@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>作品展示 - 上节好课</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 50px;
+        padding: 40px 0;
+      }
+
+      .header h1 {
+        color: white;
+        font-size: 3rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      }
+
+      .header p {
+        color: rgba(255,255,255,0.9);
+        font-size: 1.2rem;
+      }
+
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 1rem 0;
+        background: rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 100;
+        transition: all 0.3s ease;
+      }
+
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .brand-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #00d4ff;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+      }
+
+      .nav-menu {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+        padding: 0.5rem 0;
+      }
+
+      .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #00d4ff, #ff0080);
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover {
+        color: #00d4ff;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+      }
+
+      .nav-link:hover::after {
+        width: 100%;
+      }
+
+      .works-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+      }
+
+      .work-card {
+        background: rgba(255,255,255,0.95);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .work-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      }
+
+      .work-card h3 {
+        color: #333;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+      }
+
+      .work-card p {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .work-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .tag {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .work-link {
+        display: inline-block;
+        padding: 10px 20px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+      }
+
+      .work-link:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2rem;
+        }
+        
+        .works-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .container {
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <span class="brand-text">上节好课</span>
+        </div>
+        <div class="nav-menu">
+          <a href="/" class="nav-link">首页</a>
+          <a href="/works" class="nav-link">作品</a>
+          <a href="/contact" class="nav-link">联系</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="header">
+        <h1>作品展示</h1>
+        <p>探索我们的精彩作品与项目成果</p>
+      </div>
+
+      <div class="works-grid">
+        <div class="work-card">
+          <h3>在线教育平台</h3>
+          <p>一个功能完整的在线教育平台，支持视频课程、在线测试、学习进度跟踪等功能。采用现代化的设计理念，提供优质的用户体验。</p>
+          <div class="work-tags">
+            <span class="tag">React</span>
+            <span class="tag">Node.js</span>
+            <span class="tag">MongoDB</span>
+            <span class="tag">WebRTC</span>
+          </div>
+          <a href="#" class="work-link">查看详情</a>
+        </div>
+
+        <div class="work-card">
+          <h3>智能学习助手</h3>
+          <p>基于AI技术的智能学习助手，能够根据学生的学习情况提供个性化的学习建议和资源推荐，帮助提高学习效率。</p>
+          <div class="work-tags">
+            <span class="tag">Python</span>
+            <span class="tag">TensorFlow</span>
+            <span class="tag">NLP</span>
+            <span class="tag">Vue.js</span>
+          </div>
+          <a href="#" class="work-link">查看详情</a>
+        </div>
+
+        <div class="work-card">
+          <h3>移动学习应用</h3>
+          <p>专为移动设备优化的学习应用，支持离线学习、社交互动、成就系统等功能，让学习变得更加有趣和便捷。</p>
+          <div class="work-tags">
+            <span class="tag">React Native</span>
+            <span class="tag">Firebase</span>
+            <span class="tag">Redux</span>
+            <span class="tag">TypeScript</span>
+          </div>
+          <a href="#" class="work-link">查看详情</a>
+        </div>
+
+        <div class="work-card">
+          <h3>虚拟实验室</h3>
+          <p>3D虚拟实验室平台，让学生能够在虚拟环境中进行各种科学实验，安全且成本效益高，支持物理、化学、生物等多个学科。</p>
+          <div class="work-tags">
+            <span class="tag">Three.js</span>
+            <span class="tag">WebGL</span>
+            <span class="tag">Unity</span>
+            <span class="tag">C#</span>
+          </div>
+          <a href="#" class="work-link">查看详情</a>
+        </div>
+
+        <div class="work-card">
+          <h3>在线协作工具</h3>
+          <p>为教师和学生设计的在线协作工具，支持实时文档编辑、视频会议、白板共享等功能，促进远程教学和学习。</p>
+          <div class="work-tags">
+            <span class="tag">Socket.io</span>
+            <span class="tag">Express</span>
+            <span class="tag">Canvas API</span>
+            <span class="tag">WebRTC</span>
+          </div>
+          <a href="#" class="work-link">查看详情</a>
+        </div>
+
+        <div class="work-card">
+          <h3>学习数据分析系统</h3>
+          <p>强大的学习数据分析系统，通过收集和分析学习行为数据，为教育机构提供深入的洞察和改进建议。</p>
+          <div class="work-tags">
+            <span class="tag">D3.js</span>
+            <span class="tag">Python</span>
+            <span class="tag">Pandas</span>
+            <span class="tag">PostgreSQL</span>
+          </div>
+          <a href="#" class="work-link">查看详情</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
