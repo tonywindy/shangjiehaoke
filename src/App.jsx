@@ -100,8 +100,8 @@ function App() {
             </div>
             <div className="nav-menu">
               <a href="/" className="nav-link">首页</a>
-              <a href="/works" className="nav-link">作品</a>
-              <a href="/contact" className="nav-link">联系</a>
+              <a href="./works.html" className="nav-link">作品</a>
+              <a href="./contact.html" className="nav-link">联系</a>
             </div>
           </div>
         </nav>
