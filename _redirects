@@ -1,0 +1,9 @@
+# Netlify redirects file
+# This file handles SPA routing for deployment
+
+# Redirect all routes to index.html for SPA
+/*    /index.html   200
+
+# Specific redirects for HTML files
+/works.html   /works.html   200
+/contact.html /contact.html 200
