@@ -3,22 +3,50 @@ import './App.css'
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
 
   useEffect(() => {
     setIsLoaded(true)
   }, [])
+
+  const handleVideoLoad = () => {
+    setVideoLoaded(true)
+    console.log('视频加载成功')
+  }
+
+  const handleVideoError = (e) => {
+    setVideoError(true)
+    console.error('视频加载失败:', e)
+  }
 
   return (
     <>
       <div className="app">
         {/* 视频背景 */}
         <div className="video-background">
+          {!videoLoaded && !videoError && (
+            <div className="video-loading">
+              <div className="loading-spinner"></div>
+              <p>视频加载中...</p>
+            </div>
+          )}
+          
+          {videoError && (
+            <div className="video-fallback">
+              <div className="fallback-bg"></div>
+            </div>
+          )}
+          
           <video 
             autoPlay 
             muted 
             loop 
             playsInline
             className="background-video"
+            onLoadedData={handleVideoLoad}
+            onError={handleVideoError}
+            style={{ opacity: videoLoaded ? 1 : 0 }}
           >
             {/* 你可以替换这个视频源为你自己的视频文件 */}
             <source src="/your-video.mp4" type="video/mp4" />

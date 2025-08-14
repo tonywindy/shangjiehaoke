@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目预览说明</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .status {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .code {
+            background: #f5f5f5;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+        }
+        .btn {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 5px;
+            font-weight: 500;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .section {
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 项目预览说明</h1>
+        <p>这是一个 Vite + React 项目</p>
+    </div>
+
+    <div class="status">
+        <h3>✅ 当前状态</h3>
+        <p>开发服务器正在运行中...</p>
+        <a href="http://localhost:5173/" class="btn" target="_blank">打开项目预览</a>
+    </div>
+
+    <div class="warning">
+        <h3>⚠️ 为什么不能直接双击 index.html？</h3>
+        <p>这是一个现代化的 React 项目，使用了以下技术：</p>
+        <ul>
+            <li><strong>ES6 模块：</strong> 使用 <span class="code">import/export</span> 语法</li>
+            <li><strong>JSX 语法：</strong> React 组件需要编译</li>
+            <li><strong>模块打包：</strong> 需要 Vite 构建工具处理</li>
+            <li><strong>开发服务器：</strong> 提供热重载和实时预览</li>
+        </ul>
+        <p>直接双击 <span class="code">index.html</span> 会遇到 CORS 错误和模块加载问题。</p>
+    </div>
+
+    <div class="section">
+        <h3>🛠️ 如何预览项目？</h3>
+        <p><strong>方法1：使用开发服务器（推荐）</strong></p>
+        <ol>
+            <li>在终端中运行：<span class="code">npm run dev</span></li>
+            <li>打开浏览器访问：<span class="code">http://localhost:5173/</span></li>
+        </ol>
+        
+        <p><strong>方法2：构建静态文件</strong></p>
+        <ol>
+            <li>运行：<span class="code">npm run build</span></li>
+            <li>运行：<span class="code">npm run preview</span></li>
+            <li>或者直接打开 <span class="code">dist/index.html</span></li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h3>📁 项目文件说明</h3>
+        <ul>
+            <li><span class="code">index.html</span> - 主HTML模板（需要服务器运行）</li>
+            <li><span class="code">contact.html</span> - 联系页面（可直接打开）</li>
+            <li><span class="code">works.html</span> - 作品页面（可直接打开）</li>
+            <li><span class="code">preview.html</span> - 本说明文件（可直接打开）</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>🔗 快速链接</h3>
+        <a href="http://localhost:5173/" class="btn" target="_blank">React 项目预览</a>
+        <a href="contact.html" class="btn">联系页面</a>
+        <a href="works.html" class="btn">作品页面</a>
+    </div>
+
+    <script>
+        // 检查开发服务器是否运行
+        fetch('http://localhost:5173/')
+            .then(() => {
+                document.querySelector('.status').innerHTML = `
+                    <h3>✅ 开发服务器运行中</h3>
+                    <p>项目已准备就绪，可以开始预览！</p>
+                    <a href="http://localhost:5173/" class="btn" target="_blank">打开项目预览</a>
+                `;
+            })
+            .catch(() => {
+                document.querySelector('.status').innerHTML = `
+                    <h3>❌ 开发服务器未运行</h3>
+                    <p>请在终端中运行 <span class="code">npm run dev</span> 启动服务器</p>
+                `;
+                document.querySelector('.status').style.background = '#f8d7da';
+                document.querySelector('.status').style.borderColor = '#dc3545';
+            });
+    </script>
+</body>
+</html>
