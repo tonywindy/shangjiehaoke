@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>作品展示 - 上节好课</title>
     <style>
@@ -13,34 +13,48 @@
       }
 
       body {
-        font-family: 'Arial', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 50%, #e8ebff 100%);
         min-height: 100vh;
-        color: #333;
+        color: #2d3748;
+        line-height: 1.6;
       }
 
       .container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 0 24px;
       }
 
-      .header {
+      .main-content {
+        padding-top: 120px;
+        padding-bottom: 80px;
+      }
+
+      .hero-section {
         text-align: center;
-        margin-bottom: 50px;
-        padding: 40px 0;
+        margin-bottom: 80px;
+        padding: 60px 0;
       }
 
-      .header h1 {
-        color: white;
-        font-size: 3rem;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      .hero-title {
+        font-size: 4rem;
+        font-weight: 800;
+        color: #1a202c;
+        margin-bottom: 16px;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
-      .header p {
-        color: rgba(255,255,255,0.9);
-        font-size: 1.2rem;
+      .hero-subtitle {
+        font-size: 1.25rem;
+        color: #718096;
+        font-weight: 400;
+        max-width: 600px;
+        margin: 0 auto;
       }
 
       .navbar {
@@ -48,18 +62,18 @@
         top: 0;
         left: 0;
         width: 100%;
-        padding: 1rem 0;
-        background: rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 16px 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         z-index: 100;
         transition: all 0.3s ease;
       }
 
       .nav-container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 0 2rem;
+        padding: 0 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -68,29 +82,29 @@
       .nav-brand {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 8px;
       }
 
       .brand-text {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #00d4ff;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        color: #667eea;
+        text-decoration: none;
       }
 
       .nav-menu {
         display: flex;
-        gap: 2rem;
+        gap: 32px;
         align-items: center;
       }
 
       .nav-link {
-        color: rgba(255, 255, 255, 0.8);
+        color: #4a5568;
         text-decoration: none;
         font-weight: 500;
         transition: all 0.3s ease;
         position: relative;
-        padding: 0.5rem 0;
+        padding: 8px 0;
       }
 
       .nav-link::after {
@@ -100,95 +114,290 @@
         left: 0;
         width: 0;
         height: 2px;
-        background: linear-gradient(90deg, #00d4ff, #ff0080);
+        background: #667eea;
         transition: width 0.3s ease;
       }
 
       .nav-link:hover {
-        color: #00d4ff;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        color: #667eea;
       }
 
       .nav-link:hover::after {
         width: 100%;
       }
 
-      .works-grid {
+      .works-layout {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 30px;
-        margin-bottom: 50px;
+        grid-template-columns: 2fr 1fr;
+        gap: 40px;
+        align-items: start;
       }
 
-      .work-card {
-        background: rgba(255,255,255,0.95);
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      .main-works {
+        display: grid;
+        gap: 32px;
       }
 
-      .work-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      .featured-work {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
       }
 
-      .work-card h3 {
-        color: #333;
-        font-size: 1.5rem;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #667eea;
-        padding-bottom: 10px;
+      .featured-work:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
       }
 
-      .work-card p {
-        color: #666;
+      .featured-image {
+        width: 100%;
+        height: 280px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+
+      .featured-content {
+        padding: 32px;
+      }
+
+      .featured-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 12px;
+        line-height: 1.3;
+      }
+
+      .featured-description {
+        color: #718096;
+        font-size: 1rem;
+        margin-bottom: 24px;
         line-height: 1.6;
-        margin-bottom: 20px;
       }
 
       .work-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
       }
 
       .tag {
-        background: linear-gradient(45deg, #667eea, #764ba2);
-        color: white;
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-size: 0.8rem;
+        background: #edf2f7;
+        color: #4a5568;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.875rem;
         font-weight: 500;
       }
 
       .work-link {
-        display: inline-block;
-        padding: 10px 20px;
-        background: linear-gradient(45deg, #667eea, #764ba2);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: #667eea;
         color: white;
         text-decoration: none;
-        border-radius: 25px;
+        border-radius: 8px;
+        font-weight: 500;
         transition: all 0.3s ease;
       }
 
       .work-link:hover {
-        transform: scale(1.05);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        background: #5a67d8;
+        transform: translateY(-1px);
+      }
+
+      .regular-works {
+        display: grid;
+        gap: 24px;
+      }
+
+      .work-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .work-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .work-card h3 {
+        color: #1a202c;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        line-height: 1.4;
+      }
+
+      .work-card p {
+        color: #718096;
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+        line-height: 1.6;
+      }
+
+      .work-card .work-tags {
+        margin-bottom: 16px;
+      }
+
+      .work-card .tag {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+      }
+
+      .work-card .work-link {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 120px;
+      }
+
+      .sidebar-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .sidebar-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1a202c;
+        margin-bottom: 16px;
+      }
+
+      .featured-list {
+        list-style: none;
+      }
+
+      .featured-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .featured-item:last-child {
+        border-bottom: none;
+      }
+
+      .featured-link {
+        color: #4a5568;
+        text-decoration: none;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        transition: color 0.3s ease;
+      }
+
+      .featured-link:hover {
+        color: #667eea;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 16px;
+        background: #f7fafc;
+        border-radius: 8px;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+        display: block;
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: #718096;
+        margin-top: 4px;
+      }
+      @media (max-width: 1024px) {
+        .works-layout {
+          grid-template-columns: 1fr;
+          gap: 32px;
+        }
+        
+        .sidebar {
+          position: static;
+          order: -1;
+        }
+        
+        .sidebar-section {
+          margin-bottom: 16px;
+        }
       }
 
       @media (max-width: 768px) {
-        .header h1 {
+        .container {
+          padding: 0 16px;
+        }
+        
+        .main-content {
+          padding-top: 100px;
+          padding-bottom: 60px;
+        }
+        
+        .hero-title {
+          font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+          font-size: 1.125rem;
+        }
+        
+        .nav-menu {
+          gap: 20px;
+        }
+        
+        .featured-content {
+          padding: 24px;
+        }
+        
+        .featured-title {
+          font-size: 1.5rem;
+        }
+        
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hero-title {
           font-size: 2rem;
         }
         
-        .works-grid {
-          grid-template-columns: 1fr;
+        .nav-menu {
+          gap: 16px;
         }
         
-        .container {
-          padding: 10px;
+        .nav-link {
+          font-size: 0.9rem;
         }
       }
     </style>
@@ -197,93 +406,139 @@
     <nav class="navbar">
       <div class="nav-container">
         <div class="nav-brand">
-          <span class="brand-text">上节好课</span>
+          <a href="./index.html" class="brand-text">上节好课</a>
         </div>
         <div class="nav-menu">
-          <a href="./index.html" class="nav-link">首页</a>
-          <a href="./works.html" class="nav-link">作品</a>
-          <a href="./contact.html" class="nav-link">联系</a>
+          <a href="./index.html" class="nav-link">初见之页</a>
+          <a href="./works.html" class="nav-link">些许尝试</a>
+          <a href="./contact.html" class="nav-link">一点想法</a>
         </div>
       </div>
     </nav>
 
     <div class="container">
-      <div class="header">
-        <h1>作品展示</h1>
-        <p>探索我们的精彩作品与项目成果</p>
-      </div>
-
-      <div class="works-grid">
-        <div class="work-card">
-          <h3>在线教育平台</h3>
-          <p>一个功能完整的在线教育平台，支持视频课程、在线测试、学习进度跟踪等功能。采用现代化的设计理念，提供优质的用户体验。</p>
-          <div class="work-tags">
-            <span class="tag">React</span>
-            <span class="tag">Node.js</span>
-            <span class="tag">MongoDB</span>
-            <span class="tag">WebRTC</span>
-          </div>
-          <a href="#" class="work-link">查看详情</a>
+      <div class="main-content">
+        <div class="hero-section">
+          <h1 class="hero-title">些许尝试</h1>
+          <p class="hero-subtitle">不保证成功，不追求完美</p>
         </div>
 
-        <div class="work-card">
-          <h3>智能学习助手</h3>
-          <p>基于AI技术的智能学习助手，能够根据学生的学习情况提供个性化的学习建议和资源推荐，帮助提高学习效率。</p>
-          <div class="work-tags">
-            <span class="tag">Python</span>
-            <span class="tag">TensorFlow</span>
-            <span class="tag">NLP</span>
-            <span class="tag">Vue.js</span>
-          </div>
-          <a href="#" class="work-link">查看详情</a>
-        </div>
+        <div class="works-layout">
+          <div class="main-works">
+            <!-- 主要推荐作品 -->
+            <article class="featured-work">
+              <div class="featured-image">
+                两位数乘法登山挑战游戏
+              </div>
+              <div class="featured-content">
+                <h2 class="featured-title">两位数乘法登山挑战游戏</h2>
+                <p class="featured-description">一个有趣的数学学习游戏，通过登山挑战的形式让学生练习两位数乘法运算。支持单人挑战和双人对战模式，配有可爱的动物角色和生动的动画效果，让数学学习变得更加有趣。</p>
+                <div class="work-tags">
+                  <span class="tag">JavaScript</span>
+                  <span class="tag">HTML5</span>
+                  <span class="tag">CSS3</span>
+                  <span class="tag">教育游戏</span>
+                  <span class="tag">数学学习</span>
+                </div>
+                <a href="./climb.html" class="work-link">
+                  开始游戏 →
+                </a>
+              </div>
+            </article>
 
-        <div class="work-card">
-          <h3>移动学习应用</h3>
-          <p>专为移动设备优化的学习应用，支持离线学习、社交互动、成就系统等功能，让学习变得更加有趣和便捷。</p>
-          <div class="work-tags">
-            <span class="tag">React Native</span>
-            <span class="tag">Firebase</span>
-            <span class="tag">Redux</span>
-            <span class="tag">TypeScript</span>
-          </div>
-          <a href="#" class="work-link">查看详情</a>
-        </div>
+            <!-- 常规作品列表 -->
+            <div class="regular-works">
+              <div class="work-card">
+                <h3>智能学习助手</h3>
+                <p>基于AI技术的智能学习助手，能够根据学生的学习情况提供个性化的学习建议和资源推荐。</p>
+                <div class="work-tags">
+                  <span class="tag">Python</span>
+                  <span class="tag">TensorFlow</span>
+                  <span class="tag">NLP</span>
+                </div>
+                <a href="#" class="work-link">查看详情 →</a>
+              </div>
 
-        <div class="work-card">
-          <h3>虚拟实验室</h3>
-          <p>3D虚拟实验室平台，让学生能够在虚拟环境中进行各种科学实验，安全且成本效益高，支持物理、化学、生物等多个学科。</p>
-          <div class="work-tags">
-            <span class="tag">Three.js</span>
-            <span class="tag">WebGL</span>
-            <span class="tag">Unity</span>
-            <span class="tag">C#</span>
-          </div>
-          <a href="#" class="work-link">查看详情</a>
-        </div>
+              <div class="work-card">
+                <h3>移动学习应用</h3>
+                <p>专为移动设备优化的学习应用，支持离线学习、社交互动、成就系统等功能。</p>
+                <div class="work-tags">
+                  <span class="tag">React Native</span>
+                  <span class="tag">Firebase</span>
+                  <span class="tag">Redux</span>
+                </div>
+                <a href="#" class="work-link">查看详情 →</a>
+              </div>
 
-        <div class="work-card">
-          <h3>在线协作工具</h3>
-          <p>为教师和学生设计的在线协作工具，支持实时文档编辑、视频会议、白板共享等功能，促进远程教学和学习。</p>
-          <div class="work-tags">
-            <span class="tag">Socket.io</span>
-            <span class="tag">Express</span>
-            <span class="tag">Canvas API</span>
-            <span class="tag">WebRTC</span>
-          </div>
-          <a href="#" class="work-link">查看详情</a>
-        </div>
+              <div class="work-card">
+                <h3>虚拟实验室</h3>
+                <p>3D虚拟实验室平台，让学生能够在虚拟环境中进行各种科学实验，安全且成本效益高。</p>
+                <div class="work-tags">
+                  <span class="tag">Three.js</span>
+                  <span class="tag">WebGL</span>
+                  <span class="tag">Unity</span>
+                </div>
+                <a href="#" class="work-link">查看详情 →</a>
+              </div>
 
-        <div class="work-card">
-          <h3>学习数据分析系统</h3>
-          <p>强大的学习数据分析系统，通过收集和分析学习行为数据，为教育机构提供深入的洞察和改进建议。</p>
-          <div class="work-tags">
-            <span class="tag">D3.js</span>
-            <span class="tag">Python</span>
-            <span class="tag">Pandas</span>
-            <span class="tag">PostgreSQL</span>
+              <div class="work-card">
+                <h3>在线协作工具</h3>
+                <p>为教师和学生设计的在线协作工具，支持实时文档编辑、视频会议、白板共享等功能。</p>
+                <div class="work-tags">
+                  <span class="tag">Socket.io</span>
+                  <span class="tag">Canvas API</span>
+                  <span class="tag">WebRTC</span>
+                </div>
+                <a href="#" class="work-link">查看详情 →</a>
+              </div>
+            </div>
           </div>
-          <a href="#" class="work-link">查看详情</a>
+
+          <!-- 侧边栏 -->
+          <aside class="sidebar">
+            <div class="sidebar-section">
+              <h3 class="sidebar-title">精选文章</h3>
+              <ul class="featured-list">
+                <li class="featured-item">
+                  <a href="#" class="featured-link">如何用AI技术改变传统教育</a>
+                </li>
+                <li class="featured-item">
+                  <a href="#" class="featured-link">前端开发的最佳实践指南</a>
+                </li>
+                <li class="featured-item">
+                  <a href="#" class="featured-link">构建现代化学习平台的思考</a>
+                </li>
+                <li class="featured-item">
+                  <a href="#" class="featured-link">用户体验设计在教育产品中的应用</a>
+                </li>
+                <li class="featured-item">
+                  <a href="#" class="featured-link">技术驱动的个性化学习</a>
+                </li>
+              </ul>
+            </div>
+
+            <div class="sidebar-section">
+              <h3 class="sidebar-title">项目统计</h3>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-number">12</span>
+                  <span class="stat-label">完成项目</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">8</span>
+                  <span class="stat-label">技术栈</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">3</span>
+                  <span class="stat-label">获奖项目</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">2k+</span>
+                  <span class="stat-label">代码提交</span>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </div>

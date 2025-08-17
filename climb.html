@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>两位数乘法登山挑战</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', 'Inter', sans-serif;
+            touch-action: manipulation; /* 防止双击缩放 */
+        }
+        .numpad-btn {
+            transition: all 0.1s ease-in-out;
+        }
+        .numpad-btn:active {
+            transform: scale(0.95);
+            background-color: #4a5568; /* a darker gray */
+        }
+        .animal {
+            transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* 有趣的“跳跃”动画 */
+            font-size: 2.5rem; /* 调整动物表情大小 */
+        }
+        .mountain-path {
+            position: absolute;
+            left: 50%;
+            top: 10%;
+            bottom: 10%;
+            width: 8px;
+            background: repeating-linear-gradient(
+                to top,
+                #a0aec0,
+                #a0aec0 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            transform: translateX(-50%);
+        }
+        .checkpoint {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background-color: #f6e05e; /* yellow */
+            border-radius: 50%;
+            border: 3px solid #d69e2e; /* darker yellow */
+        }
+        .incorrect-answer {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        /* 结束动画样式 */
+        #animation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+            overflow: hidden;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 20px;
+            opacity: 0;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .winner-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            padding: 20px 40px;
+            background-color: rgba(255, 215, 0, 0.9);
+            color: white;
+            font-size: 5rem;
+            font-weight: bold;
+            border-radius: 20px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            animation: winner-zoom 3s forwards;
+            z-index: 101;
+        }
+        @keyframes winner-zoom {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2) rotate(5deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+        }
+        .loser-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 90;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen">
+
+    <div id="app-container" class="w-full max-w-6xl mx-auto p-4">
+
+        <!-- 欢迎/主菜单界面 -->
+        <div id="lobby-screen" class="text-center bg-white p-8 rounded-2xl shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <a href="./works.html" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md transition-transform transform hover:scale-105">
+                    ← 返回作品
+                </a>
+                <div class="flex-1"></div>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-700">两位数乘法登山挑战</h1>
+            <p class="text-gray-500 mb-8">选择一个模式开始你的计算之旅吧！</p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <button onclick="showSinglePlayerSetup()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
+                    👤 单人模式
+                </button>
+                <button onclick="showDualPlayerSetup()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
+                    👥 双人模式
+                </button>
+            </div>
+            
+            <!-- 单人模式设置 -->
+            <div id="single-player-setup" class="hidden mt-8 max-w-md mx-auto bg-gray-50 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold mb-4 text-gray-600">单人挑战设置</h2>
+                <div class="mb-4">
+                    <label class="block text-lg font-medium text-gray-700 mb-2">总题数:</label>
+                    <div class="flex justify-center gap-3" data-setting-type="questions">
+                        <button onclick="setGameOption('single', 'questions', 5, this)" class="game-option-btn bg-white border-2 border-blue-500 text-blue-500 py-2 px-5 rounded-lg font-semibold">5题</button>
+                        <button onclick="setGameOption('single', 'questions', 10, this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">10题</button>
+                        <button onclick="setGameOption('single', 'questions', 15, this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">15题</button>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-lg font-medium text-gray-700 mb-2">难易度:</label>
+                    <div class="flex justify-center gap-3" data-setting-type="difficulty">
+                        <button onclick="setGameOption('single', 'difficulty', 'easy', this)" class="game-option-btn bg-white border-2 border-green-500 text-green-500 py-2 px-5 rounded-lg font-semibold">简单</button>
+                        <button onclick="setGameOption('single', 'difficulty', 'normal', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">普通</button>
+                        <button onclick="setGameOption('single', 'difficulty', 'hard', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">困难</button>
+                    </div>
+                </div>
+                <button onclick="setupGame('single')" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
+                    💪 开始挑战
+                </button>
+            </div>
+
+            <!-- 双人模式设置 -->
+            <div id="dual-player-setup" class="hidden mt-8 max-w-md mx-auto bg-gray-50 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold mb-4 text-gray-600">双人对战设置</h2>
+                <div class="mb-4">
+                    <label class="block text-lg font-medium text-gray-700 mb-2">总题数:</label>
+                    <div class="flex justify-center gap-3" data-setting-type="questions">
+                        <button onclick="setGameOption('dual', 'questions', 5, this)" class="game-option-btn bg-white border-2 border-blue-500 text-blue-500 py-2 px-5 rounded-lg font-semibold">5题</button>
+                        <button onclick="setGameOption('dual', 'questions', 10, this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">10题</button>
+                        <button onclick="setGameOption('dual', 'questions', 15, this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">15题</button>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-lg font-medium text-gray-700 mb-2">难易度:</label>
+                    <div class="flex justify-center gap-3" data-setting-type="difficulty">
+                        <button onclick="setGameOption('dual', 'difficulty', 'easy', this)" class="game-option-btn bg-white border-2 border-green-500 text-green-500 py-2 px-5 rounded-lg font-semibold">简单</button>
+                        <button onclick="setGameOption('dual', 'difficulty', 'normal', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">普通</button>
+                        <button onclick="setGameOption('dual', 'difficulty', 'hard', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">困难</button>
+                    </div>
+                </div>
+                <button onclick="setupGame('dual')" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
+                    🚀 开始对战
+                </button>
+            </div>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div id="game-screen" class="hidden w-full">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="showLobby()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md transition-transform transform hover:scale-105">
+                    ← 返回主菜单
+                </button>
+                <a href="./works.html" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md transition-transform transform hover:scale-105">
+                    ← 返回作品
+                </a>
+            </div>
+            <div id="game-area" class="flex flex-col md:flex-row gap-4 w-full">
+                <!-- 玩家模板，JS会复制这个结构 -->
+            </div>
+        </div>
+        
+        <!-- 游戏结束界面 -->
+        <div id="game-over-screen" class="hidden text-center bg-white p-8 rounded-2xl shadow-lg">
+            <h2 id="game-over-title" class="text-4xl md:text-5xl font-bold mb-4">游戏结束</h2>
+            <p id="game-over-message" class="text-2xl text-gray-600 mb-8"></p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <button onclick="showLobby()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
+                    返回主菜单
+                </button>
+                <a href="./works.html" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
+                    返回作品页面
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动画层 -->
+    <div id="animation-overlay"></div>
+
+    <!-- 玩家游戏区域的HTML模板 -->
+    <template id="player-template">
+        <div class="player-container flex-1 bg-white rounded-2xl shadow-lg p-4 flex flex-col md:flex-row gap-4 min-w-0 relative">
+            <!-- 左侧：答题区域 (默认顺序) -->
+            <div class="quiz-panel w-full md:w-3/5 lg:w-2/3 flex flex-col items-center justify-center p-2">
+                <div class="question-display w-full text-center mb-4">
+                    <p class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-wider"></p>
+                </div>
+                <div class="answer-input w-full h-16 bg-gray-200 rounded-lg mb-4 text-4xl font-mono flex items-center justify-center text-gray-700"></div>
+                <div class="numpad grid grid-cols-3 gap-2 w-full max-w-xs mx-auto">
+                    <!-- 数字键会由JS生成 -->
+                    <button data-key="clear" class="numpad-btn bg-yellow-500 text-white text-2xl font-bold rounded-lg p-3 col-span-1">⌫</button>
+                    <button data-key="0" class="numpad-btn bg-gray-600 text-white text-2xl font-bold rounded-lg p-3 col-span-1">0</button>
+                    <button data-key="enter" class="numpad-btn bg-green-500 text-white text-2xl font-bold rounded-lg p-3 col-span-1">✔</button>
+                </div>
+            </div>
+            <!-- 右侧：登山进度 (默认顺序) -->
+            <div class="progress-panel w-full md:w-2/5 lg:w-1/3 bg-blue-100 rounded-xl relative overflow-hidden h-64 md:h-auto">
+                <div class="mountain-path"></div>
+                <div class="checkpoints-container"></div>
+                <div class="animal absolute bottom-0 left-1/2 -translate-x-1/2 mb-[-10px]"></div>
+                <div class="player-name absolute top-2 left-2 bg-black bg-opacity-20 text-white text-sm font-bold px-2 py-1 rounded"></div>
+                <div class="timer absolute top-2 right-2 bg-black bg-opacity-20 text-white text-sm font-bold px-2 py-1 rounded">00:00</div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        // DOM 元素获取
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const singlePlayerSetupScreen = document.getElementById('single-player-setup');
+        const dualPlayerSetupScreen = document.getElementById('dual-player-setup');
+        const gameScreen = document.getElementById('game-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const gameArea = document.getElementById('game-area');
+        const playerTemplate = document.getElementById('player-template');
+        const animationOverlay = document.getElementById('animation-overlay');
+
+        // 游戏状态
+        let gameState = {};
+        const animals = ['🐼', '🐵', '🦊', '🦁', '🐸', '🦄', '🚀', '🐢'];
+
+        // 游戏设置
+        let singleGameSettings = { questions: 5, difficulty: 'easy' };
+        let dualGameSettings = { questions: 5, difficulty: 'easy' };
+
+        // --- 界面切换函数 ---
+        function showLobby() {
+            lobbyScreen.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            singlePlayerSetupScreen.classList.add('hidden');
+            dualPlayerSetupScreen.classList.add('hidden');
+            gameArea.innerHTML = '';
+        }
+
+        function showSinglePlayerSetup() {
+            singlePlayerSetupScreen.classList.remove('hidden');
+            dualPlayerSetupScreen.classList.add('hidden');
+        }
+
+        function showDualPlayerSetup() {
+            dualPlayerSetupScreen.classList.remove('hidden');
+            singlePlayerSetupScreen.classList.add('hidden');
+        }
+
+        function showGame() {
+            lobbyScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameOverScreen.classList.add('hidden');
+        }
+
+        function showGameOver() {
+            gameScreen.classList.add('hidden');
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        // --- 游戏设置 ---
+        function setGameOption(mode, type, value, element) {
+            const settings = mode === 'single' ? singleGameSettings : dualGameSettings;
+            settings[type] = value;
+
+            const parent = element.parentElement;
+            parent.querySelectorAll('.game-option-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-500', 'border-green-500', 'text-green-500');
+                btn.classList.add('border-gray-300', 'text-gray-500');
+            });
+            
+            const activeColor = type === 'questions' ? ['border-blue-500', 'text-blue-500'] : ['border-green-500', 'text-green-500'];
+            element.classList.remove('border-gray-300', 'text-gray-500');
+            element.classList.add(...activeColor);
+        }
+
+        // --- 游戏核心逻辑 ---
+        function setupGame(mode) {
+            gameState.mode = mode;
+            gameState.players = [];
+            gameState.gameInterval = null;
+            gameState.isOver = false;
+
+            if (mode === 'single') {
+                createPlayer(0, singleGameSettings.questions, singleGameSettings.difficulty);
+            } else {
+                const shuffledAnimals = [...animals].sort(() => 0.5 - Math.random());
+                createPlayer(0, dualGameSettings.questions, dualGameSettings.difficulty, shuffledAnimals[0]);
+                createPlayer(1, dualGameSettings.questions, dualGameSettings.difficulty, shuffledAnimals[1]);
+                
+                const questionBank = generateQuestionBank(dualGameSettings.questions, dualGameSettings.difficulty);
+                gameState.players[0].questions = [...questionBank].sort(() => 0.5 - Math.random());
+                gameState.players[1].questions = [...questionBank].sort(() => 0.5 - Math.random());
+            }
+
+            showGame();
+            startGame();
+        }
+
+        function createPlayer(index, totalQuestions, difficulty, animal) {
+            const playerNode = playerTemplate.content.cloneNode(true);
+            const playerContainer = playerNode.querySelector('.player-container');
+            
+            // *** 修正逻辑：为双人模式的右边玩家(玩家2)反转布局 ***
+            if (gameState.mode === 'dual' && index === 1) {
+                playerContainer.classList.add('md:flex-row-reverse');
+            }
+
+            playerContainer.dataset.playerId = index;
+            const playerName = gameState.mode === 'single' ? '挑战者' : `玩家 ${index + 1}`;
+            playerContainer.querySelector('.player-name').textContent = playerName;
+            
+            const selectedAnimal = animal || animals[Math.floor(Math.random() * animals.length)];
+            playerContainer.querySelector('.animal').textContent = selectedAnimal;
+
+            const numpad = playerContainer.querySelector('.numpad');
+            const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            keys.forEach(key => {
+                const button = document.createElement('button');
+                button.textContent = key;
+                button.dataset.key = key;
+                button.className = "numpad-btn bg-gray-600 text-white text-2xl font-bold rounded-lg p-3";
+                numpad.prepend(button);
+            });
+            
+            gameArea.appendChild(playerNode);
+
+            const checkpointsContainer = playerContainer.querySelector('.checkpoints-container');
+            for (let i = 1; i <= totalQuestions; i++) {
+                const checkpoint = document.createElement('div');
+                checkpoint.className = 'checkpoint';
+                const progressPercentage = (i / (totalQuestions + 1)) * 100;
+                checkpoint.style.bottom = `${progressPercentage}%`;
+                checkpointsContainer.appendChild(checkpoint);
+            }
+
+            const playerData = {
+                id: index,
+                score: 0,
+                totalQuestions: totalQuestions,
+                questions: generateQuestionBank(totalQuestions, difficulty),
+                currentQuestionIndex: 0,
+                startTime: null,
+                elapsedTime: 0,
+                answer: '',
+                ui: {
+                    container: document.querySelector(`.player-container[data-player-id='${index}']`),
+                    questionDisplay: document.querySelector(`.player-container[data-player-id='${index}'] .question-display p`),
+                    answerInput: document.querySelector(`.player-container[data-player-id='${index}'] .answer-input`),
+                    animal: document.querySelector(`.player-container[data-player-id='${index}'] .animal`),
+                    timer: document.querySelector(`.player-container[data-player-id='${index}'] .timer`),
+                }
+            };
+            
+            playerData.ui.container.querySelector('.numpad').addEventListener('click', (e) => handleNumpad(e, index));
+            gameState.players.push(playerData);
+        }
+
+        function generateQuestionBank(count, difficulty) {
+            const questions = new Set();
+            const ranges = {
+                easy: { min: 10, max: 30 },
+                normal: { min: 10, max: 70 },
+                hard: { min: 30, max: 99 }
+            };
+            const { min, max } = ranges[difficulty];
+
+            while (questions.size < count) {
+                const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+                const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+                const key = `${Math.min(num1, num2)}x${Math.max(num1, num2)}`;
+                if (!questions.has(key)) questions.add(key);
+            }
+            
+            return Array.from(questions).map(q => {
+                const [num1, num2] = q.split('x').map(Number);
+                return { num1, num2, answer: num1 * num2 };
+            });
+        }
+
+        function startGame() {
+            const now = Date.now();
+            gameState.players.forEach(p => {
+                p.startTime = now;
+                displayQuestion(p.id);
+            });
+
+            gameState.gameInterval = setInterval(updateTimers, 1000);
+        }
+
+        function updateTimers() {
+            if (gameState.isOver) return;
+            const now = Date.now();
+            gameState.players.forEach(p => {
+                p.elapsedTime = Math.floor((now - p.startTime) / 1000);
+                const minutes = String(Math.floor(p.elapsedTime / 60)).padStart(2, '0');
+                const seconds = String(p.elapsedTime % 60).padStart(2, '0');
+                p.ui.timer.textContent = `${minutes}:${seconds}`;
+            });
+        }
+
+        function displayQuestion(playerId) {
+            const player = gameState.players[playerId];
+            if (player.currentQuestionIndex < player.questions.length) {
+                const q = player.questions[player.currentQuestionIndex];
+                player.ui.questionDisplay.textContent = `${q.num1} × ${q.num2} = ?`;
+                player.answer = '';
+                player.ui.answerInput.textContent = '';
+            }
+        }
+
+        function handleNumpad(event, playerId) {
+            if (gameState.isOver) return;
+            const key = event.target.dataset.key;
+            if (!key) return;
+
+            const player = gameState.players[playerId];
+
+            if (key >= '0' && key <= '9') {
+                if(player.answer.length < 6) player.answer += key;
+            } else if (key === 'clear') {
+                player.answer = player.answer.slice(0, -1);
+            } else if (key === 'enter') {
+                checkAnswer(playerId);
+            }
+            
+            player.ui.answerInput.textContent = player.answer;
+        }
+
+        function checkAnswer(playerId) {
+            const player = gameState.players[playerId];
+            const q = player.questions[player.currentQuestionIndex];
+            
+            if (parseInt(player.answer) === q.answer) {
+                player.score++;
+                updateProgress(playerId);
+                player.currentQuestionIndex++;
+
+                if (player.score >= player.totalQuestions) {
+                    endGame(playerId);
+                } else {
+                    displayQuestion(playerId);
+                }
+            } else {
+                player.ui.answerInput.classList.add('incorrect-answer');
+                setTimeout(() => {
+                    player.ui.answerInput.classList.remove('incorrect-answer');
+                }, 500);
+            }
+        }
+        
+        function updateProgress(playerId) {
+            const player = gameState.players[playerId];
+            const progressPercentage = (player.score / (player.totalQuestions + 1)) * 100;
+            player.ui.animal.style.bottom = `${progressPercentage}%`;
+        }
+
+        function endGame(winnerId = null) {
+            if (gameState.isOver) return;
+            gameState.isOver = true;
+            clearInterval(gameState.gameInterval);
+            updateTimers(); // 最后更新一次时间
+
+            playEndAnimation(winnerId);
+
+            setTimeout(() => {
+                const title = document.getElementById('game-over-title');
+                const message = document.getElementById('game-over-message');
+
+                if (gameState.mode === 'single') {
+                    const player = gameState.players[0];
+                    title.textContent = '🎉 恭喜通关！ 🎉';
+                    message.textContent = `你完成了所有题目，用时：${player.ui.timer.textContent}`;
+                } else {
+                    const winner = gameState.players[winnerId];
+                    const loser = gameState.players[1 - winnerId];
+                    title.textContent = `🏆 玩家 ${winnerId + 1} 获胜！ 🏆`;
+                    message.innerHTML = `
+                        <p>胜利者用时: ${winner.ui.timer.textContent}</p>
+                        <p class="text-lg mt-2">玩家 ${loser.id + 1} 完成了 ${loser.score}/${loser.totalQuestions} 题</p>
+                    `;
+                }
+                showGameOver();
+            }, 3000); // 动画播放3秒后显示结果
+        }
+
+        function playEndAnimation(winnerId) {
+            animationOverlay.innerHTML = ''; // 清空上一场动画
+            if (gameState.mode === 'single') {
+                // 彩带动画
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = `${Math.random() * 100}vw`;
+                    confetti.style.animationDelay = `${Math.random() * 2}s`;
+                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    animationOverlay.appendChild(confetti);
+                }
+            } else {
+                // 胜利者动画
+                const winner = gameState.players[winnerId];
+                const loser = gameState.players[1 - winnerId];
+
+                const banner = document.createElement('div');
+                banner.className = 'winner-banner';
+                banner.textContent = '胜利!';
+                winner.ui.container.appendChild(banner);
+
+                const loserOverlay = document.createElement('div');
+                loserOverlay.className = 'loser-overlay';
+                loser.ui.container.appendChild(loserOverlay);
+            }
+        }
+
+        // 初始化
+        window.onload = showLobby;
+    </script>
+</body>
+</html>

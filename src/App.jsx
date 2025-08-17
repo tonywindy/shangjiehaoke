@@ -50,8 +50,6 @@ function App() {
           >
             {/* 你可以替换这个视频源为你自己的视频文件 */}
             <source src="/your-video.mp4" type="video/mp4" />
-            {/* 备用视频格式 */}
-            <source src="/your-video.webm" type="video/webm" />
             {/* 如果浏览器不支持视频，显示备用内容 */}
             Your browser does not support the video tag.
           </video>
@@ -99,9 +97,9 @@ function App() {
               <span className="brand-text">上节好课</span>
             </div>
             <div className="nav-menu">
-              <a href="/" className="nav-link">首页</a>
-              <a href="./works.html" className="nav-link">作品</a>
-              <a href="./contact.html" className="nav-link">联系</a>
+              <a href="/" className="nav-link">初见之页</a>
+              <a href="./works.html" className="nav-link">些许尝试</a>
+              <a href="./contact.html" className="nav-link">一点想法</a>
             </div>
           </div>
         </nav>

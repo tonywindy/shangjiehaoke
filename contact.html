@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>联系我们 - 上节好课</title>
+    <title>一点想法 - 上节好课</title>
     <style>
       * {
         margin: 0;
@@ -13,10 +13,11 @@
       }
 
       body {
-        font-family: 'Arial', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 50%, #f0f4ff 100%);
         min-height: 100vh;
-        color: #333;
+        color: #2d3748;
+        line-height: 1.6;
       }
 
       .container {
@@ -25,22 +26,27 @@
         padding: 20px;
       }
 
-      .header {
+      .hero-section {
         text-align: center;
-        margin-bottom: 50px;
-        padding: 40px 0;
+        padding: 120px 0 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin-bottom: 80px;
       }
 
-      .header h1 {
+      .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
         color: white;
-        font-size: 3rem;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        margin-bottom: 1rem;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.3);
       }
 
-      .header p {
+      .hero-subtitle {
+        font-size: 1.3rem;
         color: rgba(255,255,255,0.9);
-        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
       }
 
       .navbar {
@@ -48,18 +54,18 @@
         top: 0;
         left: 0;
         width: 100%;
-        padding: 1rem 0;
-        background: rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 16px 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         z-index: 100;
         transition: all 0.3s ease;
       }
 
       .nav-container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 0 2rem;
+        padding: 0 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -68,29 +74,29 @@
       .nav-brand {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 8px;
       }
 
       .brand-text {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #00d4ff;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        color: #667eea;
+        text-decoration: none;
       }
 
       .nav-menu {
         display: flex;
-        gap: 2rem;
+        gap: 32px;
         align-items: center;
       }
 
       .nav-link {
-        color: rgba(255, 255, 255, 0.8);
+        color: #4a5568;
         text-decoration: none;
         font-weight: 500;
         transition: all 0.3s ease;
         position: relative;
-        padding: 0.5rem 0;
+        padding: 8px 0;
       }
 
       .nav-link::after {
@@ -100,185 +106,248 @@
         left: 0;
         width: 0;
         height: 2px;
-        background: linear-gradient(90deg, #00d4ff, #ff0080);
+        background: #667eea;
         transition: width 0.3s ease;
       }
 
       .nav-link:hover {
-        color: #00d4ff;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        color: #667eea;
       }
 
       .nav-link:hover::after {
         width: 100%;
       }
 
-      .contact-content {
+      .thoughts-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 3rem;
+        margin-bottom: 80px;
+      }
+
+      .main-thoughts {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 2rem;
+        position: relative;
+      }
+
+      .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 2px;
+      }
+
+      .article-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .article-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+      }
+
+      .article-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+      }
+
+      .article-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: #718096;
+      }
+
+      .article-date {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .article-category {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .article-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+      }
+
+      .article-excerpt {
+        color: #4a5568;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+      }
+
+      .article-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .article-link:hover {
+        color: #764ba2;
+        transform: translateX(4px);
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .sidebar-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      .sidebar-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .thought-item {
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8f9ff, #e8ecff);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+      }
+
+      .thought-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+      }
+
+      .thought-text {
+        color: #4a5568;
+        font-style: italic;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+      }
+
+      .thought-author {
+        font-size: 0.85rem;
+        color: #718096;
+        text-align: right;
+      }
+
+      .stats-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 40px;
-        margin-bottom: 50px;
+        gap: 1rem;
       }
 
-      .contact-info {
-        background: rgba(255,255,255,0.95);
-        border-radius: 15px;
-        padding: 40px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      }
-
-      .contact-form {
-        background: rgba(255,255,255,0.95);
-        border-radius: 15px;
-        padding: 40px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      }
-
-      .contact-info h2,
-      .contact-form h2 {
-        color: #333;
-        font-size: 2rem;
-        margin-bottom: 30px;
-        border-bottom: 3px solid #667eea;
-        padding-bottom: 15px;
-      }
-
-      .contact-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 25px;
-        padding: 15px;
-        background: rgba(102, 126, 234, 0.1);
-        border-radius: 10px;
-        transition: all 0.3s ease;
-      }
-
-      .contact-item:hover {
-        background: rgba(102, 126, 234, 0.2);
-        transform: translateX(5px);
-      }
-
-      .contact-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(45deg, #667eea, #764ba2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 20px;
+      .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
-        font-size: 1.2rem;
+        border-radius: 12px;
       }
 
-      .contact-details h3 {
-        color: #333;
-        font-size: 1.1rem;
-        margin-bottom: 5px;
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
       }
 
-      .contact-details p {
-        color: #666;
-        font-size: 0.9rem;
+      .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
       }
 
-      .form-group {
-        margin-bottom: 25px;
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        color: #333;
-        font-weight: 500;
-      }
-
-      .form-group input,
-      .form-group textarea {
-        width: 100%;
-        padding: 12px 15px;
-        border: 2px solid #e1e1e1;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        background: white;
-      }
-
-      .form-group input:focus,
-      .form-group textarea:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-      }
-
-      .form-group textarea {
-        resize: vertical;
-        min-height: 120px;
-      }
-
-      .submit-btn {
-        width: 100%;
-        padding: 15px;
-        background: linear-gradient(45deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .submit-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-      }
-
-      .social-links {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-top: 30px;
-      }
-
-      .social-link {
-        width: 60px;
-        height: 60px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 50%;
-        display: flex;
+      .featured-link {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
         text-decoration: none;
-        font-size: 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
         transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.3);
+        margin-top: 1rem;
       }
 
-      .social-link:hover {
-        background: rgba(255,255,255,0.3);
-        transform: translateY(-5px);
+      .featured-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
       }
 
       @media (max-width: 768px) {
-        .header h1 {
+        .hero-title {
+          font-size: 2.5rem;
+        }
+        
+        .thoughts-layout {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+        
+        .section-title {
           font-size: 2rem;
         }
         
-        .contact-content {
-          grid-template-columns: 1fr;
-          gap: 20px;
-        }
-        
-        .contact-info,
-        .contact-form {
-          padding: 25px;
+        .article-card {
+          padding: 1.5rem;
         }
         
         .container {
           padding: 10px;
+        }
+        
+        .nav-menu {
+          gap: 1rem;
         }
       }
     </style>
@@ -287,138 +356,155 @@
     <nav class="navbar">
       <div class="nav-container">
         <div class="nav-brand">
-          <span class="brand-text">上节好课</span>
+          <a href="./index.html" class="brand-text">上节好课</a>
         </div>
         <div class="nav-menu">
-          <a href="./index.html" class="nav-link">首页</a>
-          <a href="./works.html" class="nav-link">作品</a>
-          <a href="./contact.html" class="nav-link">联系</a>
+          <a href="./index.html" class="nav-link">初见之页</a>
+          <a href="./works.html" class="nav-link">些许尝试</a>
+          <a href="./contact.html" class="nav-link">一点想法</a>
         </div>
       </div>
     </nav>
 
-    <div class="container">
-      <div class="header">
-        <h1>联系我们</h1>
-        <p>我们期待与您的交流合作</p>
-      </div>
-
-      <div class="contact-content">
-        <div class="contact-info">
-          <h2>联系信息</h2>
-          
-          <div class="contact-item">
-            <div class="contact-icon">📧</div>
-            <div class="contact-details">
-              <h3>邮箱地址</h3>
-              <p>contact@shangjiehaokecom</p>
-            </div>
-          </div>
-
-          <div class="contact-item">
-            <div class="contact-icon">📱</div>
-            <div class="contact-details">
-              <h3>联系电话</h3>
-              <p>+86 138-0000-0000</p>
-            </div>
-          </div>
-
-          <div class="contact-item">
-            <div class="contact-icon">📍</div>
-            <div class="contact-details">
-              <h3>公司地址</h3>
-              <p>北京市朝阳区教育科技园区</p>
-            </div>
-          </div>
-
-          <div class="contact-item">
-            <div class="contact-icon">🕒</div>
-            <div class="contact-details">
-              <h3>工作时间</h3>
-              <p>周一至周五 9:00-18:00</p>
-            </div>
-          </div>
-
-          <div class="contact-item">
-            <div class="contact-icon">💬</div>
-            <div class="contact-details">
-              <h3>微信客服</h3>
-              <p>shangjiehaokecom</p>
-            </div>
-          </div>
-
-          <div class="contact-item">
-            <div class="contact-icon">🌐</div>
-            <div class="contact-details">
-              <h3>官方网站</h3>
-              <p>www.shangjiehaokecom</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="contact-form">
-          <h2>发送消息</h2>
-          <form>
-            <div class="form-group">
-              <label for="name">姓名 *</label>
-              <input type="text" id="name" name="name" required>
-            </div>
-
-            <div class="form-group">
-              <label for="email">邮箱 *</label>
-              <input type="email" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-              <label for="phone">电话</label>
-              <input type="tel" id="phone" name="phone">
-            </div>
-
-            <div class="form-group">
-              <label for="subject">主题 *</label>
-              <input type="text" id="subject" name="subject" required>
-            </div>
-
-            <div class="form-group">
-              <label for="message">消息内容 *</label>
-              <textarea id="message" name="message" placeholder="请详细描述您的需求或问题..." required></textarea>
-            </div>
-
-            <button type="submit" class="submit-btn">发送消息</button>
-          </form>
-        </div>
-      </div>
-
-      <div class="social-links">
-        <a href="#" class="social-link" title="微信">💬</a>
-        <a href="#" class="social-link" title="微博">🐦</a>
-        <a href="#" class="social-link" title="QQ">🐧</a>
-        <a href="#" class="social-link" title="邮箱">📧</a>
+    <div class="hero-section">
+      <div class="container">
+        <h1 class="hero-title">一点想法</h1>
+        <p class="hero-subtitle">记录思考的轨迹，分享智慧的火花，在这里遇见更好的自己</p>
       </div>
     </div>
 
-    <script>
-      // 简单的表单提交处理
-      document.querySelector('form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // 获取表单数据
-        const formData = new FormData(this);
-        const name = formData.get('name');
-        const email = formData.get('email');
-        const subject = formData.get('subject');
-        const message = formData.get('message');
-        
-        // 简单验证
-        if (!name || !email || !subject || !message) {
-          alert('请填写所有必填字段！');
-          return;
-        }
-        
-        // 模拟发送成功
-        alert('消息发送成功！我们会尽快回复您。');
-        this.reset();
-      });
-    </script>
+    <div class="container">
+      <div class="thoughts-layout">
+        <div class="main-thoughts">
+          <h2 class="section-title">📝 最新文章</h2>
+          
+          <article class="article-card">
+            <div class="article-meta">
+              <div class="article-date">
+                <span>📅</span>
+                <span>2024年1月15日</span>
+              </div>
+              <span class="article-category">教育思考</span>
+            </div>
+            <h3 class="article-title">数字化时代的教育变革：从传统课堂到智能学习</h3>
+            <p class="article-excerpt">
+              在这个快速变化的数字化时代，教育正在经历前所未有的变革。从传统的黑板粉笔到智能化的学习平台，我们见证了教育技术的飞跃发展。本文探讨了如何在保持教育本质的同时，拥抱技术带来的无限可能...
+            </p>
+            <a href="#" class="article-link">
+              阅读全文 <span>→</span>
+            </a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-meta">
+              <div class="article-date">
+                <span>📅</span>
+                <span>2024年1月10日</span>
+              </div>
+              <span class="article-category">技术分享</span>
+            </div>
+            <h3 class="article-title">游戏化学习的设计原则：让学习变得有趣而有效</h3>
+            <p class="article-excerpt">
+              游戏化学习不仅仅是在教育中加入游戏元素，更是一种全新的教学理念。通过精心设计的挑战、奖励机制和进度反馈，我们可以激发学习者的内在动机，让学习过程变得既有趣又高效...
+            </p>
+            <a href="#" class="article-link">
+              阅读全文 <span>→</span>
+            </a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-meta">
+              <div class="article-date">
+                <span>📅</span>
+                <span>2024年1月5日</span>
+              </div>
+              <span class="article-category">产品设计</span>
+            </div>
+            <h3 class="article-title">用户体验设计中的情感化设计：创造有温度的产品</h3>
+            <p class="article-excerpt">
+              好的产品不仅要功能完善，更要能触动用户的情感。情感化设计通过色彩、动画、交互细节等元素，为用户创造愉悦的使用体验。本文分享了一些实用的情感化设计技巧和案例分析...
+            </p>
+            <a href="#" class="article-link">
+              阅读全文 <span>→</span>
+            </a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-meta">
+              <div class="article-date">
+                <span>📅</span>
+                <span>2023年12月28日</span>
+              </div>
+              <span class="article-category">行业观察</span>
+            </div>
+            <h3 class="article-title">AI时代的教育：机遇与挑战并存</h3>
+            <p class="article-excerpt">
+              人工智能正在重塑教育行业的方方面面。从个性化学习推荐到智能作业批改，AI技术为教育带来了前所未有的可能性。然而，我们也需要思考如何在拥抱技术的同时，保持教育的人文关怀...
+            </p>
+            <a href="#" class="article-link">
+              阅读全文 <span>→</span>
+            </a>
+          </article>
+        </div>
+
+        <div class="sidebar">
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">💭 用户想法</h3>
+            
+            <div class="thought-item">
+              <p class="thought-text">"这个登山游戏真的很有创意！我家孩子玩了一个小时都不愿意停下来，不知不觉就练习了很多乘法题。"</p>
+              <p class="thought-author">— 张妈妈</p>
+            </div>
+
+            <div class="thought-item">
+              <p class="thought-text">"作为一名数学老师，我觉得这种游戏化的学习方式很值得推广。孩子们在玩中学，效果比传统的练习册好太多了。"</p>
+              <p class="thought-author">— 李老师</p>
+            </div>
+
+            <div class="thought-item">
+              <p class="thought-text">"希望能开发更多这样的教育游戏，比如除法、分数等等。寓教于乐真的是最好的学习方式。"</p>
+              <p class="thought-author">— 小明爸爸</p>
+            </div>
+
+            <div class="thought-item">
+              <p class="thought-text">"界面设计很清新，操作也很简单。我觉得这种淡紫色的配色很舒服，不会让眼睛疲劳。"</p>
+              <p class="thought-author">— 设计师小王</p>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">📊 数据统计</h3>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-number">1,234</div>
+                <div class="stat-label">文章阅读</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number">567</div>
+                <div class="stat-label">用户反馈</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number">89</div>
+                <div class="stat-label">发布文章</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number">23</div>
+                <div class="stat-label">精选想法</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">🌟 精选推荐</h3>
+            <p style="color: #4a5568; line-height: 1.6; margin-bottom: 1rem;">探索更多有趣的教育内容和创新思维，让学习变得更加精彩。</p>
+            <a href="./works.html" class="featured-link">
+              查看更多作品 <span>→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
   </body>
 </html>
