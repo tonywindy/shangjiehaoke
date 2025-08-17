@@ -103,7 +103,7 @@ function App() {
               <div className="feedback-container">
                 <span className="nav-link" style={{cursor: 'pointer'}}>意见之箱</span>
                 <div className="qr-popup">
-                  <img src="./public/erweima.png" alt="公众号二维码" className="qr-code" />
+                  <img src="/erweima.png" alt="公众号二维码" className="qr-code" />
                   <p className="qr-text">扫码分享您的想法<br />让我们一起成长</p>
                 </div>
               </div>

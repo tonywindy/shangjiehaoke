@@ -74,15 +74,20 @@
         </header>
 
         <nav class="flex justify-center bg-white rounded-xl shadow-md p-2 mb-8">
-            <button id="nav-1" class="nav-item active flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(1)">
-                1. 什么是周长？
+            <button onclick="window.location.href='./works.html'" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg mr-4 transition-colors">
+                ← 返回作品
             </button>
-            <button id="nav-2" class="nav-item flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(2)">
-                2. 神奇的绳子
-            </button>
-            <button id="nav-3" class="nav-item flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(3)">
-                3. 长方形的秘密
-            </button>
+            <div class="flex flex-1">
+                <button id="nav-1" class="nav-item active flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(1)">
+                    1. 什么是周长？
+                </button>
+                <button id="nav-2" class="nav-item flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(2)">
+                    2. 神奇的绳子
+                </button>
+                <button id="nav-3" class="nav-item flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(3)">
+                    3. 长方形的秘密
+                </button>
+            </div>
         </nav>
 
         <main id="app-content" class="bg-white rounded-2xl shadow-lg p-4 md:p-8 min-h-[60vh] w-full">
