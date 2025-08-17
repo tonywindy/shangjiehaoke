@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周长的探索之旅</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Soft Pastels -->
+    <!-- Application Structure Plan: A linear, three-step SPA guided by a top navigation bar. Each step corresponds to a learning module from the source document, displayed in a dedicated content area. This structure directly follows the pedagogical flow of the report, ensuring a logical and easy-to-follow learning journey for young students. Key interactions involve canvas-based animations for conceptual understanding and direct manipulation of elements for exploration. -->
+    <!-- Visualization & Content Choices: Module 1 (Concept): Uses a Canvas to animate an 'ant' tracing a shape's perimeter and simulates 'unrolling' it into a line, visually defining the concept. Module 2 (Conservation): Uses a Canvas with draggable points to form various shapes from a fixed-length line, demonstrating that perimeter remains constant. Module 3 (Formula): Uses HTML/CSS transforms to visually deconstruct a rectangle, explaining the (L+W)*2 formula. This avoids SVG/Mermaid and uses the best tool (Canvas for dynamic drawing, HTML for block layout) for each pedagogical goal. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #F0F4F8; /* Light Blue-Gray */
+        }
+        .nav-item {
+            transition: all 0.3s ease;
+            border-bottom-width: 4px;
+        }
+        .nav-item.active {
+            color: #3B82F6; /* Blue-500 */
+            border-color: #3B82F6;
+        }
+        .nav-item:not(.active) {
+            border-color: transparent;
+        }
+        .shape-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .shape-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .control-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .control-button:hover {
+            transform: scale(1.05);
+        }
+        .control-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .unrolled-line {
+            transition: width 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        #module-3-grid {
+            background-image:
+                linear-gradient(to right, #D1D5DB 1px, transparent 1px),
+                linear-gradient(to bottom, #D1D5DB 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .resizable-handle {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: #3B82F6;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: nwse-resize;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen p-4 md:p-8">
+
+    <div class="w-full max-w-5xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800">周长的探索之旅</h1>
+            <p class="text-gray-500 mt-2">通过互动发现周长的奥秘！</p>
+        </header>
+
+        <nav class="flex justify-center bg-white rounded-xl shadow-md p-2 mb-8">
+            <button id="nav-1" class="nav-item active flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(1)">
+                1. 什么是周长？
+            </button>
+            <button id="nav-2" class="nav-item flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(2)">
+                2. 神奇的绳子
+            </button>
+            <button id="nav-3" class="nav-item flex-1 text-center font-bold text-lg p-3 cursor-pointer" onclick="app.navigateTo(3)">
+                3. 长方形的秘密
+            </button>
+        </nav>
+
+        <main id="app-content" class="bg-white rounded-2xl shadow-lg p-4 md:p-8 min-h-[60vh] w-full">
+            
+            <!-- 模块一：周长的本质 -->
+            <div id="module-1" class="module-content">
+                <div id="m1-gallery" class="text-center">
+                    <h2 class="text-2xl font-bold mb-1 text-gray-700">第一站：图形陈列馆</h2>
+                    <p class="text-gray-500 mb-6">请选择一个你感兴趣的图形，看看它的周长是什么样的。</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <!-- Shapes will be injected by JS -->
+                    </div>
+                </div>
+                <div id="m1-focus" class="hidden flex flex-col items-center">
+                    <div id="m1-canvas-container" class="w-full max-w-md h-80 bg-gray-50 rounded-lg mb-4 relative">
+                        <canvas id="m1-canvas"></canvas>
+                    </div>
+                    <div id="m1-controls" class="flex items-center gap-4 mb-4">
+                        <button id="m1-start-btn" class="control-button bg-blue-500 text-white font-bold py-2 px-5 rounded-full shadow-lg">开始演示</button>
+                        <button id="m1-pause-btn" class="control-button bg-yellow-500 text-white font-bold py-2 px-5 rounded-full shadow-lg hidden">暂停</button>
+                        <button id="m1-unroll-btn" class="control-button bg-green-500 text-white font-bold py-2 px-5 rounded-full shadow-lg" disabled>展开周长</button>
+                        <button id="m1-back-btn" class="control-button bg-gray-400 text-white font-bold py-2 px-5 rounded-full shadow-lg">返回</button>
+                    </div>
+                    <div id="m1-result-container" class="w-full max-w-md h-16 text-center">
+                        <p id="m1-result-text" class="text-lg font-semibold text-gray-600 h-8"></p>
+                        <div id="m1-unrolled-line-wrapper" class="h-8 flex items-center justify-center relative overflow-hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模块二：周长守恒 -->
+            <div id="module-2" class="module-content hidden">
+                <h2 class="text-2xl font-bold mb-1 text-center text-gray-700">第二站：绳子变魔术</h2>
+                <p class="text-gray-500 mb-4 text-center">拖动绳子上的圆点，看看会发生什么神奇的事情！</p>
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div id="m2-canvas-container" class="w-full md:w-2/3 h-96 bg-gray-50 rounded-lg relative">
+                        <canvas id="m2-canvas"></canvas>
+                    </div>
+                    <div class="w-full md:w-1/3 text-center p-4 bg-blue-100 rounded-lg">
+                        <h3 class="text-xl font-bold text-blue-800">周长指示器</h3>
+                        <p class="text-5xl font-mono font-extrabold text-blue-600 my-4" id="m2-perimeter-display">24.0</p>
+                        <p class="text-blue-700">无论形状怎么变，周长（绳子的总长度）是**不变**的！</p>
+                        <div class="mt-4 flex flex-col gap-2">
+                            <button class="control-button bg-white text-blue-600 font-semibold py-2 px-4 rounded-lg border-2 border-blue-300" onclick="modules.module2.setShape('rect')">变成长方形</button>
+                            <button class="control-button bg-white text-blue-600 font-semibold py-2 px-4 rounded-lg border-2 border-blue-300" onclick="modules.module2.setShape('circle')">变成圆形</button>
+                             <button class="control-button bg-white text-blue-600 font-semibold py-2 px-4 rounded-lg border-2 border-blue-300" onclick="modules.module2.reset()">重置为直线</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模块三：长方形的秘密 -->
+            <div id="module-3" class="module-content hidden">
+                <h2 class="text-2xl font-bold mb-1 text-center text-gray-700">第三站：长方形的秘密</h2>
+                <p class="text-gray-500 mb-4 text-center">拖动右下角的蓝色圆点可以改变大小，看看周长公式是怎么来的。</p>
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="w-full md:w-2/3 h-96 relative flex items-center justify-center" id="m3-container">
+                        <div id="m3-grid" class="absolute inset-0 opacity-50"></div>
+                        <div id="m3-rect-container" class="relative">
+                           <div id="m3-rect" class="bg-blue-300 border-2 border-blue-600 relative" style="width: 240px; height: 160px;">
+                                <div id="m3-handle" class="resizable-handle -right-2 -bottom-2"></div>
+                                <div id="m3-length-label" class="absolute -top-6 left-1/2 -translate-x-1/2 bg-white px-2 rounded text-blue-800 font-bold"></div>
+                                <div id="m3-width-label" class="absolute -left-8 top-1/2 -translate-y-1/2 bg-white px-2 rounded text-green-800 font-bold rotate-[-90deg]"></div>
+                           </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/3 text-center p-4 bg-green-100 rounded-lg">
+                        <h3 class="text-xl font-bold text-green-800">周长计算公式</h3>
+                        <div class="flex gap-2 mb-3 justify-center">
+                            <button id="m3-rect-mode" class="control-button bg-green-500 text-white font-semibold py-1 px-3 rounded-lg text-sm">长方形</button>
+                            <button id="m3-square-mode" class="control-button bg-white text-green-600 font-semibold py-1 px-3 rounded-lg border-2 border-green-300 text-sm">正方形</button>
+                        </div>
+                        <div id="m3-formula" class="text-lg font-semibold text-green-700 my-4 h-24 flex flex-col justify-center">
+                            <!-- Formula will be injected here -->
+                        </div>
+                        <button id="m3-demo-btn" class="control-button bg-green-500 text-white font-bold py-2 px-5 rounded-full shadow-lg">演示公式</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const modules = {};
+
+        const app = {
+            state: {
+                currentModule: 1,
+            },
+            init() {
+                this.navigateTo(1);
+                modules.module1.init();
+                modules.module2.init();
+                modules.module3.init();
+            },
+            navigateTo(moduleNumber) {
+                this.state.currentModule = moduleNumber;
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById(`nav-${moduleNumber}`).classList.add('active');
+                
+                document.querySelectorAll('.module-content').forEach(module => module.classList.add('hidden'));
+                document.getElementById(`module-${moduleNumber}`).classList.remove('hidden');
+
+                // Re-initialize or update module state if needed
+                if (moduleNumber === 1) modules.module1.reset();
+                if (moduleNumber === 2) modules.module2.reset();
+                if (moduleNumber === 3) modules.module3.updateLabels();
+            }
+        };
+
+        // --- 模块一：周长的本质 ---
+        modules.module1 = (() => {
+            const gallery = document.getElementById('m1-gallery');
+            const focusView = document.getElementById('m1-focus');
+            const canvas = document.getElementById('m1-canvas');
+            const ctx = canvas.getContext('2d');
+            const startBtn = document.getElementById('m1-start-btn');
+            const pauseBtn = document.getElementById('m1-pause-btn');
+            const unrollBtn = document.getElementById('m1-unroll-btn');
+            const backBtn = document.getElementById('m1-back-btn');
+            const resultText = document.getElementById('m1-result-text');
+            const lineWrapper = document.getElementById('m1-unrolled-line-wrapper');
+
+            let animationFrameId;
+            let isPaused = false;
+            let progress = 0;
+            let currentShape;
+
+            const shapes = {
+                square: { name: '正方形', path: (w, h) => [[w*0.2, h*0.2], [w*0.8, h*0.2], [w*0.8, h*0.8], [w*0.2, h*0.8]] },
+                rectangle: { name: '长方形', path: (w, h) => [[w*0.15, h*0.3], [w*0.85, h*0.3], [w*0.85, h*0.7], [w*0.15, h*0.7]] },
+                triangle: { name: '三角形', path: (w, h) => [[w*0.5, h*0.15], [w*0.85, h*0.85], [w*0.15, h*0.85]] },
+                cloud: { name: '云朵', path: (w, h) => {
+                    const points = [];
+                    for (let i = 0; i < Math.PI * 2; i += 0.1) {
+                        const x = w/2 + (w/3 + Math.sin(i*5) * w/10) * Math.cos(i);
+                        const y = h/2 + (h/4 + Math.sin(i*6) * h/12) * Math.sin(i);
+                        points.push([x, y]);
+                    }
+                    return points;
+                }}
+            };
+
+            function getPathLength(path) {
+                let length = 0;
+                for (let i = 0; i < path.length; i++) {
+                    const p1 = path[i];
+                    const p2 = path[(i + 1) % path.length];
+                    length += Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+                }
+                return length;
+            }
+
+            function getPointAtLength(path, length) {
+                let travelled = 0;
+                for (let i = 0; i < path.length; i++) {
+                    const p1 = path[i];
+                    const p2 = path[(i + 1) % path.length];
+                    const segmentLength = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+                    if (travelled + segmentLength >= length) {
+                        const remaining = length - travelled;
+                        const ratio = remaining / segmentLength;
+                        return {
+                            x: p1[0] + (p2[0] - p1[0]) * ratio,
+                            y: p1[1] + (p2[1] - p1[1]) * ratio,
+                        };
+                    }
+                    travelled += segmentLength;
+                }
+                return { x: path[0][0], y: path[0][1] };
+            }
+
+            function drawShape(path, color = '#60A5FA', progress = 1) {
+                ctx.beginPath();
+                ctx.moveTo(path[0][0], path[0][1]);
+                let travelled = 0;
+                const totalLength = getPathLength(path) * progress;
+                for (let i = 0; i < path.length; i++) {
+                    const p1 = path[i];
+                    const p2 = path[(i + 1) % path.length];
+                    const segmentLength = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+                    if (travelled + segmentLength > totalLength) {
+                        const remaining = totalLength - travelled;
+                        const ratio = remaining / segmentLength;
+                        const endX = p1[0] + (p2[0] - p1[0]) * ratio;
+                        const endY = p1[1] + (p2[1] - p1[1]) * ratio;
+                        ctx.lineTo(endX, endY);
+                        break;
+                    }
+                    ctx.lineTo(p2[0], p2[1]);
+                    travelled += segmentLength;
+                }
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 5;
+                ctx.stroke();
+            }
+
+            function animate() {
+                if (isPaused) return;
+                progress += 0.005;
+                if (progress > 1) {
+                    progress = 1;
+                    cancelAnimationFrame(animationFrameId);
+                    startBtn.classList.add('hidden');
+                    pauseBtn.classList.add('hidden');
+                    unrollBtn.disabled = false;
+                    resultText.textContent = `小蚂蚁走完了一圈！周长是 ${currentShape.length.toFixed(1)} 像素。`;
+                }
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawShape(currentShape.path, '#D1D5DB'); // Draw base shape
+                drawShape(currentShape.path, '#EF4444', progress); // Draw progress
+                
+                const antPos = getPointAtLength(currentShape.path, currentShape.length * progress);
+                ctx.fillStyle = 'black';
+                ctx.font = '24px sans-serif';
+                ctx.fillText('🐜', antPos.x - 12, antPos.y + 8);
+
+                if (progress < 1) {
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+            }
+
+            function selectShape(shapeKey) {
+                currentShape = {
+                    key: shapeKey,
+                    ...shapes[shapeKey]
+                };
+                gallery.classList.add('hidden');
+                focusView.classList.remove('hidden');
+                
+                const container = document.getElementById('m1-canvas-container');
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                
+                currentShape.path = shapes[shapeKey].path(canvas.width, canvas.height);
+                currentShape.length = getPathLength(currentShape.path);
+                
+                resetAnimation();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawShape(currentShape.path, '#D1D5DB');
+            }
+
+            function resetAnimation() {
+                cancelAnimationFrame(animationFrameId);
+                progress = 0;
+                isPaused = false;
+                startBtn.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+                startBtn.textContent = '开始演示';
+                unrollBtn.disabled = true;
+                resultText.textContent = '';
+                lineWrapper.innerHTML = '';
+            }
+
+            function unrollPerimeter() {
+                resultText.textContent = `周长展开后，就是这样一条直线！`;
+                
+                // 创建多个线段片段，模拟从图形边界剥离
+                const segments = [];
+                const numSegments = 6; // 分成6段
+                const path = currentShape.path;
+                const totalLength = currentShape.length;
+                
+                // 清空之前的内容
+                lineWrapper.innerHTML = '';
+                
+                // 计算容器和画布的相对位置
+                const canvasRect = canvas.getBoundingClientRect();
+                const wrapperRect = lineWrapper.getBoundingClientRect();
+                
+                // 为每个线段创建DOM元素
+                for (let i = 0; i < numSegments; i++) {
+                    const segment = document.createElement('div');
+                    segment.className = 'absolute h-2 bg-red-500 rounded-full transition-all duration-1500 ease-out';
+                    const segmentWidth = Math.min(totalLength / numSegments * 0.2, 40); // 限制最大宽度
+                    segment.style.width = `${segmentWidth}px`;
+                    segment.style.opacity = '0';
+                    segment.style.zIndex = '10';
+                    lineWrapper.appendChild(segment);
+                    segments.push(segment);
+                }
+                
+                // 逐个显示线段，模拟从图形剥离的效果
+                segments.forEach((segment, index) => {
+                    setTimeout(() => {
+                        // 计算线段在图形上的位置
+                        const segmentProgress = (index + 0.5) / numSegments;
+                        const pos = getPointAtLength(path, totalLength * segmentProgress);
+                        
+                        // 设置初始位置（相对于容器的位置）
+                        const initialX = pos.x - (wrapperRect.left - canvasRect.left);
+                        const initialY = pos.y - (wrapperRect.top - canvasRect.top) - 100; // 从画布位置开始
+                        
+                        segment.style.left = `${initialX}px`;
+                        segment.style.top = `${initialY}px`;
+                        segment.style.opacity = '1';
+                        
+                        // 延迟后移动到最终位置
+                        setTimeout(() => {
+                            const finalX = index * (parseInt(segment.style.width) + 4) + 10;
+                            segment.style.left = `${finalX}px`;
+                            segment.style.top = '8px'; // 居中显示
+                            segment.style.transform = 'rotate(0deg)';
+                        }, 500);
+                        
+                    }, index * 200);
+                });
+            }
+
+            function init() {
+                for (const key in shapes) {
+                    const card = document.createElement('div');
+                    card.className = 'shape-card bg-white p-4 rounded-lg shadow cursor-pointer flex flex-col items-center justify-center aspect-square';
+                    card.innerHTML = `<canvas id="thumb-${key}" width="100" height="100"></canvas><p class="font-semibold mt-2">${shapes[key].name}</p>`;
+                    card.onclick = () => selectShape(key);
+                    gallery.querySelector('.grid').appendChild(card);
+                    
+                    const thumbCanvas = document.getElementById(`thumb-${key}`);
+                    const thumbCtx = thumbCanvas.getContext('2d');
+                    const thumbPath = shapes[key].path(100, 100);
+                    thumbCtx.beginPath();
+                    thumbCtx.moveTo(thumbPath[0][0], thumbPath[0][1]);
+                    for(let i = 1; i < thumbPath.length; i++) thumbCtx.lineTo(thumbPath[i][0], thumbPath[i][1]);
+                    thumbCtx.closePath();
+                    thumbCtx.strokeStyle = '#60A5FA';
+                    thumbCtx.lineWidth = 3;
+                    thumbCtx.stroke();
+                }
+
+                startBtn.onclick = () => {
+                    isPaused = false;
+                    startBtn.classList.add('hidden');
+                    pauseBtn.classList.remove('hidden');
+                    animate();
+                };
+                pauseBtn.onclick = () => {
+                    isPaused = !isPaused;
+                    pauseBtn.textContent = isPaused ? '继续' : '暂停';
+                    if (!isPaused) animate();
+                };
+                backBtn.onclick = () => reset();
+                unrollBtn.onclick = () => {
+                    unrollPerimeter();
+                };
+            }
+            
+            function reset() {
+                resetAnimation();
+                gallery.classList.remove('hidden');
+                focusView.classList.add('hidden');
+            }
+
+            return { init, reset };
+        })();
+
+        // --- 模块二：周长守恒 ---
+        modules.module2 = (() => {
+            const canvas = document.getElementById('m2-canvas');
+            const ctx = canvas.getContext('2d');
+            const perimeterDisplay = document.getElementById('m2-perimeter-display');
+            const FIXED_PERIMETER = 400; // 固定周长
+            let points = [];
+            let draggingPoint = null;
+            let draggingIndex = -1;
+
+            function init() {
+                const container = document.getElementById('m2-canvas-container');
+                // 设置Canvas尺寸
+                canvas.width = container.clientWidth || 400;
+                canvas.height = container.clientHeight || 300;
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                
+                reset();
+                
+                canvas.addEventListener('mousedown', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    const mouseX = (e.clientX - rect.left) * scaleX;
+                    const mouseY = (e.clientY - rect.top) * scaleY;
+                    
+                    for (let i = 0; i < points.length; i++) {
+                        const point = points[i];
+                        const distance = Math.hypot(point.x - mouseX, point.y - mouseY);
+                        if (distance < 15) {
+                            draggingPoint = point;
+                            draggingIndex = i;
+                            canvas.style.cursor = 'grabbing';
+                            break;
+                        }
+                    }
+                });
+
+                canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    const mouseX = (e.clientX - rect.left) * scaleX;
+                    const mouseY = (e.clientY - rect.top) * scaleY;
+                    
+                    if (draggingPoint && draggingIndex >= 0) {
+                        // 更新拖拽点位置
+                        draggingPoint.x = mouseX;
+                        draggingPoint.y = mouseY;
+                        
+                        // 保持周长不变：调整其他点的位置
+                        maintainPerimeter();
+                        draw();
+                        updatePerimeterDisplay();
+                    } else {
+                        // 检查是否悬停在控制点上
+                        let hoveringPoint = false;
+                        for (const point of points) {
+                            if (Math.hypot(point.x - mouseX, point.y - mouseY) < 15) {
+                                hoveringPoint = true;
+                                break;
+                            }
+                        }
+                        canvas.style.cursor = hoveringPoint ? 'grab' : 'default';
+                    }
+                });
+                
+                canvas.addEventListener('mouseup', () => { 
+                    draggingPoint = null; 
+                    draggingIndex = -1;
+                    canvas.style.cursor = 'default';
+                });
+                canvas.addEventListener('mouseleave', () => { 
+                    draggingPoint = null; 
+                    draggingIndex = -1;
+                    canvas.style.cursor = 'default';
+                });
+            }
+
+            function calculatePerimeter() {
+                if (points.length < 2) return 0;
+                let perimeter = 0;
+                for (let i = 0; i < points.length; i++) {
+                    const current = points[i];
+                    const next = points[(i + 1) % points.length];
+                    perimeter += Math.hypot(next.x - current.x, next.y - current.y);
+                }
+                return perimeter;
+            }
+            
+            function maintainPerimeter() {
+                if (points.length < 3 || draggingIndex < 0) return;
+                
+                const currentPerimeter = calculatePerimeter();
+                const scaleFactor = FIXED_PERIMETER / currentPerimeter;
+                
+                // 以拖拽点为中心，按比例调整其他点的位置
+                const centerX = draggingPoint.x;
+                const centerY = draggingPoint.y;
+                
+                for (let i = 0; i < points.length; i++) {
+                    if (i !== draggingIndex) {
+                        const dx = points[i].x - centerX;
+                        const dy = points[i].y - centerY;
+                        points[i].x = centerX + dx * scaleFactor;
+                        points[i].y = centerY + dy * scaleFactor;
+                    }
+                }
+            }
+            
+            function updatePerimeterDisplay() {
+                const perimeter = calculatePerimeter();
+                if (perimeterDisplay) {
+                    perimeterDisplay.textContent = `当前周长: ${Math.round(perimeter)}px`;
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (points.length === 0) return;
+                
+                // Draw line/shape
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
+                }
+                if (points.length > 2 && points[0].isClosed) {
+                    ctx.closePath();
+                }
+                ctx.strokeStyle = '#e17055';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                // Draw control points
+                for (const point of points) {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = '#74b9ff';
+                    ctx.fill();
+                    ctx.strokeStyle = '#0984e3';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
+            
+            function reset() {
+                const w = canvas.width || 400;
+                const h = canvas.height || 300;
+                points = [
+                    { x: w * 0.1, y: h / 2, isClosed: false },
+                    { x: w * 0.9, y: h / 2, isClosed: false },
+                ];
+                draw();
+                updatePerimeterDisplay();
+            }
+
+            function setShape(shape) {
+                const w = canvas.width;
+                const h = canvas.height;
+                if (shape === 'rect') {
+                    // 创建一个周长为FIXED_PERIMETER的矩形
+                    const rectWidth = FIXED_PERIMETER / 4;
+                    const rectHeight = FIXED_PERIMETER / 4;
+                    const centerX = w / 2;
+                    const centerY = h / 2;
+                    points = [
+                        { x: centerX - rectWidth/2, y: centerY - rectHeight/2, isClosed: true }, 
+                        { x: centerX + rectWidth/2, y: centerY - rectHeight/2 },
+                        { x: centerX + rectWidth/2, y: centerY + rectHeight/2 }, 
+                        { x: centerX - rectWidth/2, y: centerY + rectHeight/2 }
+                    ];
+                } else if (shape === 'circle') {
+                    // 创建一个周长为FIXED_PERIMETER的圆形
+                    const radius = FIXED_PERIMETER / (2 * Math.PI);
+                    points = [];
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const point = {
+                            x: w/2 + radius * Math.cos(angle),
+                            y: h/2 + radius * Math.sin(angle)
+                        };
+                        if (i === 0) point.isClosed = true;
+                        points.push(point);
+                    }
+                }
+                draw();
+                updatePerimeterDisplay();
+            }
+            
+            return { init, reset, setShape };
+        })();
+        
+        // --- 模块三：长方形的秘密 ---
+        modules.module3 = (() => {
+            const rectEl = document.getElementById('m3-rect');
+            const handleEl = document.getElementById('m3-handle');
+            const containerEl = document.getElementById('m3-rect-container');
+            const lengthLabel = document.getElementById('m3-length-label');
+            const widthLabel = document.getElementById('m3-width-label');
+            const formulaEl = document.getElementById('m3-formula');
+            const demoBtn = document.getElementById('m3-demo-btn');
+            const rectModeBtn = document.getElementById('m3-rect-mode');
+            const squareModeBtn = document.getElementById('m3-square-mode');
+            
+            const unit = 20; // 20px = 1 unit
+            let isDragging = false;
+            let isSquareMode = false;
+
+            function init() {
+                handleEl.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    containerEl.style.pointerEvents = 'none'; // Prevent flickering
+                    document.body.style.cursor = 'nwse-resize';
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    const rect = containerEl.getBoundingClientRect();
+                    let width = e.clientX - rect.left;
+                    let height = e.clientY - rect.top;
+                    
+                    // Snap to grid
+                    width = Math.round(width / unit) * unit;
+                    height = Math.round(height / unit) * unit;
+                    
+                    // 正方形模式下保持宽高相等
+                    if (isSquareMode) {
+                        const size = Math.max(width, height);
+                        width = size;
+                        height = size;
+                    }
+                    
+                    rectEl.style.width = `${Math.max(unit*2, width)}px`;
+                    rectEl.style.height = `${Math.max(unit*2, height)}px`;
+                    updateLabels();
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isDragging = false;
+                    containerEl.style.pointerEvents = 'auto';
+                    document.body.style.cursor = 'default';
+                });
+                
+                // 模式切换事件
+                rectModeBtn.addEventListener('click', () => setMode(false));
+                squareModeBtn.addEventListener('click', () => setMode(true));
+                
+                demoBtn.addEventListener('click', runDemo);
+                updateLabels();
+            }
+
+            function setMode(squareMode) {
+                isSquareMode = squareMode;
+                
+                // 更新按钮样式
+                if (isSquareMode) {
+                    rectModeBtn.className = 'control-button bg-white text-green-600 font-semibold py-1 px-3 rounded-lg border-2 border-green-300 text-sm';
+                    squareModeBtn.className = 'control-button bg-green-500 text-white font-semibold py-1 px-3 rounded-lg text-sm';
+                    
+                    // 切换到正方形时，将矩形调整为正方形
+                    const currentWidth = rectEl.offsetWidth;
+                    const currentHeight = rectEl.offsetHeight;
+                    const size = Math.max(currentWidth, currentHeight);
+                    rectEl.style.width = `${size}px`;
+                    rectEl.style.height = `${size}px`;
+                } else {
+                    rectModeBtn.className = 'control-button bg-green-500 text-white font-semibold py-1 px-3 rounded-lg text-sm';
+                    squareModeBtn.className = 'control-button bg-white text-green-600 font-semibold py-1 px-3 rounded-lg border-2 border-green-300 text-sm';
+                }
+                
+                updateLabels();
+            }
+
+            function updateLabels() {
+                const width = rectEl.offsetWidth / unit;
+                const height = rectEl.offsetHeight / unit;
+                
+                if (isSquareMode) {
+                    lengthLabel.textContent = `边长 = ${width}`;
+                    widthLabel.textContent = `边长 = ${width}`;
+                    
+                    formulaEl.innerHTML = `
+                        <p>正方形周长 = 边长 × 4</p>
+                        <p>= ${width} × 4</p>
+                        <p class="font-bold text-2xl">= ${width * 4}</p>
+                    `;
+                } else {
+                    lengthLabel.textContent = `长 = ${width}`;
+                    widthLabel.textContent = `宽 = ${height}`;
+                    
+                    formulaEl.innerHTML = `
+                        <p>长方形周长 = (长 + 宽) × 2</p>
+                        <p>= (${width} + ${height}) × 2</p>
+                        <p class="font-bold text-2xl">= ${(width + height) * 2}</p>
+                    `;
+                }
+            }
+
+            function runDemo() {
+                demoBtn.disabled = true;
+                const width = rectEl.offsetWidth;
+                const height = rectEl.offsetHeight;
+
+                // Cleanup previous demo elements
+                containerEl.querySelectorAll('.demo-piece').forEach(el => el.remove());
+
+                if (isSquareMode) {
+                    // 正方形演示：四条相等的边
+                    const side1 = createPiece(0, 0, width, 5, 'bg-red-500');
+                    const side2 = createPiece(width-5, 0, 5, height, 'bg-red-500');
+                    const side3 = createPiece(0, height-5, width, 5, 'bg-red-500');
+                    const side4 = createPiece(0, 0, 5, height, 'bg-red-500');
+                    
+                    // 四条边分别移动到不同位置，展示4个相等的边长
+                    setTimeout(() => {
+                        side1.style.transform = `translateY(-${height/2 + 30}px)`;
+                        side2.style.transform = `translate(${width/2 + 30}px, 0)`;
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        side3.style.transform = `translateY(${height/2 + 30}px)`;
+                        side4.style.transform = `translate(-${width/2 + 30}px, 0)`;
+                    }, 1500);
+                } else {
+                    // 长方形演示：长和宽各两条
+                    const l1 = createPiece(0, 0, width, 5, 'bg-blue-500');
+                    const w1 = createPiece(width-5, 0, 5, height, 'bg-green-500');
+                    const l2 = createPiece(0, height-5, width, 5, 'bg-blue-500');
+                    const w2 = createPiece(0, 0, 5, height, 'bg-green-500');
+                    
+                    setTimeout(() => {
+                        l1.style.transform = `translateY(-${height/2 + 20}px)`;
+                        w1.style.transform = `translate(calc(${width/2}px + 10px), 0)`;
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        l2.style.transform = `translateY(${height/2 + 20}px)`;
+                        w2.style.transform = `translate(calc(-${width/2}px - 10px), 0)`;
+                    }, 1500);
+                }
+
+                setTimeout(() => {
+                    demoBtn.disabled = false;
+                }, 4000);
+            }
+
+            function createPiece(left, top, width, height, color) {
+                const piece = document.createElement('div');
+                piece.className = `demo-piece absolute ${color} transition-transform duration-1000 ease-in-out`;
+                piece.style.left = `${left}px`;
+                piece.style.top = `${top}px`;
+                piece.style.width = `${width}px`;
+                piece.style.height = `${height}px`;
+                containerEl.appendChild(piece);
+                return piece;
+            }
+
+            return { init, updateLabels };
+        })();
+
+        // --- App Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>

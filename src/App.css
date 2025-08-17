@@ -281,6 +281,51 @@
   width: 100%;
 }
 
+/* 意见之箱样式 */
+.feedback-container {
+  position: relative;
+  display: inline-block;
+}
+
+.qr-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 15px;
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.feedback-container:hover .qr-popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.qr-code {
+  width: 120px;
+  height: 120px;
+  display: block;
+  margin: 0 auto 10px;
+  border-radius: 4px;
+}
+
+.qr-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}
+
 /* 底部信息 */
 .bottom-info {
   position: absolute;

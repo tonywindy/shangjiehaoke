@@ -400,6 +400,62 @@
           font-size: 0.9rem;
         }
       }
+
+      /* 意见之箱样式 */
+      .feedback-container {
+        position: relative;
+        display: inline-block;
+      }
+
+      .qr-popup {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        min-width: 200px;
+      }
+
+      .feedback-container:hover .qr-popup {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .qr-popup::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        right: 20px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid white;
+      }
+
+      .qr-code {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 12px;
+        display: block;
+        border-radius: 8px;
+      }
+
+      .qr-text {
+        text-align: center;
+        color: #4a5568;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
     </style>
   </head>
   <body>
@@ -412,6 +468,16 @@
           <a href="./index.html" class="nav-link">初见之页</a>
           <a href="./works.html" class="nav-link">些许尝试</a>
           <a href="./contact.html" class="nav-link">一点想法</a>
+          <div class="feedback-container">
+            <span class="nav-link" style="cursor: pointer;">意见之箱</span>
+            <div class="qr-popup">
+              <img src="./public/erweima.png" alt="公众号二维码" class="qr-code">
+              <div class="qr-text">
+                扫码关注公众号<br>
+                分享您的宝贵意见
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
@@ -448,6 +514,19 @@
 
             <!-- 常规作品列表 -->
             <div class="regular-works">
+              <div class="work-card">
+                <h3>周长的探索之旅</h3>
+                <p>一个互动式的数学学习应用，通过三个精心设计的模块帮助学生直观理解周长概念。包含小蚂蚁演示、绳子变魔术和长方形公式推导，让抽象的数学概念变得生动有趣。</p>
+                <div class="work-tags">
+                  <span class="tag">JavaScript</span>
+                  <span class="tag">Canvas API</span>
+                  <span class="tag">CSS3</span>
+                  <span class="tag">数学教育</span>
+                  <span class="tag">交互设计</span>
+                </div>
+                <a href="./zhouchang.html" class="work-link">开始探索 →</a>
+              </div>
+
               <div class="work-card">
                 <h3>智能学习助手</h3>
                 <p>基于AI技术的智能学习助手，能够根据学生的学习情况提供个性化的学习建议和资源推荐。</p>

@@ -324,6 +324,62 @@
         box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
       }
 
+      /* 意见之箱样式 */
+      .feedback-container {
+        position: relative;
+        display: inline-block;
+      }
+
+      .qr-popup {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        min-width: 200px;
+      }
+
+      .feedback-container:hover .qr-popup {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .qr-popup::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        right: 20px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid white;
+      }
+
+      .qr-code {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 12px;
+        display: block;
+        border-radius: 8px;
+      }
+
+      .qr-text {
+        text-align: center;
+        color: #4a5568;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
       @media (max-width: 768px) {
         .hero-title {
           font-size: 2.5rem;
@@ -349,6 +405,15 @@
         .nav-menu {
           gap: 1rem;
         }
+        
+        .qr-popup {
+          right: -50px;
+          min-width: 180px;
+        }
+        
+        .qr-popup::before {
+          right: 60px;
+        }
       }
     </style>
   </head>
@@ -362,6 +427,13 @@
           <a href="./index.html" class="nav-link">初见之页</a>
           <a href="./works.html" class="nav-link">些许尝试</a>
           <a href="./contact.html" class="nav-link">一点想法</a>
+          <div class="feedback-container">
+            <a href="#" class="nav-link">意见之箱</a>
+            <div class="qr-popup">
+              <img src="./public/erweima.png" alt="公众号二维码" class="qr-code">
+              <p class="qr-text">扫码分享您的想法<br>让我们一起成长</p>
+            </div>
+          </div>
         </div>
       </div>
     </nav>

@@ -11,6 +11,7 @@ export default defineConfig({
         works: resolve(__dirname, 'works.html'),
         contact: resolve(__dirname, 'contact.html'),
         climb: resolve(__dirname, 'climb.html'),
+        zhouchang: resolve(__dirname, 'zhouchang.html'),
       },
     },
   },

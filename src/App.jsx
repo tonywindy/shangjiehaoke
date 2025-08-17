@@ -100,6 +100,13 @@ function App() {
               <a href="/" className="nav-link">初见之页</a>
               <a href="./works.html" className="nav-link">些许尝试</a>
               <a href="./contact.html" className="nav-link">一点想法</a>
+              <div className="feedback-container">
+                <span className="nav-link" style={{cursor: 'pointer'}}>意见之箱</span>
+                <div className="qr-popup">
+                  <img src="./public/erweima.png" alt="公众号二维码" className="qr-code" />
+                  <p className="qr-text">扫码分享您的想法<br />让我们一起成长</p>
+                </div>
+              </div>
             </div>
           </div>
         </nav>
