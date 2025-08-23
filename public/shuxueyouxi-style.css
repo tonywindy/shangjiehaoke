@@ -27,11 +27,17 @@ h1 {
     font-size: 2.5em;
 }
 
-/* 返回按钮样式 */
-.back-btn {
+/* 返回按钮容器样式 */
+.back-buttons {
     position: absolute;
     top: 20px;
     left: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+/* 返回按钮样式 */
+.back-btn {
     background-color: #6c757d;
     color: white;
     border: none;

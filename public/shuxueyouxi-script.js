@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedbackArea = document.getElementById('feedback-area');
     const continueAdventureBtn = document.getElementById('continue-adventure-btn');
     const backToHomeBtn = document.getElementById('back-to-home-btn');
+    const backToWorksBtn = document.getElementById('back-to-works-btn');
     const hintBtn = document.getElementById('hint-btn');
     const backToQuestionBtn = document.getElementById('back-to-question-btn');
     
@@ -305,6 +306,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // 切换到首页
         storyScreen.classList.add('hidden');
         themeSelectionScreen.classList.remove('hidden');
+    });
+
+    // 返回作品按钮事件监听器
+    backToWorksBtn.addEventListener('click', () => {
+        // 跳转到作品页面
+        window.location.href = '/works.html';
     });
 
     // 提示按钮事件监听器
