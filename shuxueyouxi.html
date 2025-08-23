@@ -3,422 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一人一世界 - 数学情境答题游戏</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <style>
-        body {
-            font-family: 'Helvetica Neue', sans-serif;
-            background-color: #f0f8ff;
-            color: #333;
-            margin: 0;
-            padding: 20px 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #game-container {
-            width: 90%;
-            max-width: 1200px;
-            background-color: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            text-align: center;
-            transition: all 0.5s ease;
-            margin-top: 0;
-        }
-
-        h1 {
-            color: #ff6347;
-            font-size: 2.5em;
-        }
-
-        /* 返回按钮样式 */
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .back-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .selection-container {
-            display: flex;
-            gap: 30px;
-            margin-top: 30px;
-            align-items: flex-start;
-        }
-
-        .knowledge-selection {
-            flex: 1;
-            text-align: left;
-        }
-
-        .theme-selection {
-            flex: 1;
-            text-align: left;
-        }
-
-        .selection-section {
-            background-color: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .knowledge-categories {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .knowledge-category {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 4px solid #4CAF50;
-        }
-
-        .knowledge-category h3 {
-            margin: 0 0 15px 0;
-            color: #2c3e50;
-            font-size: 1.2em;
-        }
-
-        .knowledge-items {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .knowledge-item {
-            background-color: #e8f5e8;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            font-size: 0.9em;
-        }
-
-        .knowledge-item:hover {
-            background-color: #d4edda;
-            transform: translateY(-2px);
-        }
-
-        .knowledge-item.selected {
-            background-color: #4CAF50;
-            color: white;
-            border-color: #45a049;
-        }
-
-        .theme-items {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .theme-item {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid transparent;
-        }
-
-        .theme-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .theme-item.selected {
-            border-color: #ffd700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-        }
-
-        .theme-item h4 {
-            margin: 0 0 10px 0;
-            font-size: 1.1em;
-        }
-
-        .theme-item p {
-            margin: 0;
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-
-        .start-button {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 30px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .start-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        .start-button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* 游戏界面样式 */
-        #game-screen {
-            display: none;
-        }
-
-        .story-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            text-align: left;
-            line-height: 1.6;
-        }
-
-        .story-section h2 {
-            color: #ffd700;
-            margin-bottom: 15px;
-        }
-
-        .question-section {
-            background-color: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .question-section h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-
-        .options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .option {
-            background-color: white;
-            border: 2px solid #e9ecef;
-            padding: 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .option:hover {
-            border-color: #007bff;
-            background-color: #f8f9ff;
-        }
-
-        .option.selected {
-            border-color: #007bff;
-            background-color: #007bff;
-            color: white;
-        }
-
-        .option.correct {
-            border-color: #28a745;
-            background-color: #28a745;
-            color: white;
-        }
-
-        .option.incorrect {
-            border-color: #dc3545;
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .submit-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .submit-button:hover {
-            background-color: #0056b3;
-        }
-
-        .submit-button:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-
-        .feedback {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            display: none;
-        }
-
-        .feedback.correct {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .feedback.incorrect {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .next-button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1em;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .next-button:hover {
-            background-color: #218838;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #28a745, #20c997);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        .score-display {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-            color: #495057;
-        }
-
-        /* 结果界面样式 */
-        #result-screen {
-            display: none;
-        }
-
-        .result-content {
-            text-align: center;
-        }
-
-        .score-circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            font-weight: bold;
-            margin: 20px auto;
-        }
-
-        .restart-button {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .restart-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .selection-container {
-                flex-direction: column;
-            }
-            
-            .theme-items {
-                grid-template-columns: 1fr;
-            }
-            
-            .options {
-                grid-template-columns: 1fr;
-            }
-            
-            #game-container {
-                padding: 20px;
-                width: 95%;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
+    <title>AI数学冒险故事</title>
+    <link rel="stylesheet" href="/shuxueyouxi-style.css">
 </head>
 <body>
-    <button class="back-button" onclick="window.location.href='./works.html'">← 返回作品</button>
-    
+
     <div id="game-container">
         <!-- 阶段一：知识点和情景选择界面 -->
         <div id="theme-selection-screen">
-            <h1>🎯 一人一世界 - 数学情境答题游戏</h1>
+            <h1>🎯 选择你的数学冒险</h1>
             
             <div class="selection-container">
                 <!-- 知识点选择区域 - 左侧 -->
@@ -456,346 +49,187 @@
                             <div class="knowledge-category">
                                 <h3>📐 图形与几何</h3>
                                 <div class="knowledge-items">
-                                    <div class="knowledge-item" data-knowledge="周长">周长</div>
-                                    <div class="knowledge-item" data-knowledge="面积">面积</div>
-                                    <div class="knowledge-item" data-knowledge="图形的认识">图形的认识</div>
+                                    <div class="knowledge-item" data-knowledge="四边形性质与判定">四边形性质与判定</div>
+                                    <div class="knowledge-item" data-knowledge="面积与周长">面积与周长</div>
+                                </div>
+                            </div>
+                            
+                            <div class="knowledge-category">
+                                <h3>📊 数据的收集与整理</h3>
+                                <div class="knowledge-items">
+                                    <div class="knowledge-item" data-knowledge="条形统计图与数据">条形统计图与数据</div>
+                                    <div class="knowledge-item" data-knowledge="两步应用题">两步应用题</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 情景主题选择区域 - 右侧 -->
-                <div class="theme-selection">
+                <!-- 情景选择区域 - 右侧 -->
+                <div class="scenario-selection">
                     <div class="selection-section">
-                        <h2>🌟 选择冒险主题（单选）</h2>
-                        <div class="theme-items">
-                            <div class="theme-item" data-theme="space">
-                                <h4>🚀 太空探险</h4>
-                                <p>和宇航员一起探索神秘的宇宙，解决太空中的数学难题</p>
-                            </div>
-                            <div class="theme-item" data-theme="ocean">
-                                <h4>🌊 海底世界</h4>
-                                <p>潜入深海，与海洋生物一起解决数学谜题</p>
-                            </div>
-                            <div class="theme-item" data-theme="forest">
-                                <h4>🌲 魔法森林</h4>
-                                <p>在神奇的森林里，用数学魔法帮助森林动物</p>
-                            </div>
-                            <div class="theme-item" data-theme="city">
-                                <h4>🏙️ 未来城市</h4>
-                                <p>在科技发达的未来城市中，用数学解决城市问题</p>
-                            </div>
-                            <div class="theme-item" data-theme="ancient">
-                                <h4>🏛️ 古代文明</h4>
-                                <p>穿越到古代，帮助古人用数学建造奇迹</p>
-                            </div>
-                            <div class="theme-item" data-theme="candy">
-                                <h4>🍭 糖果王国</h4>
-                                <p>在甜蜜的糖果世界里，用数学制作美味糖果</p>
-                            </div>
+                        <h2>🎭 选择冒险情景（可多选）</h2>
+                        <div id="scenario-cards">
+                            <div class="scenario-card" data-scenario="神秘恐龙岛">🦖 神秘恐龙岛</div>
+                            <div class="scenario-card" data-scenario="星际探险">🚀 星际探险</div>
+                            <div class="scenario-card" data-scenario="魔法森林寻宝">🏰 魔法森林寻宝</div>
+                            <div class="scenario-card" data-scenario="超级英雄拯救世界">🦸 超级英雄拯救世界</div>
+                            <div class="scenario-card" data-scenario="海底探险">🐠 海底探险</div>
+                            <div class="scenario-card" data-scenario="时空穿越">⏰ 时空穿越</div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <button class="start-button" id="start-game-btn" disabled>🎮 开始冒险</button>
+            <div class="selection-summary">
+                <p>已选择知识点：<span id="selected-knowledge">无</span></p>
+                <p>已选择情景：<span id="selected-scenarios">无</span></p>
+            </div>
+            
+            <button id="start-adventure-btn" disabled>开始冒险！</button>
         </div>
-        
-        <!-- 阶段二：游戏界面 -->
-        <div id="game-screen">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
+
+        <!-- 阶段二：故事生成与展示界面 -->
+        <div id="story-screen" class="hidden">
+            <!-- 返回按钮 -->
+            <button id="back-to-home-btn" class="back-btn">← 返回首页</button>
+            
+            <!-- 加载指示器 -->
+            <div id="loading-indicator">
+                <div class="spinner"></div>
+                <p class="loading-text">✨ 故事正在生成中，请稍候... ✨</p>
             </div>
             
-            <div class="score-display">
-                <span>得分：<span id="current-score">0</span> / <span id="total-questions">0</span></span>
-            </div>
-            
-            <div class="story-section" id="story-content">
-                <!-- 故事内容将在这里动态生成 -->
-            </div>
-            
-            <div class="question-section" id="question-content">
-                <!-- 题目内容将在这里动态生成 -->
-            </div>
-        </div>
-        
-        <!-- 阶段三：结果界面 -->
-        <div id="result-screen">
-            <div class="result-content">
-                <h1>🎉 冒险完成！</h1>
-                <div class="score-circle" id="final-score-circle">
-                    <!-- 最终得分 -->
+            <div id="story-content" class="hidden">
+                <!-- 左右分栏布局 -->
+                <div class="story-layout">
+                    <!-- 左侧：图片和题目区域 -->
+                    <div class="left-content-area">
+                        <!-- 场景图片区域 -->
+                        <div class="scene-image-area">
+                            <div id="scene-image-container">
+                                <div class="image-loading" id="image-loading">
+                                    <div class="image-spinner"></div>
+                                    <p>正在生成场景图片...</p>
+                                </div>
+                                <img id="scene-image" class="hidden" alt="场景图片">
+                            </div>
+                        </div>
+                        
+                        <!-- 故事和题目区域 -->
+                        <div class="story-question-area">
+                            <!-- 故事情景阶段 -->
+                            <div id="story-stage-1" class="story-stage">
+                                <div id="story-text"></div>
+                            </div>
+                            
+                            <!-- 故事结尾阶段 -->
+                            <div id="story-ending-stage" class="story-stage hidden">
+                                <h3>故事继续...</h3>
+                                <div id="story-ending-text"></div>
+                                <button id="continue-adventure-btn">继续冒险</button>
+                            </div>
+                            
+                            <div id="feedback-area"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧：答题区域 -->
+                    <div class="right-answer-area">
+                        <!-- 数学题目区域 -->
+                        <div id="question-area" class="hidden">
+                            <h3>数学挑战</h3>
+                            <p id="question-text"></p>
+                        </div>
+                        
+                        <div class="answer-section">
+                            <!-- 填空题答案输入 -->
+                            <div id="fill-blank-answer" class="answer-type">
+                                <input type="text" id="answer-input" placeholder="输入你的答案（如：12 或 1/2）">
+                                
+                                <!-- 九宫格数字键盘 -->
+                                <div id="number-keyboard" class="number-keyboard">
+                                    <div class="keyboard-row">
+                                        <button class="num-btn" data-value="7">7</button>
+                                        <button class="num-btn" data-value="8">8</button>
+                                        <button class="num-btn" data-value="9">9</button>
+                                    </div>
+                                    <div class="keyboard-row">
+                                        <button class="num-btn" data-value="4">4</button>
+                                        <button class="num-btn" data-value="5">5</button>
+                                        <button class="num-btn" data-value="6">6</button>
+                                    </div>
+                                    <div class="keyboard-row">
+                                        <button class="num-btn" data-value="1">1</button>
+                                        <button class="num-btn" data-value="2">2</button>
+                                        <button class="num-btn" data-value="3">3</button>
+                                    </div>
+                                    <div class="keyboard-row">
+                                        <button class="num-btn" data-value="/">/</button>
+                                        <button class="num-btn" data-value="0">0</button>
+                                        <button class="num-btn delete-btn" data-value="delete">⌫</button>
+                                    </div>
+                                </div>
+                                
+                                <button id="submit-answer-btn">提交答案</button>
+                            </div>
+                            
+                            <!-- 选择题选项 -->
+                            <div id="multiple-choice-answer" class="answer-type hidden">
+                                <div class="choice-options">
+                                    <button class="choice-btn" data-choice="A" id="choice-A">A. </button>
+                                    <button class="choice-btn" data-choice="B" id="choice-B">B. </button>
+                                    <button class="choice-btn" data-choice="C" id="choice-C">C. </button>
+                                    <button class="choice-btn" data-choice="D" id="choice-D">D. </button>
+                                </div>
+                                
+                                <!-- 选择题数字输入框 -->
+                                <input type="text" id="choice-number-input" placeholder="或直接输入数字答案" style="margin: 10px 0; padding: 10px; border-radius: 8px; border: 2px solid #ddd; font-size: 16px; text-align: center;">
+                                
+                                <!-- 选择题也添加数字键盘，用于输入数字答案 -->
+                                <div id="choice-number-keyboard" class="number-keyboard">
+                                    <div class="keyboard-row">
+                                        <button class="num-btn" data-value="7">7</button>
+                                        <button class="num-btn" data-value="8">8</button>
+                                        <button class="num-btn" data-value="9">9</button>
+                                    </div>
+                                    <div class="keyboard-row">
+                                        <button class="num-btn" data-value="4">4</button>
+                                        <button class="num-btn" data-value="5">5</button>
+                                        <button class="num-btn" data-value="6">6</button>
+                                    </div>
+                                    <div class="keyboard-row">
+                                        <button class="num-btn" data-value="1">1</button>
+                                        <button class="num-btn" data-value="2">2</button>
+                                        <button class="num-btn" data-value="3">3</button>
+                                    </div>
+                                    <div class="keyboard-row">
+                                        <button class="num-btn" data-value="/">/</button>
+                                        <button class="num-btn" data-value="0">0</button>
+                                        <button class="num-btn delete-btn" data-value="delete">⌫</button>
+                                    </div>
+                                </div>
+                                
+                                <button id="submit-choice-btn" class="hidden">提交答案</button>
+                            </div>
+                            
+                            <button id="hint-btn" class="hint-btn">💡 需要提示？</button>
+                        </div>
+                        
+                        <!-- 提示阶段 -->
+                        <div id="hint-stage" class="story-stage hidden">
+                            <h3>解题提示</h3>
+                            <div id="hint-content"></div>
+                            <button id="back-to-question-btn">返回题目</button>
+                        </div>
+                        
+
+                    </div>
                 </div>
-                <div id="result-message">
-                    <!-- 结果评价 -->
-                </div>
-                <button class="restart-button" onclick="restartGame()">🔄 重新开始</button>
-                <button class="restart-button" onclick="window.location.href='./works.html'">📚 返回作品</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // 游戏状态
-        let selectedKnowledge = [];
-        let selectedTheme = '';
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let questions = [];
-        let gameData = {};
-
-        // 知识点选择
-        document.querySelectorAll('.knowledge-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const knowledge = this.dataset.knowledge;
-                if (this.classList.contains('selected')) {
-                    this.classList.remove('selected');
-                    selectedKnowledge = selectedKnowledge.filter(k => k !== knowledge);
-                } else {
-                    this.classList.add('selected');
-                    selectedKnowledge.push(knowledge);
-                }
-                updateStartButton();
-            });
-        });
-
-        // 主题选择
-        document.querySelectorAll('.theme-item').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.theme-item').forEach(t => t.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedTheme = this.dataset.theme;
-                updateStartButton();
-            });
-        });
-
-        // 更新开始按钮状态
-        function updateStartButton() {
-            const startBtn = document.getElementById('start-game-btn');
-            if (selectedKnowledge.length > 0 && selectedTheme) {
-                startBtn.disabled = false;
-            } else {
-                startBtn.disabled = true;
-            }
-        }
-
-        // 开始游戏
-        document.getElementById('start-game-btn').addEventListener('click', function() {
-            generateGameContent();
-            showGameScreen();
-        });
-
-        // 生成游戏内容
-        function generateGameContent() {
-            // 这里是简化版本，实际应该调用AI API
-            gameData = {
-                theme: selectedTheme,
-                knowledge: selectedKnowledge,
-                story: getThemeStory(selectedTheme),
-                questions: generateQuestions(selectedKnowledge, selectedTheme)
-            };
-            
-            questions = gameData.questions;
-            document.getElementById('total-questions').textContent = questions.length;
-        }
-
-        // 获取主题故事
-        function getThemeStory(theme) {
-            const stories = {
-                space: "🚀 你是一名勇敢的宇航员，正在执行一项重要的太空任务。突然，飞船的导航系统出现了故障，你需要用数学知识来修复它，才能安全返回地球。",
-                ocean: "🌊 你潜入了神秘的深海世界，发现了一个古老的海底城市。城市的守护者告诉你，只有解决数学谜题，才能获得海洋的祝福。",
-                forest: "🌲 在一个充满魔法的森林里，你遇到了一只会说话的小松鼠。它告诉你森林正面临危机，需要你用数学魔法来拯救森林。",
-                city: "🏙️ 在2050年的未来城市，你是一名数学工程师。城市的智能系统出现了问题，你需要用数学知识来修复它。",
-                ancient: "🏛️ 你穿越到了古埃及时代，法老王正在建造一座宏伟的金字塔。你需要帮助古代建筑师解决数学难题。",
-                candy: "🍭 欢迎来到甜蜜的糖果王国！糖果女王邀请你参加一场特殊的数学挑战，获胜者将得到最美味的糖果奖励。"
-            };
-            return stories[theme] || stories.space;
-        }
-
-        // 生成题目
-        function generateQuestions(knowledge, theme) {
-            // 这里是简化版本，实际应该根据知识点生成相应题目
-            const sampleQuestions = [
-                {
-                    story: "在修复导航系统时，你发现需要计算一个重要数值。",
-                    question: "计算：25 × 4 = ?",
-                    options: ["90", "100", "110", "120"],
-                    correct: 1,
-                    explanation: "25 × 4 = 100，这是基础的乘法运算。"
-                },
-                {
-                    story: "飞船的燃料消耗需要精确计算。",
-                    question: "如果飞船每小时消耗120升燃料，飞行3小时需要多少升燃料？",
-                    options: ["300升", "360升", "400升", "450升"],
-                    correct: 1,
-                    explanation: "120 × 3 = 360升，这是实际应用中的乘法计算。"
-                },
-                {
-                    story: "你需要分配氧气给船员。",
-                    question: "如果有12个氧气罐，平均分给4名船员，每人得到几个？",
-                    options: ["2个", "3个", "4个", "5个"],
-                    correct: 1,
-                    explanation: "12 ÷ 4 = 3个，这是除法的平均分配应用。"
-                }
-            ];
-            return sampleQuestions;
-        }
-
-        // 显示游戏界面
-        function showGameScreen() {
-            document.getElementById('theme-selection-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            currentQuestionIndex = 0;
-            score = 0;
-            showQuestion();
-        }
-
-        // 显示题目
-        function showQuestion() {
-            if (currentQuestionIndex >= questions.length) {
-                showResultScreen();
-                return;
-            }
-
-            const question = questions[currentQuestionIndex];
-            
-            // 更新进度条
-            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-            document.getElementById('progress-fill').style.width = progress + '%';
-            
-            // 更新得分显示
-            document.getElementById('current-score').textContent = score;
-            
-            // 显示故事背景
-            document.getElementById('story-content').innerHTML = `
-                <h2>📖 故事背景</h2>
-                <p>${gameData.story}</p>
-                <p>${question.story}</p>
-            `;
-            
-            // 显示题目
-            const optionsHtml = question.options.map((option, index) => 
-                `<div class="option" data-index="${index}">${option}</div>`
-            ).join('');
-            
-            document.getElementById('question-content').innerHTML = `
-                <h3>❓ 题目 ${currentQuestionIndex + 1}</h3>
-                <p>${question.question}</p>
-                <div class="options">${optionsHtml}</div>
-                <button class="submit-button" id="submit-btn" disabled>提交答案</button>
-                <div class="feedback" id="feedback"></div>
-                <button class="next-button hidden" id="next-btn">下一题</button>
-            `;
-            
-            // 绑定选项点击事件
-            document.querySelectorAll('.option').forEach(option => {
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-                    this.classList.add('selected');
-                    document.getElementById('submit-btn').disabled = false;
-                });
-            });
-            
-            // 绑定提交按钮事件
-            document.getElementById('submit-btn').addEventListener('click', submitAnswer);
-            
-            // 绑定下一题按钮事件
-            document.getElementById('next-btn').addEventListener('click', nextQuestion);
-        }
-
-        // 提交答案
-        function submitAnswer() {
-            const selectedOption = document.querySelector('.option.selected');
-            if (!selectedOption) return;
-            
-            const selectedIndex = parseInt(selectedOption.dataset.index);
-            const question = questions[currentQuestionIndex];
-            const isCorrect = selectedIndex === question.correct;
-            
-            // 显示答案反馈
-            document.querySelectorAll('.option').forEach((option, index) => {
-                if (index === question.correct) {
-                    option.classList.add('correct');
-                } else if (index === selectedIndex && !isCorrect) {
-                    option.classList.add('incorrect');
-                }
-                option.style.pointerEvents = 'none';
-            });
-            
-            // 更新得分
-            if (isCorrect) {
-                score++;
-            }
-            
-            // 显示反馈
-            const feedback = document.getElementById('feedback');
-            feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
-            feedback.innerHTML = `
-                <strong>${isCorrect ? '✅ 回答正确！' : '❌ 回答错误'}</strong>
-                <p>${question.explanation}</p>
-            `;
-            feedback.style.display = 'block';
-            
-            // 隐藏提交按钮，显示下一题按钮
-            document.getElementById('submit-btn').style.display = 'none';
-            document.getElementById('next-btn').classList.remove('hidden');
-        }
-
-        // 下一题
-        function nextQuestion() {
-            currentQuestionIndex++;
-            showQuestion();
-        }
-
-        // 显示结果界面
-        function showResultScreen() {
-            document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('result-screen').style.display = 'block';
-            
-            const percentage = Math.round((score / questions.length) * 100);
-            document.getElementById('final-score-circle').textContent = `${score}/${questions.length}`;
-            
-            let message = '';
-            if (percentage >= 90) {
-                message = '🌟 太棒了！你是真正的数学大师！';
-            } else if (percentage >= 70) {
-                message = '👍 很好！继续努力，你会更棒的！';
-            } else if (percentage >= 50) {
-                message = '💪 不错的开始！多练习会有更大进步！';
-            } else {
-                message = '🌱 没关系，每个人都有自己的节奏，继续加油！';
-            }
-            
-            document.getElementById('result-message').innerHTML = `
-                <h2>你的得分：${percentage}%</h2>
-                <p>${message}</p>
-            `;
-        }
-
-        // 重新开始游戏
-        function restartGame() {
-            selectedKnowledge = [];
-            selectedTheme = '';
-            currentQuestionIndex = 0;
-            score = 0;
-            questions = [];
-            
-            // 重置选择状态
-            document.querySelectorAll('.knowledge-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            document.querySelectorAll('.theme-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            // 显示选择界面
-            document.getElementById('result-screen').style.display = 'none';
-            document.getElementById('theme-selection-screen').style.display = 'block';
-            
-            updateStartButton();
-        }
-    </script>
+    <script src="/shuxueyouxi-script.js"></script>
 </body>
 </html>
