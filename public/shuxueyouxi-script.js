@@ -544,17 +544,33 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.choices && data.choices[0] && data.choices[0].message) {
                 // OpenAI标准格式
                 storyData = data.choices[0].message.content;
+            } else if (data.output && data.output.text) {
+                // 百炼大模型格式 - output.text
+                storyData = data.output.text;
+            } else if (data.output && typeof data.output === 'string') {
+                // 百炼大模型格式 - output字符串
+                storyData = data.output;
+            } else if (data.result && data.result.output) {
+                // 百炼大模型格式 - result.output
+                storyData = data.result.output;
+            } else if (data.data && data.data.output) {
+                // 百炼大模型格式 - data.output
+                storyData = data.data.output;
             } else if (data.content) {
                 // 直接内容格式
                 storyData = data.content;
             } else if (data.response) {
                 // 响应字段格式
                 storyData = data.response;
+            } else if (data.text) {
+                // 文本字段格式
+                storyData = data.text;
             } else if (typeof data === 'string') {
                 // 直接字符串格式
                 storyData = data;
             } else {
-                throw new Error('无法识别的API响应格式');
+                console.error('未知的API响应格式:', data);
+                throw new Error('无法识别的API响应格式，请检查控制台日志');
             }
             
             console.log('提取的故事数据:', storyData);
@@ -564,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('调用中转站错误:', error);
-            storyTextElem.textContent = `糟糕，故事生成失败了。\n错误信息：${error.message}`;
+            storyText.textContent = `糟糕，故事生成失败了。\n错误信息：${error.message}`;
         } finally {
             loadingIndicator.classList.add('hidden');
             storyContent.classList.remove('hidden');
