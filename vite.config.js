@@ -12,6 +12,7 @@ export default defineConfig({
         contact: resolve(__dirname, 'contact.html'),
         climb: resolve(__dirname, 'climb.html'),
         zhouchang: resolve(__dirname, 'zhouchang.html'),
+        shuxueyouxi: resolve(__dirname, 'shuxueyouxi.html'),
       },
     },
   },
