@@ -537,12 +537,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
+            console.log('API响应数据:', data);
             
-            // ！！！！！！！！！！！！！！！！！！！！！！
-            // ！！！！！！  修改就在这里 ！！！！！！
-            // ！！！！！！  移除了多余的 .output  ！！！！！！
-            // ！！！！！！！！！！！！！！！！！！！！！！
-            const storyData = data.choices[0].message.content;
+            // 处理不同的响应格式
+            let storyData;
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+                // OpenAI标准格式
+                storyData = data.choices[0].message.content;
+            } else if (data.content) {
+                // 直接内容格式
+                storyData = data.content;
+            } else if (data.response) {
+                // 响应字段格式
+                storyData = data.response;
+            } else if (typeof data === 'string') {
+                // 直接字符串格式
+                storyData = data;
+            } else {
+                throw new Error('无法识别的API响应格式');
+            }
+            
+            console.log('提取的故事数据:', storyData);
 
             storyHistory.push({ "role": "assistant", "content": storyData });
             parseAndDisplayStoryStages(storyData);
