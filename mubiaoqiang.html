@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的彩虹目标墙 (打印版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <style>
+        /* A4 paper size: 210mm x 297mm. */
+        body {
+            background-color: #f0f2f5;
+            font-family: 'ZCOOL XiaoWei', sans-serif;
+            background-image: radial-gradient(#ffd700 1px, transparent 1px), radial-gradient(#ffd700 1px, transparent 1px);
+            background-position: 0 0, 20px 20px;
+            background-size: 40px 40px;
+        }
+        .a4-container {
+            width: 21cm;
+            height: 29.7cm;
+            padding: 1.5cm;
+            margin: 2rem auto;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .goal-box {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .goal-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .goal-box h3 {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 8px;
+            font-size: 1.5rem;
+        }
+        .placeholder-text {
+            color: #d1d5db; /* light gray */
+            font-size: 1.25rem;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+                background-image: none; /* Remove background pattern for printing */
+            }
+            .no-print {
+                display: none;
+            }
+            .a4-container {
+                width: 21cm;
+                height: 29.7cm;
+                padding: 1.5cm;
+                margin: 0;
+                box-shadow: none;
+                background-color: white;
+            }
+            /* Ensure background colors and images print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            /* Keep hover effects consistent for print */
+            .goal-box:hover {
+                transform: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Back to Ideas Button -->
+    <div class="no-print fixed top-4 left-4 z-10">
+        <a href="./contact.html" class="bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-md border border-gray-200 transition-all duration-300 hover:shadow-lg flex items-center space-x-2">
+            <span>←</span>
+            <span>返回一点想法</span>
+        </a>
+    </div>
+
+    <!-- Main container that simulates an A4 page -->
+    <div class="a4-container">
+        <!-- Header Section -->
+        <header class="text-center pb-4 mb-4">
+            <div class="flex justify-center items-center mb-2">
+                <span class="text-4xl mr-2">🌈</span>
+                <h1 class="text-5xl font-bold text-gray-800">我的彩虹目标墙</h1>
+                <span class="text-4xl ml-2">🌟</span>
+            </div>
+            <div class="flex justify-center space-x-4 mb-2">
+                <span class="text-3xl">🧒</span>
+                <span class="text-3xl">🎨</span>
+                <span class="text-3xl">🎯</span>
+                <span class="text-3xl">🏆</span>
+                <span class="text-3xl">👏</span>
+            </div>
+            <p class="text-lg text-gray-500 mt-2">把你的目标便签贴在这里吧！</p>
+        </header>
+
+        <!-- Goal Sections -->
+        <main class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <!-- Learning Goals -->
+            <div class="goal-box bg-red-50 border-red-300">
+                <h3 class="bg-red-200 text-red-800">🔴 学习目标</h3>
+                <div class="text-4xl text-center mb-2">📚</div>
+                <p class="placeholder-text">（贴红色便签）</p>
+            </div>
+            <!-- Social Goals -->
+            <div class="goal-box bg-yellow-50 border-yellow-300">
+                <h3 class="bg-yellow-200 text-yellow-800">🟡 社交目标</h3>
+                <div class="text-4xl text-center mb-2">😊</div>
+                <p class="placeholder-text">（贴黄色便签）</p>
+            </div>
+            <!-- Interest Goals -->
+            <div class="goal-box bg-blue-50 border-blue-300">
+                <h3 class="bg-blue-200 text-blue-800">🔵 兴趣目标</h3>
+                <div class="text-4xl text-center mb-2">🎨</div>
+                <p class="placeholder-text">（贴蓝色便签）</p>
+            </div>
+        </main>
+
+        <!-- Completed Section -->
+        <footer class="h-1/4">
+            <div class="goal-box bg-green-50 border-green-400 h-full">
+                 <h3 class="bg-green-200 text-green-800">🏆 我的成就！</h3>
+                 <div class="text-4xl text-center mb-2">🎉</div>
+                 <p class="placeholder-text">（把完成的目标移到这里）</p>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Print Button -->
+    <div class="no-print text-center py-8">
+        <button onclick="window.print()" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 text-lg">
+            <span class="mr-2">🖨️</span>打印这张目标墙<span class="ml-2">🌟</span>
+        </button>
+        <p class="mt-4 text-gray-600">点击按钮打印你的彩虹目标墙，然后贴上你的目标便签吧！</p>
+    </div>
+
+</body>
+</html>
