@@ -49,7 +49,7 @@ function App() {
             style={{ opacity: videoLoaded ? 1 : 0 }}
           >
             {/* 你可以替换这个视频源为你自己的视频文件 */}
-            <source src="/shangjiehaoke/your-video.mp4" type="video/mp4" />
+            <source src="/your-video.mp4" type="video/mp4" />
             {/* 如果浏览器不支持视频，显示备用内容 */}
             Your browser does not support the video tag.
           </video>
@@ -72,7 +72,7 @@ function App() {
             
             {/* 使用图片logo */}
             <img 
-              src="/shangjiehaoke/logo1.png" 
+              src="/logo1.png" 
               alt="上节好课 Logo" 
               className="logo-image"
             />
@@ -98,12 +98,12 @@ function App() {
             </div>
             <div className="nav-menu">
               <a href="/" className="nav-link">初见之页</a>
-              <a href="/shangjiehaoke/works.html" className="nav-link">些许尝试</a>
-          <a href="/shangjiehaoke/contact.html" className="nav-link">一点想法</a>
+              <a href="./works.html" className="nav-link">些许尝试</a>
+              <a href="./contact.html" className="nav-link">一点想法</a>
               <div className="feedback-container">
                 <span className="nav-link" style={{cursor: 'pointer'}}>意见之箱</span>
                 <div className="qr-popup">
-                  <img src="/shangjiehaoke/erweima.png" alt="公众号二维码" className="qr-code" />
+                  <img src="/erweima.png" alt="公众号二维码" className="qr-code" />
                   <p className="qr-text">扫码分享您的想法<br />让我们一起成长</p>
                 </div>
               </div>
