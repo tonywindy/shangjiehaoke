@@ -2,7 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM 元素获取 ---
     const themeSelectionScreen = document.getElementById('theme-selection-screen');
     const storyScreen = document.getElementById('story-screen');
-    const knowledgeItems = document.querySelectorAll('.knowledge-item');
+    const knowledgeUnits = document.querySelectorAll('.knowledge-unit');
+    const unitHeaders = document.querySelectorAll('.unit-header');
+    const lessonItems = document.querySelectorAll('.lesson-item');
     const scenarioCards = document.querySelectorAll('.scenario-card');
     const startBtn = document.getElementById('start-adventure-btn');
     const selectedKnowledgeSpan = document.getElementById('selected-knowledge');
@@ -54,21 +56,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_KEY = 'dummy-key'; // 代理服务器不需要真实的API Key
 
 
-    // --- 事件监听器 (不变) ---
-    // 知识点选择逻辑
-    knowledgeItems.forEach(item => {
-        item.addEventListener('click', () => {
+    // --- 事件监听器 ---
+    // 单元展开/收起逻辑
+    unitHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const unit = header.parentElement;
+            const lessons = unit.querySelector('.unit-lessons');
+            const expandIcon = header.querySelector('.expand-icon');
+            
+            if (lessons.style.display === 'none' || lessons.style.display === '') {
+                lessons.style.display = 'block';
+                expandIcon.textContent = '▲';
+                unit.classList.add('expanded');
+            } else {
+                lessons.style.display = 'none';
+                expandIcon.textContent = '▼';
+                unit.classList.remove('expanded');
+            }
+        });
+    });
+
+    // 课时选择逻辑
+    lessonItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation(); // 防止触发单元展开/收起
+            
             const knowledge = item.dataset.knowledge;
+            const unit = item.dataset.unit;
+            const lesson = item.dataset.lesson;
+            const lessonName = item.querySelector('.lesson-name').textContent;
+            
+            // 创建完整的知识点描述
+            const fullKnowledge = `${unit} ${lesson} ${lessonName}: ${knowledge}`;
             
             if (item.classList.contains('selected')) {
                 // 取消选择
                 item.classList.remove('selected');
-                selectedKnowledge = selectedKnowledge.filter(k => k !== knowledge);
+                selectedKnowledge = selectedKnowledge.filter(k => k !== fullKnowledge);
             } else {
                 // 选择知识点（最多3个）
                 if (selectedKnowledge.length < 3) {
                     item.classList.add('selected');
-                    selectedKnowledge.push(knowledge);
+                    selectedKnowledge.push(fullKnowledge);
                 }
             }
             

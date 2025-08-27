@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI数学冒险故事</title>
-    <link rel="stylesheet" href="/shuxueyouxi-style.css">
+    <link rel="stylesheet" href="public/shuxueyouxi-style.css">
 </head>
 <body>
 
@@ -17,53 +17,258 @@
                 <!-- 知识点选择区域 - 左侧 -->
                 <div class="knowledge-selection">
                     <div class="selection-section">
-                        <h2>📚 选择知识点（可多选）</h2>
-                        <div class="knowledge-categories">
-                            <div class="knowledge-category">
-                                <h3>🔢 数与运算</h3>
-                                <div class="knowledge-items">
-                                    <div class="knowledge-item" data-knowledge="万以内数的认识">万以内数的认识</div>
-                                    <div class="knowledge-item" data-knowledge="两位数除以一位数">两位数除以一位数</div>
-                                    <div class="knowledge-item" data-knowledge="两位数乘两位数">两位数乘两位数</div>
-                                    <div class="knowledge-item" data-knowledge="两步混合运算">两步混合运算</div>
+                        <h2>📚 选择知识点（可多选，最多3个）</h2>
+                        <div class="knowledge-units">
+                            <!-- 第一单元 混合运算 -->
+                            <div class="knowledge-unit" data-unit="第一单元">
+                                <div class="unit-header">
+                                    <span class="unit-icon">🔢</span>
+                                    <span class="unit-title">第一单元 混合运算</span>
+                                    <span class="expand-icon">▼</span>
+                                </div>
+                                <div class="unit-lessons">
+                                    <div class="lesson-item" data-unit="第一单元" data-lesson="1.1" data-knowledge="乘加、乘减混合运算的运算顺序：先算乘法，后算加减法">
+                                        <span class="lesson-code">1.1</span>
+                                        <span class="lesson-name">小熊购物</span>
+                                        <span class="lesson-desc">乘加、乘减混合运算</span>
+                                    </div>
+                                    <div class="lesson-item" data-unit="第一单元" data-lesson="1.2" data-knowledge="除加、除减混合运算的运算顺序：先算除法，后算加减法">
+                                        <span class="lesson-code">1.2</span>
+                                        <span class="lesson-name">买文具</span>
+                                        <span class="lesson-desc">除加、除减混合运算</span>
+                                    </div>
+                                    <div class="lesson-item" data-unit="第一单元" data-lesson="1.3" data-knowledge="带有小括号的两步混合运算的运算顺序：先算小括号里面的，再算小括号外面的">
+                                        <span class="lesson-code">1.3</span>
+                                        <span class="lesson-name">过河</span>
+                                        <span class="lesson-desc">带小括号的混合运算</span>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="knowledge-category">
-                                <h3>🍰 分数的初步认识</h3>
-                                <div class="knowledge-items">
-                                    <div class="knowledge-item" data-knowledge="认识几分之一">认识几分之一</div>
-                                    <div class="knowledge-item" data-knowledge="分数的大小比较">分数的大小比较</div>
-                                    <div class="knowledge-item" data-knowledge="分数的简单加减">分数的简单加减</div>
+                            <!-- 第二单元 测量（二） -->
+                            <div class="knowledge-unit" data-unit="第二单元">
+                                <div class="unit-header">
+                                    <span class="unit-icon">📏</span>
+                                    <span class="unit-title">第二单元 测量（二）</span>
+                                    <span class="expand-icon">▼</span>
+                                </div>
+                                <div class="unit-lessons">
+                                    <div class="lesson-item" data-unit="第二单元" data-lesson="2.1" data-knowledge="认识长度单位：分米（dm）、毫米（mm），掌握长度单位之间的换算">
+                                        <span class="lesson-code">2.1</span>
+                                        <span class="lesson-name">铅笔有多长</span>
+                                        <span class="lesson-desc">分米、毫米的认识</span>
+                                    </div>
+                                    <div class="lesson-item" data-unit="第二单元" data-lesson="2.2" data-knowledge="认识长度单位：千米（km），掌握千米与米之间的换算">
+                                        <span class="lesson-code">2.2</span>
+                                        <span class="lesson-name">1千米有多长</span>
+                                        <span class="lesson-desc">千米的认识</span>
+                                    </div>
+                                    <div class="lesson-item" data-unit="第二单元" data-lesson="2.3" data-knowledge="学习简单的估测方法，能估测一些物体的长度">
+                                        <span class="lesson-code">2.3</span>
+                                        <span class="lesson-name">旗杆有多高</span>
+                                        <span class="lesson-desc">长度的估测</span>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="knowledge-category">
-                                <h3>⚖️ 常见的量</h3>
-                                <div class="knowledge-items">
-                                    <div class="knowledge-item" data-knowledge="时分秒">时、分、秒</div>
-                                    <div class="knowledge-item" data-knowledge="长度质量单位">长度、质量单位</div>
+                            <!-- 第三单元 大数加与减（二） -->
+                            <div class="knowledge-unit" data-unit="第三单元">
+                                <div class="unit-header">
+                                    <span class="unit-icon">➕</span>
+                                    <span class="unit-title">第三单元 大数加与减（二）</span>
+                                    <span class="expand-icon">▼</span>
                                 </div>
-                            </div>
-                            
-                            <div class="knowledge-category">
-                                <h3>📐 图形与几何</h3>
-                                <div class="knowledge-items">
-                                    <div class="knowledge-item" data-knowledge="四边形性质与判定">四边形性质与判定</div>
-                                    <div class="knowledge-item" data-knowledge="面积与周长">面积与周长</div>
-                                </div>
-                            </div>
-                            
-                            <div class="knowledge-category">
-                                <h3>📊 数据的收集与整理</h3>
-                                <div class="knowledge-items">
-                                    <div class="knowledge-item" data-knowledge="条形统计图与数据">条形统计图与数据</div>
-                                    <div class="knowledge-item" data-knowledge="两步应用题">两步应用题</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                <div class="unit-lessons">
+                                    <div class="lesson-item" data-unit="第三单元" data-lesson="3.1" data-knowledge="掌握三位数连加运算的计算方法，能正确计算三个三位数的连加">
+                                        <span class="lesson-code">3.1</span>
+                                        <span class="lesson-name">捐书</span>
+                                        <span class="lesson-desc">三位数连加运算</span>
+                                    </div>
+                                    <div class="lesson-item" data-unit="第三单元" data-lesson="3.2" data-knowledge="掌握三位数加减混合运算的计算方法，能正确计算三位数的加减混合运算">
+                                        <span class="lesson-code">3.2</span>
+                                        <span class="lesson-name">小小养殖场</span>
+                                        <span class="lesson-desc">三位数加减混合运算</span>
+                                    </div>
+                                    <div class="lesson-item" data-unit="第三单元" data-lesson="3.3" data-knowledge="进一步掌握三位数加减混合运算的计算方法，运用加减混合运算解决生活中的实际问题">
+                                        <span class="lesson-code">3.3</span>
+                                        <span class="lesson-name">节余多少钱</span>
+                                        <span class="lesson-desc">加减混合运算应用</span>
+                                    </div>
+                                    <div class="lesson-item" data-unit="第三单元" data-lesson="3.4" data-knowledge="学习收集、整理和分析数据的基本方法，能根据数据解决简单的实际问题">
+                                        <span class="lesson-code">3.4</span>
+                                        <span class="lesson-name">身高的增长</span>
+                                        <span class="lesson-desc">数据收集与分析</span>
+                                    </div>
+                                    <div class="lesson-item" data-unit="第三单元" data-lesson="3.5" data-knowledge="理解里程表的记录方式，能根据里程表数据计算行驶路程">
+                                        <span class="lesson-code">3.5</span>
+                                        <span class="lesson-name">里程表</span>
+                                        <span class="lesson-desc">里程表的应用</span>
+                                    </div>
+                                 </div>
+                             </div>
+                             
+                             <!-- 第四单元 我们生活的空间（一） -->
+                             <div class="knowledge-unit" data-unit="第四单元">
+                                 <div class="unit-header">
+                                     <span class="unit-icon">👁️</span>
+                                     <span class="unit-title">第四单元 我们生活的空间（一）</span>
+                                     <span class="expand-icon">▼</span>
+                                 </div>
+                                 <div class="unit-lessons">
+                                     <div class="lesson-item" data-unit="第四单元" data-lesson="4.1" data-knowledge="经历从不同位置观察同一个物体的活动过程，能辨认从不同方向观察到的简单物体的形状">
+                                         <span class="lesson-code">4.1</span>
+                                         <span class="lesson-name">看一看（一）</span>
+                                         <span class="lesson-desc">不同位置观察物体</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第四单元" data-lesson="4.2" data-knowledge="经历从不同角度观察两个物体的活动过程，能根据物体的相对位置辨认从不同位置观察到的简单物体">
+                                         <span class="lesson-code">4.2</span>
+                                         <span class="lesson-name">看一看（二）</span>
+                                         <span class="lesson-desc">不同角度观察物体</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第四单元" data-lesson="4.3" data-knowledge="能从不同位置观察两个物体，描述看到的物体间的相对位置关系">
+                                         <span class="lesson-code">4.3</span>
+                                         <span class="lesson-name">看一看（三）</span>
+                                         <span class="lesson-desc">物体相对位置关系</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第四单元" data-lesson="4.4" data-knowledge="综合运用观察物体的知识，能根据看到的形状画出观察者的位置或物体的摆放方式">
+                                         <span class="lesson-code">4.4</span>
+                                         <span class="lesson-name">看一看（四）</span>
+                                         <span class="lesson-desc">观察物体综合应用</span>
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             <!-- 第五单元 认识图形 -->
+                             <div class="knowledge-unit" data-unit="第五单元">
+                                 <div class="unit-header">
+                                     <span class="unit-icon">📐</span>
+                                     <span class="unit-title">第五单元 认识图形</span>
+                                     <span class="expand-icon">▼</span>
+                                 </div>
+                                 <div class="unit-lessons">
+                                     <div class="lesson-item" data-unit="第五单元" data-lesson="5.1" data-knowledge="结合生活实际，经历从实际物体中抽象出角的过程，认识角的各部分名称">
+                                         <span class="lesson-code">5.1</span>
+                                         <span class="lesson-name">认识角</span>
+                                         <span class="lesson-desc">角的认识</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第五单元" data-lesson="5.2" data-knowledge="知道角的大小与角的两条边张开的大小有关，学习比较角的大小的方法">
+                                         <span class="lesson-code">5.2</span>
+                                         <span class="lesson-name">比一比</span>
+                                         <span class="lesson-desc">角的大小比较</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第五单元" data-lesson="5.3" data-knowledge="认识直角，会用三角尺判断一个角是否是直角，能辨认锐角和钝角">
+                                         <span class="lesson-code">5.3</span>
+                                         <span class="lesson-name">认识直角</span>
+                                         <span class="lesson-desc">直角、锐角、钝角</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第五单元" data-lesson="5.4" data-knowledge="认识长方形和正方形的特征，能根据特征辨认长方形和正方形">
+                                         <span class="lesson-code">5.4</span>
+                                         <span class="lesson-name">长方形与正方形</span>
+                                         <span class="lesson-desc">长方形和正方形特征</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第五单元" data-lesson="5.5" data-knowledge="欣赏生活中的图案，感受图形的美，能运用所学的图形设计简单的图案">
+                                         <span class="lesson-code">5.5</span>
+                                         <span class="lesson-name">欣赏与设计</span>
+                                         <span class="lesson-desc">图形的欣赏与设计</span>
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             <!-- 第六单元 乘除法的应用（二） -->
+                             <div class="knowledge-unit" data-unit="第六单元">
+                                 <div class="unit-header">
+                                     <span class="unit-icon">✖️</span>
+                                     <span class="unit-title">第六单元 乘除法的应用（二）</span>
+                                     <span class="expand-icon">▼</span>
+                                 </div>
+                                 <div class="unit-lessons">
+                                     <div class="lesson-item" data-unit="第六单元" data-lesson="6.1" data-knowledge="掌握两位数乘一位数的口算方法，理解两位数乘一位数的算理">
+                                         <span class="lesson-code">6.1</span>
+                                         <span class="lesson-name">包饺子</span>
+                                         <span class="lesson-desc">两位数乘一位数口算</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第六单元" data-lesson="6.2" data-knowledge="掌握两位数乘一位数的笔算方法，能正确计算两位数乘一位数">
+                                         <span class="lesson-code">6.2</span>
+                                         <span class="lesson-name">需要多少钱</span>
+                                         <span class="lesson-desc">两位数乘一位数笔算</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第六单元" data-lesson="6.3" data-knowledge="掌握整十、整百数除以一位数的口算方法，理解算理">
+                                         <span class="lesson-code">6.3</span>
+                                         <span class="lesson-name">丰收了</span>
+                                         <span class="lesson-desc">整十整百数除法</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第六单元" data-lesson="6.4" data-knowledge="掌握两位数除以一位数的口算和笔算方法，能正确计算两位数除以一位数">
+                                         <span class="lesson-code">6.4</span>
+                                         <span class="lesson-name">植树</span>
+                                         <span class="lesson-desc">两位数除以一位数</span>
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             <!-- 第七单元 认识小数 -->
+                             <div class="knowledge-unit" data-unit="第七单元">
+                                 <div class="unit-header">
+                                     <span class="unit-icon">🔢</span>
+                                     <span class="unit-title">第七单元 认识小数</span>
+                                     <span class="expand-icon">▼</span>
+                                 </div>
+                                 <div class="unit-lessons">
+                                     <div class="lesson-item" data-unit="第七单元" data-lesson="7.1" data-knowledge="初步认识小数，知道小数的各部分名称，理解以元为单位的小数的实际意义">
+                                         <span class="lesson-code">7.1</span>
+                                         <span class="lesson-name">水果店</span>
+                                         <span class="lesson-desc">小数的初步认识</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第七单元" data-lesson="7.2" data-knowledge="进一步认识小数，理解以米为单位的小数的实际意义，能将厘米改写成以米为单位的小数">
+                                         <span class="lesson-code">7.2</span>
+                                         <span class="lesson-name">量身高</span>
+                                         <span class="lesson-desc">小数的进一步认识</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第七单元" data-lesson="7.3" data-knowledge="掌握比较小数大小的方法，能比较简单小数的大小">
+                                         <span class="lesson-code">7.3</span>
+                                         <span class="lesson-name">货比三家</span>
+                                         <span class="lesson-desc">小数大小比较</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第七单元" data-lesson="7.4" data-knowledge="掌握简单的小数加法的计算方法，理解小数加法的算理">
+                                         <span class="lesson-code">7.4</span>
+                                         <span class="lesson-name">存零用钱</span>
+                                         <span class="lesson-desc">小数加法</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第七单元" data-lesson="7.5" data-knowledge="掌握简单的小数减法的计算方法，理解小数减法的算理">
+                                         <span class="lesson-code">7.5</span>
+                                         <span class="lesson-name">竹子的生长</span>
+                                         <span class="lesson-desc">小数减法</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第七单元" data-lesson="7.6" data-knowledge="了解小数在生活中的广泛应用，能运用所学的小数知识解决生活中的简单问题">
+                                         <span class="lesson-code">7.6</span>
+                                         <span class="lesson-name">生活中的小数</span>
+                                         <span class="lesson-desc">小数的应用</span>
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                             <!-- 第八单元 调查与记录 -->
+                             <div class="knowledge-unit" data-unit="第八单元">
+                                 <div class="unit-header">
+                                     <span class="unit-icon">📊</span>
+                                     <span class="unit-title">第八单元 调查与记录</span>
+                                     <span class="expand-icon">▼</span>
+                                 </div>
+                                 <div class="unit-lessons">
+                                     <div class="lesson-item" data-unit="第八单元" data-lesson="8.1" data-knowledge="学习简单的调查方法，能记录和整理调查数据，会用简单的统计表呈现数据">
+                                         <span class="lesson-code">8.1</span>
+                                         <span class="lesson-name">评选吉祥物</span>
+                                         <span class="lesson-desc">调查方法与数据整理</span>
+                                     </div>
+                                     <div class="lesson-item" data-unit="第八单元" data-lesson="8.2" data-knowledge="进一步学习数据的收集、整理和分析方法，能根据调查数据解决简单的实际问题">
+                                         <span class="lesson-code">8.2</span>
+                                         <span class="lesson-name">购买水果</span>
+                                         <span class="lesson-desc">数据分析与应用</span>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
                 
                 <!-- 情景选择区域 - 右侧 -->
                 <div class="scenario-selection">
@@ -233,6 +438,6 @@
         </div>
     </div>
 
-    <script src="/shuxueyouxi-script.js"></script>
+    <script src="public/shuxueyouxi-script.js"></script>
 </body>
 </html>
