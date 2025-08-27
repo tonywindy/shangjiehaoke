@@ -16,6 +16,11 @@ export default defineConfig({
         shuxueyouxi: resolve(__dirname, 'shuxueyouxi.html'),
         mubiaoqiang: resolve(__dirname, 'mubiaoqiang.html'),
       },
+      output: {
+        assetFileNames: '[name].[ext]',
+        chunkFileNames: '[name].js',
+        entryFileNames: '[name].js'
+      }
     },
   },
 });
