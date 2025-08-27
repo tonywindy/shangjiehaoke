@@ -1,6 +1,14 @@
 # Apache .htaccess file for SPA routing
 # This handles routing for single page applications
 
+# Set MIME types
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+    AddType image/svg+xml .svg
+    AddType text/html .html
+</IfModule>
+
 RewriteEngine On
 
 # Handle specific HTML files
