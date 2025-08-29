@@ -55,6 +55,76 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_URL = PROXY_API_URL;
     const API_KEY = 'dummy-key'; // 代理服务器不需要真实的API Key
 
+    // --- AI伙伴数据结构 ---
+    const partnerData = {
+        name: '悟空',
+        images: {
+            default: 'public/wukong_default.png',
+            happy: 'public/wukong_happy.png',
+            thinking: 'public/wukong_thinking.png'
+        },
+        dialogues: {
+            correct: [
+                "答对了！你真是个数学天才！",
+                "YES！又攻克一道难关！我们继续前进！",
+                "太厉害了！这个答案完美无缺！",
+                "我就知道，这点困难根本难不倒我们！"
+            ],
+            incorrect: [
+                "别灰心，强大的对手才能让我们变强！再试试看！",
+                "噢，这个答案似乎不太对。没关系，我们换个思路！",
+                "等等，好像掉进陷阱了。别担心，我们能找到正确的路！",
+                "这是一个小挑战！深呼吸，我们再来一次！"
+            ]
+        }
+    };
+
+    // --- AI伙伴控制函数 ---
+    /**
+     * 更新AI伙伴的显示状态
+     * @param {string} state - 状态名称 ('default', 'happy', 'thinking')
+     * @param {string} [customMessage] - 要显示的自定义消息，如果为空则使用预设对话
+     */
+    function updatePartner(state, customMessage = '') {
+        const partnerAvatar = document.getElementById('partner-avatar');
+        const partnerDialogue = document.getElementById('partner-dialogue-text');
+        
+        if (!partnerAvatar || !partnerDialogue) {
+            console.warn('AI伙伴元素未找到');
+            return;
+        }
+
+        // 更新图片
+        partnerAvatar.src = partnerData.images[state] || partnerData.images.default;
+
+        // 更新对话
+        if (customMessage) {
+            partnerDialogue.textContent = customMessage;
+        } else {
+            if (state === 'happy') {
+                const dialogues = partnerData.dialogues.correct;
+                partnerDialogue.textContent = dialogues[Math.floor(Math.random() * dialogues.length)];
+            } else if (state === 'thinking') {
+                const dialogues = partnerData.dialogues.incorrect;
+                partnerDialogue.textContent = dialogues[Math.floor(Math.random() * dialogues.length)];
+            }
+        }
+
+        // 添加动画效果
+        const dialogueBubble = document.querySelector('.partner-dialogue-bubble');
+        if (dialogueBubble) {
+            dialogueBubble.style.animation = 'none';
+            setTimeout(() => {
+                dialogueBubble.style.animation = 'fadeInUp 0.5s ease';
+            }, 10);
+        }
+    }
+
+    // 初始化AI伙伴
+    function initializePartner() {
+        updatePartner('default', '小朋友，你好！我是你的冒险伙伴悟空！快来选择咱们要挑战的数学知识和冒险世界吧！');
+    }
+
 
     // --- 事件监听器 ---
     // 单元展开/收起逻辑
@@ -143,6 +213,11 @@ document.addEventListener('DOMContentLoaded', () => {
             themeSelectionScreen.classList.add('hidden');
             storyScreen.classList.remove('hidden');
             storyHistory = [];
+            
+            // AI伙伴开始冒险反馈
+            const selectedScenarioName = selectedScenarios[0]; // 获取第一个选择的情景
+            updatePartner('default', `准备好了吗？我们的${selectedScenarioName}马上就要开始啦！出发！`);
+            
             generateStory();
         }
     });
@@ -206,13 +281,28 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackArea.textContent = '🎉 太棒了！你答对了！';
             feedbackArea.className = 'correct';
             
-            // 延迟显示故事结尾
+            // AI伙伴庆祝反馈
+            updatePartner('happy');
+            
+            // 延迟显示故事结尾和恢复默认状态
             setTimeout(() => {
                 displayEndingStage();
+                // 2-3秒后恢复默认状态
+                setTimeout(() => {
+                    updatePartner('default', '继续加油！');
+                }, 2000);
             }, 1500);
         } else {
             feedbackArea.textContent = '哦哦，再想一想，你一定可以的！';
             feedbackArea.className = 'incorrect';
+            
+            // AI伙伴鼓励反馈
+            updatePartner('thinking');
+            
+            // 2-3秒后恢复默认状态
+            setTimeout(() => {
+                updatePartner('default');
+            }, 3000);
         }
     });
 
@@ -256,13 +346,28 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackArea.textContent = '🎉 太棒了！你答对了！';
             feedbackArea.className = 'correct';
             
-            // 延迟显示故事结尾
+            // AI伙伴庆祝反馈
+            updatePartner('happy');
+            
+            // 延迟显示故事结尾和恢复默认状态
             setTimeout(() => {
                 displayEndingStage();
+                // 2-3秒后恢复默认状态
+                setTimeout(() => {
+                    updatePartner('default', '继续加油！');
+                }, 2000);
             }, 1500);
         } else {
             feedbackArea.textContent = '哦哦，再想一想，你一定可以的！';
             feedbackArea.className = 'incorrect';
+            
+            // AI伙伴鼓励反馈
+            updatePartner('thinking');
+            
+            // 2-3秒后恢复默认状态
+            setTimeout(() => {
+                updatePartner('default');
+            }, 3000);
         }
         answerInput.value = '';
     });
@@ -343,9 +448,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/works.html';
     });
 
-    // 提示按钮事件监听器
+    // 提示按钮事件监听器 - 修改为集成到AI伙伴对话框
     hintBtn.addEventListener('click', () => {
-        displayHintStage();
+        if (currentStoryData && currentStoryData.hint) {
+            const hintMessage = "让我想想... 提示是：" + currentStoryData.hint;
+            updatePartner('thinking', hintMessage);
+        } else {
+            updatePartner('thinking', '让我想想... 这道题需要仔细思考一下！');
+        }
     });
 
     // 返回题目按钮事件监听器
@@ -844,4 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 继续故事生成函数 ---
     // generateContinueStory函数已删除，现在使用预生成的章节数据
+    
+    // 页面加载完成后初始化AI伙伴
+    initializePartner();
 });

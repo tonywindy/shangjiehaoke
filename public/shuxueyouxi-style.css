@@ -1164,3 +1164,117 @@ button:disabled::before {
         max-width: 100%;
     }
 }
+
+/* AI伙伴样式 */
+#ai-partner-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    max-width: 240px;
+    flex-direction: column;
+}
+
+.partner-avatar-container {
+    flex-shrink: 0;
+    order: 2;
+}
+
+#partner-avatar {
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    transition: all 0.3s ease;
+}
+
+#partner-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: none;
+}
+
+.partner-dialogue-container {
+    flex: 1;
+    min-width: 200px;
+}
+
+.partner-dialogue-bubble {
+    background: linear-gradient(135deg, #FFFFFF, #F8F9FA);
+    border: 2px solid #FFD700;
+    border-radius: 20px 20px 20px 20px;
+    padding: 12px 16px;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.5s ease;
+    order: 1;
+}
+
+.partner-dialogue-bubble::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #FFD700;
+}
+
+.partner-dialogue-bubble::after {
+    content: '';
+    position: absolute;
+    top: calc(100% - 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #FFFFFF;
+}
+
+#partner-dialogue-text {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+    font-weight: 500;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* AI伙伴响应式调整 */
+@media (max-width: 768px) {
+    #ai-partner-container {
+        right: 10px;
+        bottom: 10px;
+        max-width: 180px;
+    }
+    
+    #partner-avatar {
+        width: 150px;
+        height: 150px;
+    }
+    
+    #partner-dialogue-text {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+}
