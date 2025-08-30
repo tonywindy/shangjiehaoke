@@ -59,9 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const partnerData = {
         name: '悟空',
         images: {
-            default: 'public/wukong_default.png',
-            happy: 'public/wukong_happy.png',
-            thinking: 'public/wukong_thinking.png'
+            default: '/wukong_default.png',
+            happy: '/wukong_happy.png',
+            thinking: '/wukong_thinking.png'
         },
         dialogues: {
             correct: [
