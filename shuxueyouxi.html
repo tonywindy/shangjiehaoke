@@ -442,10 +442,20 @@
     <div id="ai-partner-container">
         <div class="partner-avatar-container">
             <img id="partner-avatar" src="public/wukong_default.png" alt="悟空">
+            <!-- 语音控制按钮 -->
+            <div class="voice-control">
+                <button id="voice-toggle" class="voice-btn" title="语音开关">
+                    <span class="voice-icon">🔊</span>
+                </button>
+            </div>
         </div>
         <div class="partner-dialogue-container">
             <div class="partner-dialogue-bubble">
                 <p id="partner-dialogue-text">小朋友，你好！我是你的冒险伙伴悟空！快来选择咱们要挑战的数学知识和冒险世界吧！</p>
+                <!-- 语音播放状态指示 -->
+                <div class="voice-status" id="voice-status" style="display: none;">
+                    <span class="speaking-indicator">🎵</span>
+                </div>
             </div>
         </div>
     </div>

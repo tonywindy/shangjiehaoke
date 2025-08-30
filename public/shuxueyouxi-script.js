@@ -79,13 +79,385 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- 语音控制器类 ---
+    class VoiceController {
+        constructor() {
+            this.synthesis = window.speechSynthesis;
+            this.voices = [];
+            this.currentUtterance = null;
+            this.isSupported = !!this.synthesis;
+            this.enabled = true;
+            this.speaking = false;
+            
+            // 语音队列管理
+            this.speechQueue = [];
+            this.isProcessingQueue = false;
+            
+            // 语音参数配置
+            this.config = {
+                rate: 1.0,     // 语速
+                pitch: 1.2,    // 音调（略高体现悟空活泼性格）
+                volume: 0.8,   // 音量
+                lang: 'zh-CN'  // 中文
+            };
+            
+            this.init();
+        }
+        
+        /**
+         * 初始化语音控制器
+         */
+        async init() {
+            if (!this.isSupported) {
+                console.warn('浏览器不支持Web Speech API');
+                this.handleUnsupported();
+                return;
+            }
+            
+            // 加载语音列表
+            this.loadVoices();
+            
+            // 监听语音列表变化
+            if (this.synthesis.onvoiceschanged !== undefined) {
+                this.synthesis.onvoiceschanged = () => this.loadVoices();
+            }
+            
+            // 从本地存储恢复设置
+            this.loadSettings();
+            
+            // 初始化UI
+            this.initUI();
+        }
+        
+        /**
+         * 加载可用语音列表
+         */
+        loadVoices() {
+            this.voices = this.synthesis.getVoices();
+            
+            // 优先选择中文语音
+            const chineseVoice = this.voices.find(voice => 
+                voice.lang.includes('zh') || voice.lang.includes('CN')
+            );
+            
+            if (chineseVoice) {
+                this.selectedVoice = chineseVoice;
+            }
+        }
+        
+        /**
+         * 语音合成播放（支持队列）
+         * @param {string} text - 要播放的文本
+         * @param {Object} options - 播放选项
+         */
+        speak(text, options = {}) {
+            if (!this.isSupported || !this.enabled || !text.trim()) {
+                return Promise.resolve({ success: false, error: 'Voice not available' });
+            }
+            
+            const speechItem = {
+                text: text.trim(),
+                options: { ...this.config, ...options },
+                timestamp: Date.now()
+            };
+            
+            // 如果设置了立即播放或队列为空，直接播放
+            if (options.immediate || this.speechQueue.length === 0) {
+                return this.speakImmediate(speechItem);
+            } else {
+                // 添加到队列
+                return this.addToQueue(speechItem);
+            }
+        }
+        
+        /**
+         * 立即播放语音（会中断当前播放）
+         * @param {Object} speechItem - 语音项目
+         */
+        speakImmediate(speechItem) {
+            return new Promise((resolve) => {
+                // 停止当前播放和清空队列
+                this.stop();
+                this.clearQueue();
+                
+                // 创建语音合成实例
+                const utterance = new SpeechSynthesisUtterance(speechItem.text);
+                
+                // 设置语音参数
+                Object.assign(utterance, speechItem.options);
+                
+                if (this.selectedVoice) {
+                    utterance.voice = this.selectedVoice;
+                }
+                
+                // 设置事件监听
+                utterance.onstart = () => {
+                    this.speaking = true;
+                    this.updateSpeakingStatus(true);
+                    this.triggerSpeechAnimation('start');
+                };
+                
+                utterance.onend = () => {
+                    this.speaking = false;
+                    this.currentUtterance = null;
+                    this.updateSpeakingStatus(false);
+                    this.triggerSpeechAnimation('end');
+                    resolve({ success: true });
+                    
+                    // 处理队列中的下一个项目
+                    this.processQueue();
+                };
+                
+                utterance.onerror = (event) => {
+                    this.speaking = false;
+                    this.currentUtterance = null;
+                    this.updateSpeakingStatus(false);
+                    this.triggerSpeechAnimation('error');
+                    console.warn('语音播放失败:', event.error);
+                    resolve({ success: false, error: event.error });
+                    
+                    // 处理队列中的下一个项目
+                    this.processQueue();
+                };
+                
+                // 开始播放
+                this.currentUtterance = utterance;
+                this.synthesis.speak(utterance);
+            });
+        }
+        
+        /**
+         * 添加到语音队列
+         * @param {Object} speechItem - 语音项目
+         */
+        addToQueue(speechItem) {
+            return new Promise((resolve) => {
+                speechItem.resolve = resolve;
+                this.speechQueue.push(speechItem);
+                
+                // 如果当前没有播放，开始处理队列
+                if (!this.speaking && !this.isProcessingQueue) {
+                    this.processQueue();
+                }
+            });
+        }
+        
+        /**
+         * 处理语音队列
+         */
+        async processQueue() {
+            if (this.isProcessingQueue || this.speechQueue.length === 0 || this.speaking) {
+                return;
+            }
+            
+            this.isProcessingQueue = true;
+            
+            while (this.speechQueue.length > 0 && this.enabled) {
+                const speechItem = this.speechQueue.shift();
+                
+                try {
+                    const result = await this.speakImmediate(speechItem);
+                    if (speechItem.resolve) {
+                        speechItem.resolve(result);
+                    }
+                } catch (error) {
+                    if (speechItem.resolve) {
+                        speechItem.resolve({ success: false, error });
+                    }
+                }
+                
+                // 短暂延迟，避免语音重叠
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            this.isProcessingQueue = false;
+        }
+        
+        /**
+         * 清空语音队列
+         */
+        clearQueue() {
+            // 解决所有待处理的Promise
+            this.speechQueue.forEach(item => {
+                if (item.resolve) {
+                    item.resolve({ success: false, error: 'Queue cleared' });
+                }
+            });
+            this.speechQueue = [];
+            this.isProcessingQueue = false;
+        }
+        
+        /**
+         * 停止语音播放
+         * @param {boolean} clearQueue - 是否清空队列
+         */
+        stop(clearQueue = false) {
+            if (this.synthesis && this.speaking) {
+                this.synthesis.cancel();
+                this.speaking = false;
+                this.currentUtterance = null;
+                this.updateSpeakingStatus(false);
+                this.triggerSpeechAnimation('end');
+            }
+            
+            if (clearQueue) {
+                this.clearQueue();
+            }
+        }
+        
+        /**
+         * 设置语音开关状态
+         * @param {boolean} enabled - 是否启用语音
+         */
+        setEnabled(enabled) {
+            this.enabled = enabled;
+            this.saveSettings();
+            this.updateUI();
+            
+            if (!enabled) {
+                this.stop();
+            }
+        }
+        
+        /**
+         * 更新播放状态UI
+         * @param {boolean} speaking - 是否正在播放
+         */
+        updateSpeakingStatus(speaking) {
+            const voiceStatus = document.getElementById('voice-status');
+            if (voiceStatus) {
+                voiceStatus.style.display = speaking ? 'flex' : 'none';
+                
+                // 更新队列状态显示
+                const queueCount = this.speechQueue.length;
+                if (queueCount > 0) {
+                    voiceStatus.title = `正在播放语音，队列中还有 ${queueCount} 条消息`;
+                } else {
+                    voiceStatus.title = '正在播放语音';
+                }
+            }
+        }
+        
+        /**
+         * 触发语音播放动画效果
+         * @param {string} type - 动画类型：'start', 'end', 'error'
+         */
+        triggerSpeechAnimation(type) {
+            const partnerAvatar = document.getElementById('partner-avatar');
+            const dialogueBubble = document.querySelector('.partner-dialogue-bubble');
+            
+            if (!partnerAvatar || !dialogueBubble) return;
+            
+            switch (type) {
+                case 'start':
+                    // 开始播放时的动画
+                    partnerAvatar.classList.add('speaking');
+                    dialogueBubble.classList.add('speaking');
+                    break;
+                    
+                case 'end':
+                    // 播放结束时的动画
+                    partnerAvatar.classList.remove('speaking');
+                    dialogueBubble.classList.remove('speaking');
+                    break;
+                    
+                case 'error':
+                    // 播放出错时的动画
+                    partnerAvatar.classList.remove('speaking');
+                    dialogueBubble.classList.remove('speaking');
+                    // 可以添加错误提示动画
+                    break;
+            }
+        }
+        
+        /**
+         * 初始化UI控件
+         */
+        initUI() {
+            const voiceToggle = document.getElementById('voice-toggle');
+            if (voiceToggle) {
+                // 设置初始状态
+                this.updateUI();
+                
+                // 添加点击事件
+                voiceToggle.addEventListener('click', () => {
+                    this.setEnabled(!this.enabled);
+                });
+            }
+        }
+        
+        /**
+         * 更新UI状态
+         */
+        updateUI() {
+            const voiceToggle = document.getElementById('voice-toggle');
+            const voiceIcon = document.querySelector('.voice-icon');
+            
+            if (voiceToggle && voiceIcon) {
+                if (!this.isSupported) {
+                    voiceToggle.classList.add('disabled');
+                    voiceToggle.title = '浏览器不支持语音功能';
+                    voiceIcon.textContent = '🔇';
+                } else if (this.enabled) {
+                    voiceToggle.classList.remove('muted', 'disabled');
+                    voiceToggle.title = '点击关闭语音';
+                    voiceIcon.textContent = '🔊';
+                } else {
+                    voiceToggle.classList.add('muted');
+                    voiceToggle.classList.remove('disabled');
+                    voiceToggle.title = '点击开启语音';
+                    voiceIcon.textContent = '🔇';
+                }
+            }
+        }
+        
+        /**
+         * 处理不支持语音的情况
+         */
+        handleUnsupported() {
+            const voiceControl = document.querySelector('.voice-control');
+            if (voiceControl) {
+                voiceControl.style.display = 'none';
+            }
+        }
+        
+        /**
+         * 保存设置到本地存储
+         */
+        saveSettings() {
+            try {
+                localStorage.setItem('wukong-voice-enabled', this.enabled.toString());
+            } catch (e) {
+                console.warn('无法保存语音设置:', e);
+            }
+        }
+        
+        /**
+         * 从本地存储加载设置
+         */
+        loadSettings() {
+            try {
+                const saved = localStorage.getItem('wukong-voice-enabled');
+                if (saved !== null) {
+                    this.enabled = saved === 'true';
+                }
+            } catch (e) {
+                console.warn('无法加载语音设置:', e);
+            }
+        }
+    }
+    
+    // 创建全局语音控制器实例
+    const voiceController = new VoiceController();
+
     // --- AI伙伴控制函数 ---
     /**
      * 更新AI伙伴的显示状态
      * @param {string} state - 状态名称 ('default', 'happy', 'thinking')
      * @param {string} [customMessage] - 要显示的自定义消息，如果为空则使用预设对话
+     * @param {Object} voiceOptions - 语音播放选项
      */
-    function updatePartner(state, customMessage = '') {
+    function updatePartner(state, customMessage = '', voiceOptions = {}) {
         const partnerAvatar = document.getElementById('partner-avatar');
         const partnerDialogue = document.getElementById('partner-dialogue-text');
         
@@ -97,18 +469,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // 更新图片
         partnerAvatar.src = partnerData.images[state] || partnerData.images.default;
 
-        // 更新对话
+        // 确定要显示和播放的文本
+        let dialogueText = '';
         if (customMessage) {
-            partnerDialogue.textContent = customMessage;
+            dialogueText = customMessage;
         } else {
             if (state === 'happy') {
                 const dialogues = partnerData.dialogues.correct;
-                partnerDialogue.textContent = dialogues[Math.floor(Math.random() * dialogues.length)];
+                dialogueText = dialogues[Math.floor(Math.random() * dialogues.length)];
             } else if (state === 'thinking') {
                 const dialogues = partnerData.dialogues.incorrect;
-                partnerDialogue.textContent = dialogues[Math.floor(Math.random() * dialogues.length)];
+                dialogueText = dialogues[Math.floor(Math.random() * dialogues.length)];
             }
         }
+        
+        // 更新对话文本
+        partnerDialogue.textContent = dialogueText;
 
         // 添加动画效果
         const dialogueBubble = document.querySelector('.partner-dialogue-bubble');
@@ -118,11 +494,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 dialogueBubble.style.animation = 'fadeInUp 0.5s ease';
             }, 10);
         }
+        
+        // 播放语音（如果有文本且语音控制器可用）
+        if (dialogueText && voiceController) {
+            // 根据状态调整语音参数
+            const stateVoiceOptions = {
+                rate: state === 'happy' ? 1.1 : 1.0,  // 开心时语速稍快
+                pitch: state === 'happy' ? 1.3 : 1.2, // 开心时音调更高
+                ...voiceOptions // 允许外部覆盖参数
+            };
+            
+            // 异步播放语音，不阻塞UI
+            voiceController.speak(dialogueText, stateVoiceOptions).catch(error => {
+                console.warn('语音播放失败:', error);
+            });
+        }
     }
 
     // 初始化AI伙伴
     function initializePartner() {
         updatePartner('default', '小朋友，你好！我是你的冒险伙伴悟空！快来选择咱们要挑战的数学知识和冒险世界吧！');
+    }
+    
+    /**
+     * 悟空语音播放辅助函数
+     * @param {string} text - 要播放的文本
+     * @param {string} emotion - 情感状态：'happy', 'thinking', 'default'
+     * @param {Object} options - 额外的语音选项
+     */
+    function speakAsWukong(text, emotion = 'default', options = {}) {
+        if (!voiceController || !text) return;
+        
+        const emotionVoiceMap = {
+            happy: { rate: 1.1, pitch: 1.3, volume: 0.9 },
+            thinking: { rate: 0.9, pitch: 1.1, volume: 0.8 },
+            default: { rate: 1.0, pitch: 1.2, volume: 0.8 }
+        };
+        
+        const voiceConfig = {
+            ...emotionVoiceMap[emotion] || emotionVoiceMap.default,
+            ...options
+        };
+        
+        return voiceController.speak(text, voiceConfig);
     }
 
 
