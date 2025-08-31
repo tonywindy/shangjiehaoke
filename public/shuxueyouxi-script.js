@@ -59,9 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const partnerData = {
         name: '悟空',
         images: {
-            default: '/wukong_default.png',
-            happy: '/wukong_happy.png',
-            thinking: '/wukong_thinking.png'
+            default: 'public/wukong_default.png',
+            happy: 'public/wukong_happy.png',
+            thinking: 'public/wukong_thinking.png'
         },
         dialogues: {
             correct: [
@@ -952,8 +952,35 @@ document.addEventListener('DOMContentLoaded', () => {
             // 构建适合小学生的图片提示词
             const imagePrompt = `${sceneDescription}, cute cartoon style, vibrant colors, child-friendly, educational illustration, kawaii style, simple and clear composition, suitable for elementary school students, digital art, anime style, cheerful atmosphere, safe and friendly environment, no scary elements`;
             
-            // 使用Pollinations AI生成图片，调整为更适合的尺寸
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=500&height=400&seed=${Math.floor(Math.random() * 1000000)}&model=flux&enhance=true`;
+            // 使用指定的API生成图片
+            const response = await fetch(`${PROXY_API_URL}/api/generate-image`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: imagePrompt,
+                    width: 500,
+                    height: 400
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`图片生成API请求失败: ${errorData.error || response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('图片API响应数据:', data);
+            
+            // 处理图片API响应数据，直接检查data.imageUrl
+            let imageUrl;
+            if (data.imageUrl) {
+                imageUrl = data.imageUrl;
+            } else {
+                console.error('未知的图片API响应格式:', data);
+                throw new Error('无法识别的图片API响应格式，缺少imageUrl字段');
+            }
             
             // 预加载图片
             const img = new Image();
@@ -964,7 +991,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             img.onerror = () => {
                 console.error('图片加载失败');
-                imageLoading.innerHTML = '<p style="color: #ff6b6b;">图片生成失败，请稍后重试</p>';
+                imageLoading.innerHTML = '<p style="color: #ff6b6b;">图片加载失败，请稍后重试</p>';
             };
             img.src = imageUrl;
             
@@ -1081,7 +1108,8 @@ document.addEventListener('DOMContentLoaded', () => {
         storyHistory.push({ "role": "user", "content": userPrompt });
 
         try {
-            const response = await fetch(PROXY_API_URL, {
+            console.log('即将请求的文本生成API地址是：', `${PROXY_API_URL}/api/generate-story`);
+            const response = await fetch(`${PROXY_API_URL}/api/generate-story`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
