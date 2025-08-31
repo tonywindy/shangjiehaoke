@@ -949,10 +949,76 @@ document.addEventListener('DOMContentLoaded', () => {
             imageLoading.classList.remove('hidden');
             sceneImage.classList.add('hidden');
             
-            // 构建适合小学生的图片提示词
-            const imagePrompt = `${sceneDescription}, cute cartoon style, vibrant colors, child-friendly, educational illustration, kawaii style, simple and clear composition, suitable for elementary school students, digital art, anime style, cheerful atmosphere, safe and friendly environment, no scary elements`;
+            // 第一步：调用百炼大模型提取生图元素
+            console.log('开始提取生图元素...');
+            const extractResponse = await fetch(`${PROXY_API_URL}/api/generate-story`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    messages: [{
+                        role: 'user',
+                        content: `请分析以下题目内容，提取出适合生成图片的关键视觉元素，包括：场景环境、物体、角色、颜色、风格等。请用简洁的英文关键词列出，用逗号分隔：\n\n题目内容：${sceneDescription}\n\n选择的情境：${selectedScenarios.join('、')}\n\n请只返回英文关键词，不要其他解释。`
+                    }]
+                })
+            });
             
-            // 使用指定的API生成图片
+            if (!extractResponse.ok) {
+                throw new Error('元素提取API请求失败');
+            }
+            
+            const extractData = await extractResponse.json();
+            let extractedElements = '';
+            
+            // 处理不同的响应格式
+            if (extractData.content) {
+                extractedElements = extractData.content;
+            } else if (extractData.choices && extractData.choices[0] && extractData.choices[0].message) {
+                extractedElements = extractData.choices[0].message.content;
+            } else if (typeof extractData === 'string') {
+                extractedElements = extractData;
+            } else {
+                console.warn('无法解析元素提取结果，使用默认元素');
+                extractedElements = 'cartoon style, colorful, child-friendly';
+            }
+            
+            console.log('提取的生图元素:', extractedElements);
+            
+            // 根据选择的情境添加环境元素
+            let scenarioElements = '';
+            if (selectedScenarios.length > 0) {
+                const scenario = selectedScenarios[0];
+                switch (scenario) {
+                    case '神秘恐龙岛':
+                        scenarioElements = ', prehistoric landscape, dinosaurs, tropical jungle, ancient ferns, volcanic mountains';
+                        break;
+                    case '海底探险':
+                        scenarioElements = ', underwater scene, coral reefs, colorful fish, sea plants, ocean depths, bubbles';
+                        break;
+                    case '星际探险':
+                        scenarioElements = ', space setting, planets, stars, spacecraft, alien landscapes, cosmic background';
+                        break;
+                    case '魔法森林寻宝':
+                        scenarioElements = ', magical forest, enchanted trees, glowing mushrooms, fairy lights, mystical creatures';
+                        break;
+                    case '超级英雄拯救世界':
+                        scenarioElements = ', superhero cityscape, modern buildings, heroic atmosphere, action scene';
+                        break;
+                    case '时空穿越':
+                        scenarioElements = ', time portal, historical elements, futuristic and ancient mixed, swirling effects';
+                        break;
+                    default:
+                        scenarioElements = ', adventure setting, exciting environment';
+                }
+            }
+            
+            // 第二步：构建优化的图片提示词
+            const imagePrompt = `${extractedElements}${scenarioElements}, cute cartoon style, vibrant colors, child-friendly, educational illustration, kawaii style, simple and clear composition, suitable for elementary school students, digital art, anime style, cheerful atmosphere, safe and friendly environment, no scary elements`;
+            
+            console.log('最终生图提示词:', imagePrompt);
+            
+            // 第三步：调用图片生成API
             const response = await fetch(`${PROXY_API_URL}/api/generate-image`, {
                 method: 'POST',
                 headers: {
@@ -960,8 +1026,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     prompt: imagePrompt,
-                    width: 500,
-                    height: 400
+                    width: 300,
+                    height: 200
                 })
             });
             
