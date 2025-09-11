@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSceneDescription = ''; // 当前场景描述，用于生成图片
 
     // --- API 配置 (不变) ---
-    const PROXY_API_URL = 'https://peizhiapi.renardwind.workers.dev';
+    const PROXY_API_URL = 'https://api.shangjiehaoke.xyz';
     const API_URL = PROXY_API_URL;
     const API_KEY = 'dummy-key'; // 代理服务器不需要真实的API Key
 
