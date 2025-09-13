@@ -1,22 +1,7 @@
 # Netlify redirects file
 # This file handles SPA routing for deployment
 
-# Exclude static assets from SPA routing
-/assets/*  /assets/:splat  200
-/*.css     /:splat.css     200
-/*.js      /:splat.js      200
-/*.png     /:splat.png     200
-/*.jpg     /:splat.jpg     200
-/*.jpeg    /:splat.jpeg    200
-/*.gif     /:splat.gif     200
-/*.ico     /:splat.ico     200
-/*.svg     /:splat.svg     200
-/*.woff    /:splat.woff    200
-/*.woff2   /:splat.woff2   200
-/*.ttf     /:splat.ttf     200
-/*.eot     /:splat.eot     200
-
-# Redirect all other routes to index.html for SPA
+# Redirect all routes to index.html for SPA
 /*    /index.html   200
 
 # Specific redirects for HTML files

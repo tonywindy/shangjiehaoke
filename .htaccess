@@ -8,8 +8,6 @@ RewriteRule ^works$ /works.html [L]
 RewriteRule ^contact$ /contact.html [L]
 
 # Handle Angular and other SPA routes
-# Exclude static assets from SPA routing
-RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.html [L]
