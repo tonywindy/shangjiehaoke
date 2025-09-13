@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI 助教来了：盘点那些能让教师效率倍增的 AI 工具 - 上节好课</title>
+    <meta name="description" content="本文为教师精选了多款国内主流的 AI 助教工具，涵盖备课、作业批改、个性化教学等多个方面，帮助你从繁重的工作中解放出来，将更多精力投入到真正的教学创新中。" />
+    <meta name="keywords" content="AI助教, 教师工具, 国产AI, 讯飞星火, 文心一言, WPS AI, 秘塔AI, 智慧教育" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 50%, #f0f4ff 100%);
+        min-height: 100vh;
+        color: #2d3748;
+        line-height: 1.7;
+      }
+
+      /* 导航栏样式 */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 16px 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        z-index: 100;
+        transition: all 0.3s ease;
+      }
+
+      .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .brand-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .brand-text:hover {
+        color: #764ba2;
+      }
+
+      .nav-menu {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+      }
+
+      .nav-link {
+        color: #4a5568;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+        padding: 8px 0;
+      }
+
+      .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover {
+        color: #667eea;
+      }
+
+      .nav-link:hover::after {
+        width: 100%;
+      }
+
+      /* 意见之箱样式 */
+      .feedback-container {
+        position: relative;
+        display: inline-block;
+      }
+
+      .qr-popup {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        min-width: 200px;
+      }
+
+      .feedback-container:hover .qr-popup {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .qr-popup::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        right: 20px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid white;
+      }
+
+      .qr-code {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 12px;
+        display: block;
+        border-radius: 8px;
+      }
+
+      .qr-text {
+        text-align: center;
+        color: #4a5568;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      /* 主要布局 */
+      .main-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 120px 24px 40px;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 3rem;
+        align-items: start;
+      }
+
+      /* 文章内容区域 */
+      .article-content {
+        background: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .article-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+      }
+
+      /* 文章头部 */
+      .article-header {
+        margin-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .article-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: #718096;
+        flex-wrap: wrap;
+      }
+
+      .article-date {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .article-category {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .reading-time {
+        color: #a0aec0;
+        font-size: 0.85rem;
+      }
+
+      .article-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        line-height: 1.3;
+        margin-bottom: 1rem;
+      }
+
+      .article-subtitle {
+        font-size: 1.2rem;
+        color: #4a5568;
+        line-height: 1.5;
+        font-weight: 400;
+      }
+
+      /* 文章正文样式 */
+      .article-body {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #2d3748;
+      }
+
+      .article-body h1,
+      .article-body h2,
+      .article-body h3,
+      .article-body h4,
+      .article-body h5,
+      .article-body h6 {
+        color: #1a202c;
+        font-weight: 600;
+        margin: 2rem 0 1rem 0;
+        line-height: 1.4;
+      }
+
+      .article-body h1 {
+        font-size: 2rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.5rem;
+      }
+
+      .article-body h2 {
+        font-size: 1.7rem;
+        color: #667eea;
+      }
+
+      .article-body h3 {
+        font-size: 1.4rem;
+      }
+
+      .article-body p {
+        margin-bottom: 1.5rem;
+        text-align: justify;
+      }
+
+      .article-body ul,
+      .article-body ol {
+        margin: 1.5rem 0;
+        padding-left: 2rem;
+      }
+
+      .article-body li {
+        margin-bottom: 0.5rem;
+      }
+
+      .article-body blockquote {
+        border-left: 4px solid #667eea;
+        padding: 1rem 1.5rem;
+        margin: 2rem 0;
+        background: #f8f9ff;
+        border-radius: 0 8px 8px 0;
+        font-style: italic;
+        color: #4a5568;
+      }
+
+      .article-body code {
+        background: #f7fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 0.2rem 0.4rem;
+        font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+        font-size: 0.9rem;
+        color: #e53e3e;
+      }
+
+      .article-body pre {
+        background: #2d3748;
+        color: #e2e8f0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        overflow-x: auto;
+        line-height: 1.5;
+      }
+
+      .article-body pre code {
+        background: none;
+        border: none;
+        padding: 0;
+        color: inherit;
+        font-size: 0.95rem;
+      }
+
+      .article-body img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 2rem 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+
+      .article-body a {
+        color: #667eea;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: all 0.3s ease;
+      }
+
+      .article-body a:hover {
+        color: #764ba2;
+        border-bottom-color: #764ba2;
+      }
+
+      /* 文章标签 */
+      .article-tags {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .tags-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 1rem;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .tag {
+        background: #edf2f7;
+        color: #4a5568;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+      }
+
+      .tag:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-1px);
+      }
+
+      /* 侧边栏样式 */
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: sticky;
+        top: 120px;
+      }
+
+      .sidebar-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .sidebar-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+      }
+
+      .sidebar-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* 目录样式 */
+      .toc-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .toc-item {
+        margin-bottom: 0.5rem;
+      }
+
+      .toc-link {
+        color: #4a5568;
+        text-decoration: none;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        padding: 0.3rem 0;
+        display: block;
+        border-left: 2px solid transparent;
+        padding-left: 0.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .toc-link:hover,
+      .toc-link.active {
+        color: #667eea;
+        border-left-color: #667eea;
+        background: #f8f9ff;
+        border-radius: 0 4px 4px 0;
+      }
+
+      .toc-item.h2 .toc-link {
+        font-weight: 500;
+      }
+
+      .toc-item.h3 .toc-link {
+        padding-left: 1.5rem;
+        font-size: 0.85rem;
+      }
+
+      .toc-item.h4 .toc-link {
+        padding-left: 2.5rem;
+        font-size: 0.8rem;
+        color: #718096;
+      }
+
+      /* 相关文章样式 */
+      .related-item {
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      .related-item:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+        transform: translateX(4px);
+      }
+
+      .related-title {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+      }
+
+      .related-meta {
+        font-size: 0.8rem;
+        color: #718096;
+        display: flex;
+        gap: 1rem;
+      }
+
+      .related-link {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      /* 分享按钮 */
+      .share-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .share-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #4a5568;
+      }
+
+      .share-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+
+      .share-btn.weibo {
+        border-color: #ff6b6b;
+        color: #ff6b6b;
+      }
+
+      .share-btn.weibo:hover {
+        background: #ff6b6b;
+        color: white;
+      }
+
+      .share-btn.wechat {
+        border-color: #4ecdc4;
+        color: #4ecdc4;
+      }
+
+      .share-btn.wechat:hover {
+        background: #4ecdc4;
+        color: white;
+      }
+
+      /* 页脚样式 */
+      .footer {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0 2rem;
+        margin-top: 4rem;
+      }
+
+      .footer-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .footer-section h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: white;
+      }
+
+      .footer-section p,
+      .footer-section a {
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+
+      .footer-section a:hover {
+        color: white;
+      }
+
+      .footer-links {
+        list-style: none;
+        padding: 0;
+      }
+
+      .footer-links li {
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-bottom {
+        text-align: center;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.7);
+        font-size: 0.9rem;
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 1024px) {
+        .main-container {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+          padding: 100px 20px 40px;
+        }
+        
+        .sidebar {
+          position: static;
+          order: -1;
+        }
+        
+        .article-content {
+          padding: 2rem;
+        }
+        
+        .article-title {
+          font-size: 2rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .nav-container {
+          padding: 0 16px;
+        }
+        
+        .nav-menu {
+          gap: 20px;
+        }
+        
+        .main-container {
+          padding: 80px 16px 40px;
+        }
+        
+        .article-content {
+          padding: 1.5rem;
+        }
+        
+        .article-title {
+          font-size: 1.8rem;
+        }
+        
+        .article-meta {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+        
+        .footer-content {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .nav-menu {
+          gap: 16px;
+        }
+        
+        .nav-link {
+          font-size: 0.9rem;
+        }
+        
+        .article-title {
+          font-size: 1.6rem;
+        }
+        
+        .article-body {
+          font-size: 1rem;
+        }
+      }
+
+      /* 添加返回顶部按钮 */
+      .back-to-top {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        opacity: 0;
+        visibility: hidden;
+        z-index: 50;
+      }
+
+      .back-to-top.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .back-to-top:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <a href="./index.html" class="brand-text">上节好课</a>
+        </div>
+        <div class="nav-menu">
+          <a href="./index.html" class="nav-link">初见之页</a>
+          <a href="./works.html" class="nav-link">些许尝试</a>
+          <a href="./contact.html" class="nav-link">一点想法</a>
+          <div class="feedback-container">
+            <span class="nav-link" style="cursor: pointer;">意见之箱</span>
+            <div class="qr-popup">
+              <img src="./public/erweima.png" alt="公众号二维码" class="qr-code">
+              <div class="qr-text">
+                扫码分享您的想法<br>
+                让我们一起成长
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="main-container">
+      <!-- 文章内容 -->
+      <article class="article-content">
+        <!-- 文章头部 -->
+        <header class="article-header">
+          <div class="article-meta">
+            <div class="article-date">
+              <span>📅</span>
+              <span>2025-09-13</span>
+            </div>
+            <span class="article-category">AI教育</span>
+            <span class="reading-time">📖 预计阅读 5 分钟</span>
+          </div>
+          <h1 class="article-title">AI 助教来了：盘点那些能让教师效率倍增的 AI 工具</h1>
+          <p class="article-subtitle">告别繁琐的重复工作，让 AI 成为你的得力教学伙伴</p>
+        </header>
+
+        <!-- 文章正文 - Markdown内容将被插入到这里 -->
+        <div class="article-body">
+          <h1 id="heading-引言：当 AI 走进课堂，教师不再孤军奋战">引言：当 AI 走进课堂，教师不再孤军奋战</h1>
+<p>身为教师，我们每天都在与时间赛跑：备课、设计教案、批改作业、给学生反馈、应对各种行政杂务…… 如果有一位不知疲倦、知识渊博的"助教"能分担这些繁重的工作，那该多好？</p>
+<p>现在，这位助教已经到来，它就是人工智能（AI）。AI 并非要取代教师，而是作为强大的辅助工具，将教师从重复性、机械化的劳动中解放出来，把宝贵的时间和精力重新聚焦于学生的成长和创造性的教学活动上。</p>
+<img src="./public/images/ai-teaching/ai-assistant-concept.jpg" alt="AI助教概念图" />
+<h2 id="heading-备课与课程设计：一键生成教学灵感">备课与课程设计：一键生成教学灵感</h2>
+<p>备课是教学中最耗费心力的环节之一。从构思教学目标到设计活动环节，再到制作精美的课件，每一步都需要投入大量时间。国产大模型和 AI 办公软件可以极大地简化这一流程。</p>
+<h3 id="heading-推荐工具：">推荐工具：</h3>
+<p><strong>WPS AI</strong>：还在为制作 PPT 烦恼吗？作为国民级的办公软件，WPS 内置的 AI 功能非常强大。你只需在文档里写好大纲，点击"一键生成PPT"，它就能自动匹配模板、提炼要点、生成图文并茂的演示文稿。这能为你节省下大量用于排版和美化的时间。</p>
+
+<p><strong>秘塔AI (Metaso)</strong>：在备课的资料搜集阶段，秘塔AI是一个强大的研究助手。它能快速整合网络信息、学术论文和报告，并生成结构化的大纲和摘要。教师可以用它来高效地研究一个新课题，寻找教学素材和前沿知识，为课程注入深度和广度。</p>
+<img src="./public/images/ai-teaching/ai-lesson-planning.jpg" alt="AI备课界面示意图" />
+<h2 id="heading-作业批改与智能反馈：告别红笔的海洋">作业批改与智能反馈：告别红笔的海洋</h2>
+<p>批改作业，尤其是主观题和作文，是另一项艰巨的任务。国内的智慧教育平台早已将 AI 技术深度应用于作业批改场景。</p>
+<h3 id="heading-推荐工具：">推荐工具：</h3>
+<strong>科大讯飞智慧教育平台</strong>：科大讯飞深耕教育领域多年，其智慧教育解决方案已被广泛应用于全国多所学校。其 AI 作业批改系统不仅能对客观题自动阅卷，还能对语文和英语作文进行智能批改，从字词、句子到篇章结构给出多维度的评分和评语，极大提升了作文批改的效率和一致性。
+<strong>好未来 (TAL) / 有道等教育科技平台</strong>：类似的，好未来、有道等公司的教学平台也内置了 AI 批改功能。它们能够通过大数据分析学生的答题情况，定位共性错误和知识薄弱点，并生成学情分析报告，帮助教师更精准地进行针对性讲解。
+<img src="./public/images/ai-teaching/ai-grading-system.jpg" alt="AI批改作业界面" />
+<h2 id="heading-个性化学习与差异化教学：因材施教的智能伙伴">个性化学习与差异化教学：因材施教的智能伙伴</h2>
+<p>每个学生的学习进度和理解能力都不同。实现真正的"因材施教"是所有教育者的理想，AI 技术让这个理想变得触手可及。</p>
+<h3 id="heading-推荐工具：">推荐工具：</h3>
+<strong>松鼠 AI (Squirrel AI)</strong>：这是国内在自适应学习领域探索较早的代表。它通过"模测-学习-模测"的循环，精准诊断出每个学生的知识漏洞，并为他们推送专属的学习路径和练习题。这种模式能有效帮助学生查漏补缺，避免"题海战术"。
+<strong>主流大模型的"苏格拉底式"辅导</strong>：像"通义千问"、"文心一言"等大模型，可以扮演学生的"AI 辅导员"。当学生遇到难题时，可以引导他们进行苏格拉底式的对话，通过不断提问来启发学生独立思考，而不是直接给出答案。
+<pre><code><h1 id="heading-AI个性化学习算法示例">AI个性化学习算法示例</h1>
+def personalized_learning_path(student_profile, knowledge_graph):
+    """
+    根据学生画像生成个性化学习路径
+    """
+    weak_points = identify_weak_points(student_profile)
+    learning_style = student_profile.learning_style
+    
+    # 基于知识图谱构建学习路径
+    path = []
+    for concept in weak_points:
+        prerequisites = knowledge_graph.get_prerequisites(concept)
+        exercises = generate_adaptive_exercises(concept, learning_style)
+        path.append({
+            'concept': concept,
+            'prerequisites': prerequisites,
+            'exercises': exercises
+        })
+    
+    return optimize_learning_sequence(path)
+</code></pre>
+<h2 id="heading-善用 AI 的小贴士：人机协作，效果更佳">善用 AI 的小贴士：人机协作，效果更佳</h2>
+<p>拥抱 AI 的同时，我们也需要保持清醒的头脑：</p>
+<p>- <strong>把 AI 当作"副驾"，而非"代驾"</strong>：AI 生成的内容需要教师的专业判断和审核，确保其符合教学大纲和学生实际情况。</p>
+<p>- <strong>保护学生隐私</strong>：在使用任何 AI 工具时，务必注意数据安全和学生隐私保护的规定。</p>
+<p>- <strong>教学的核心是"人"</strong>：AI 可以分担工作，但教师与学生之间的情感连接、思想启迪和价值观引导是技术无法替代的。</p>
+<h2 id="heading-结语">结语</h2>
+<p>AI 助教的时代已经来临。它们不是冰冷的机器，而是赋能教师的强大工具。通过明智地利用这些国产 AI 应用，我们可以将自己从繁重的日常工作中解放出来，成为更高效、更具创造力、也更从容的教育者，最终将这份价值传递给每一个学生。</p>
+<blockquote>技术是路径，好课是目的地。让我们与 AI 携手，共同创造更美好的教育未来。</blockquote>
+        </div>
+
+        <!-- 文章标签 -->
+        <div class="article-tags">
+          <h3 class="tags-title">🏷️ 相关标签</h3>
+          <div class="tag-list">
+            <span class="tag">AI工具</span>
+            <span class="tag">教师效率</span>
+            <span class="tag">教育科技</span>
+            <span class="tag">智能助教</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 侧边栏 -->
+      <aside class="sidebar">
+        <!-- 文章目录 -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">📋 文章目录</h3>
+          <nav class="toc">
+            <ul class="toc-list">
+              <!-- 目录将自动生成 -->
+            </ul>
+          </nav>
+        </div>
+
+        <!-- 相关文章 -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">📚 相关文章</h3>
+          <div class="related-articles">
+            
+            <div class="related-item">
+              <a href="./contact.html" class="related-link">
+                <div class="related-title">更多教育思考</div>
+                <div class="related-meta">
+                  <span>📅 持续更新</span>
+                  <span>📚 想法分享</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分享功能 -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">🔗 分享文章</h3>
+          <div class="share-buttons">
+            <button class="share-btn weibo" onclick="shareToWeibo()">微博</button>
+            <button class="share-btn wechat" onclick="shareToWechat()">微信</button>
+            <button class="share-btn" onclick="copyLink()">复制链接</button>
+          </div>
+        </div>
+
+        <!-- 文章统计 -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">📊 文章数据</h3>
+          <div class="article-stats">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>阅读量</span>
+              <strong>615</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>点赞数</span>
+              <strong>117</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>评论数</span>
+              <strong>47</strong>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>关于我们</h3>
+            <p>技术是路径，好课是目的地。致力于通过创新技术提升教育质量，让学习变得更加有趣和高效。</p>
+          </div>
+          <div class="footer-section">
+            <h3>快速链接</h3>
+            <ul class="footer-links">
+              <li><a href="./index.html">首页</a></li>
+              <li><a href="./works.html">作品展示</a></li>
+              <li><a href="./contact.html">想法分享</a></li>
+              <li><a href="#privacy">隐私政策</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>教育游戏</h3>
+            <ul class="footer-links">
+              <li><a href="./shuxueyouxi.html">数学冒险</a></li>
+              <li><a href="./climb.html">登山挑战</a></li>
+              <li><a href="./zhouchang.html">周长探索</a></li>
+              <li><a href="./mubiaoqiang.html">目标墙</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>联系方式</h3>
+            <p>📧 邮箱：hello@shangjiehaoke.com</p>
+            <p>🏠 地址：上海市静安区</p>
+            <p>📱 关注我们的公众号获取更多内容</p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2024 上节好课. 保留所有权利 | 用心做教育，用技术创未来</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button class="back-to-top" onclick="scrollToTop()">↑</button>
+
+    <script>
+      // 返回顶部功能
+      function scrollToTop() {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+
+      // 显示/隐藏返回顶部按钮
+      window.addEventListener('scroll', function() {
+        const backToTop = document.querySelector('.back-to-top');
+        if (window.pageYOffset > 300) {
+          backToTop.classList.add('visible');
+        } else {
+          backToTop.classList.remove('visible');
+        }
+      });
+
+      // 目录导航功能
+      document.addEventListener('DOMContentLoaded', function() {
+        const tocLinks = document.querySelectorAll('.toc-link');
+        const headings = document.querySelectorAll('.article-body h1, .article-body h2, .article-body h3');
+
+        // 为标题添加ID
+        headings.forEach((heading, index) => {
+          const id = 'heading-' + index;
+          heading.id = id;
+        });
+
+        // 生成目录链接
+        headings.forEach((heading, index) => {
+          const level = heading.tagName.toLowerCase();
+          const tocItem = document.createElement('li');
+          tocItem.className = `toc-item ${level}`;
+          
+          const tocLink = document.createElement('a');
+          tocLink.className = 'toc-link';
+          tocLink.href = '#heading-' + index;
+          tocLink.textContent = heading.textContent;
+          
+          tocItem.appendChild(tocLink);
+          
+          // 如果目录容器存在，添加链接
+          const tocList = document.querySelector('.toc-list');
+          if (tocList) {
+            tocList.appendChild(tocItem);
+          }
+        });
+
+        // 滚动时高亮当前目录项
+        function highlightCurrentSection() {
+          let current = '';
+          headings.forEach(heading => {
+            const rect = heading.getBoundingClientRect();
+            if (rect.top <= 100) {
+              current = heading.id;
+            }
+          });
+
+          tocLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+              link.classList.add('active');
+            }
+          });
+        }
+
+        window.addEventListener('scroll', highlightCurrentSection);
+        highlightCurrentSection(); // 初始调用
+
+        // 平滑滚动到目标位置
+        tocLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+              const offsetTop = targetElement.offsetTop - 100;
+              window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+              });
+            }
+          });
+        });
+      });
+
+      // 分享功能
+      function shareToWeibo() {
+        const title = document.querySelector('.article-title').textContent;
+        const url = window.location.href;
+        window.open(`https://service.weibo.com/share/share.php?title=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`);
+      }
+
+      function shareToWechat() {
+        alert('请复制链接后在微信中分享');
+        copyLink();
+      }
+
+      function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          alert('链接已复制到剪贴板!');
+        });
+      }
+    </script>
+  </body>
+</html>

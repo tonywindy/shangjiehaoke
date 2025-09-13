@@ -1,11 +1,55 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="上节好课 - 一点想法，教育智慧金句分享，启发思考，点燃学习热情" />
+    <meta name="keywords" content="教育,金句,智慧,学习,启发,教学" />
+    <meta name="author" content="上节好课" />
     <title>一点想法 - 上节好课</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+      /* CSS变量定义 */
+      :root {
+        /* 字体系统 */
+        --font-chinese: "Noto Serif SC", "Source Han Serif SC", "LXGW WenKai", serif;
+        --font-english: "Georgia", "Times New Roman", "Times", serif;
+        
+        /* 字体大小 */
+        --quote-size-desktop: 2.5rem;
+        --quote-size-mobile: 1.8rem;
+        --author-size: 1.1rem;
+        --button-size: 0.95rem;
+        
+        /* 行高 */
+        --quote-line-height: 1.8;
+        --author-line-height: 1.6;
+        
+        /* 主色调 */
+        --bg-primary: #fefefe;
+        --bg-secondary: #f8f9fa;
+        --text-primary: #2d3748;
+        --text-secondary: #718096;
+        --text-muted: #a0aec0;
+        
+        /* 强调色 */
+        --accent-primary: #2c5aa0;
+        --accent-secondary: #2d5016;
+        --accent-light: #e2e8f0;
+        
+        /* 状态色 */
+        --success: #38a169;
+        --warning: #d69e2e;
+        --error: #e53e3e;
+        
+        /* 动画时长 */
+        --transition-fast: 0.3s;
+        --transition-normal: 0.6s;
+        --transition-slow: 1s;
+      }
+      
       * {
         margin: 0;
         padding: 0;
@@ -13,40 +57,32 @@
       }
 
       body {
-        font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 50%, #f0f4ff 100%);
+        font-family: var(--font-chinese);
+        background: var(--bg-primary);
         min-height: 100vh;
-        color: #2d3748;
-        line-height: 1.6;
+        color: var(--text-primary);
+        line-height: var(--quote-line-height);
+        font-display: swap;
       }
 
-      .container {
-        max-width: 1200px;
+      .contact-page {
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .quote-container {
+        max-width: 800px;
         margin: 0 auto;
-        padding: 20px;
-      }
-
-      .hero-section {
-        text-align: center;
-        padding: 120px 0 80px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        margin-bottom: 80px;
-      }
-
-      .hero-title {
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 1rem;
-        text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      }
-
-      .hero-subtitle {
-        font-size: 1.3rem;
-        color: rgba(255,255,255,0.9);
-        max-width: 600px;
-        margin: 0 auto;
-        line-height: 1.6;
+        padding: 0 80px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        padding-top: 2rem;
       }
 
       .navbar {
@@ -59,7 +95,7 @@
         backdrop-filter: blur(20px);
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         z-index: 100;
-        transition: all 0.3s ease;
+        transition: all var(--transition-fast) ease;
       }
 
       .nav-container {
@@ -80,7 +116,7 @@
       .brand-text {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #667eea;
+        color: var(--accent-primary);
         text-decoration: none;
       }
 
@@ -91,10 +127,10 @@
       }
 
       .nav-link {
-        color: #4a5568;
+        color: var(--text-secondary);
         text-decoration: none;
         font-weight: 500;
-        transition: all 0.3s ease;
+        transition: all var(--transition-fast) ease;
         position: relative;
         padding: 8px 0;
       }
@@ -106,222 +142,196 @@
         left: 0;
         width: 0;
         height: 2px;
-        background: #667eea;
-        transition: width 0.3s ease;
+        background: var(--accent-primary);
+        transition: width var(--transition-fast) ease;
       }
 
       .nav-link:hover {
-        color: #667eea;
+        color: var(--accent-primary);
       }
 
       .nav-link:hover::after {
         width: 100%;
       }
 
-      .thoughts-layout {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 3rem;
-        margin-bottom: 80px;
+      /* 金句展示组件 */
+      .quote-display {
+        text-align: center;
+        position: relative;
+        margin-bottom: 60px;
+        max-width: 100%;
       }
-
-      .main-thoughts {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      .section-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 2rem;
+      
+      .quote-decorations {
         position: relative;
       }
-
-      .section-title::after {
-        content: '';
+      
+      .quote-mark {
+        font-size: 4rem;
+        color: var(--accent-primary);
+        opacity: 0.6;
+        font-family: var(--font-english);
+        line-height: 1;
         position: absolute;
-        bottom: -8px;
-        left: 0;
-        width: 60px;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        border-radius: 2px;
+        pointer-events: none;
+      }
+      
+      .quote-mark.opening {
+        top: 2rem;
+        left: -3rem;
+      }
+      
+      .quote-mark.closing {
+        top: 2rem;
+        right: -3rem;
       }
 
-      .article-card {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border: 1px solid rgba(102, 126, 234, 0.1);
-        transition: all 0.3s ease;
+      .quote-text {
+        font-size: clamp(var(--quote-size-mobile), 4vw, var(--quote-size-desktop));
+        line-height: var(--quote-line-height);
+        color: var(--text-primary);
+        margin: 2rem 0;
+        font-weight: 400;
+        max-width: 100%;
+        word-wrap: break-word;
+        position: relative;
+        z-index: 1;
+      }
+      
+      .quote-footer {
+        margin-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      
+      .quote-author {
+        font-size: var(--author-size);
+        color: var(--text-secondary);
+        font-style: normal;
+        line-height: var(--author-line-height);
+        font-weight: 500;
+      }
+      
+      .quote-category {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: var(--accent-light);
+        color: var(--accent-secondary);
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* 交互按钮 */
+      .action-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+      }
+      
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 25px;
+        font-size: var(--button-size);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-fast) ease;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--accent-light);
         position: relative;
         overflow: hidden;
       }
+      
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(44, 90, 160, 0.2);
+        background: var(--accent-primary);
+        color: white;
+      }
+      
+      .btn:active {
+        transform: translateY(0);
+      }
+      
+      .btn.btn-primary {
+        background: var(--accent-primary);
+        color: white;
+      }
+      
+      .btn.btn-primary:hover {
+        background: #1e3a8a;
+      }
+      
+      .btn.favorited {
+        background: var(--success);
+        color: white;
+      }
 
-      .article-card::before {
-        content: '';
+      /* 装饰元素 */
+      .background-elements {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
+      }
+      
+      .texture-overlay {
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
+        width: 100%;
+        height: 100%;
+        background-image: 
+          radial-gradient(circle at 1px 1px, rgba(45, 55, 72, 0.03) 1px, transparent 0);
+        background-size: 20px 20px;
+        opacity: 0.5;
       }
 
-      .article-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+      /* 动画定义 */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
-
-      .article-meta {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-        color: #718096;
+      
+      @keyframes fadeOutDown {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
       }
-
-      .article-date {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+      
+      .quote-transition-enter {
+        animation: fadeInUp var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
       }
-
-      .article-category {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: 500;
+      
+      .quote-transition-exit {
+        animation: fadeOutDown var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
       }
-
-      .article-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 1rem;
-        line-height: 1.4;
-      }
-
-      .article-excerpt {
-        color: #4a5568;
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-      }
-
-      .article-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
-      }
-
-      .article-link:hover {
-        color: #764ba2;
-        transform: translateX(4px);
-      }
-
-      .sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-      }
-
-      .sidebar-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border: 1px solid rgba(102, 126, 234, 0.1);
-      }
-
-      .sidebar-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .thought-item {
-        padding: 1rem;
-        background: linear-gradient(135deg, #f8f9ff, #e8ecff);
-        border-radius: 12px;
-        margin-bottom: 1rem;
-        border-left: 4px solid #667eea;
-        transition: all 0.3s ease;
-      }
-
-      .thought-item:hover {
-        transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
-      }
-
-      .thought-text {
-        color: #4a5568;
-        font-style: italic;
-        line-height: 1.5;
-        margin-bottom: 0.5rem;
-      }
-
-      .thought-author {
-        font-size: 0.85rem;
-        color: #718096;
-        text-align: right;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-      }
-
-      .stat-item {
-        text-align: center;
-        padding: 1rem;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border-radius: 12px;
-      }
-
-      .stat-number {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-      }
-
-      .stat-label {
-        font-size: 0.8rem;
-        opacity: 0.9;
-      }
-
-      .featured-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        text-decoration: none;
-        border-radius: 25px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        margin-top: 1rem;
-      }
-
-      .featured-link:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
       }
 
       /* 意见之箱样式 */
@@ -341,7 +351,7 @@
         opacity: 0;
         visibility: hidden;
         transform: translateY(-10px);
-        transition: all 0.3s ease;
+        transition: all var(--transition-fast) ease;
         z-index: 1000;
         border: 1px solid rgba(0, 0, 0, 0.1);
         min-width: 200px;
@@ -375,31 +385,36 @@
 
       .qr-text {
         text-align: center;
-        color: #4a5568;
+        color: var(--text-secondary);
         font-size: 0.9rem;
         line-height: 1.4;
       }
 
+      /* 响应式设计 */
       @media (max-width: 768px) {
-        .hero-title {
-          font-size: 2.5rem;
+        .quote-container {
+          padding: 2rem 1rem;
+          min-height: calc(100vh - 80px);
         }
         
-        .thoughts-layout {
-          grid-template-columns: 1fr;
-          gap: 2rem;
+        .quote-mark.opening {
+          left: -1.5rem;
         }
         
-        .section-title {
-          font-size: 2rem;
+        .quote-mark.closing {
+          right: -1.5rem;
         }
         
-        .article-card {
-          padding: 1.5rem;
+        .action-bar {
+          flex-direction: column;
+          gap: 1rem;
+          width: 100%;
         }
         
-        .container {
-          padding: 10px;
+        .btn {
+          width: 100%;
+          padding: 1rem;
+          max-width: 280px;
         }
         
         .nav-menu {
@@ -415,171 +430,289 @@
           right: 60px;
         }
       }
+      
+      @media (max-width: 480px) {
+        .quote-container {
+          padding: 1rem;
+        }
+        
+        .quote-mark {
+          font-size: 3rem;
+        }
+        
+        .quote-mark.opening {
+          left: -1rem;
+          top: -1.5rem;
+        }
+        
+        .quote-mark.closing {
+          right: -1rem;
+          bottom: -1.5rem;
+        }
+      }
     </style>
   </head>
   <body>
-    <nav class="navbar">
-      <div class="nav-container">
-        <div class="nav-brand">
-          <a href="./index.html" class="brand-text">上节好课</a>
-        </div>
-        <div class="nav-menu">
-          <a href="./index.html" class="nav-link">初见之页</a>
-          <a href="./works.html" class="nav-link">些许尝试</a>
-          <a href="./contact.html" class="nav-link">一点想法</a>
-          <div class="feedback-container">
-            <a href="#" class="nav-link">意见之箱</a>
-            <div class="qr-popup">
-              <img src="./public/erweima.png" alt="公众号二维码" class="qr-code">
-              <p class="qr-text">扫码分享您的想法<br>让我们一起成长</p>
+    <div class="contact-page">
+      <!-- 保留原有导航栏 -->
+      <nav class="navbar">
+        <div class="nav-container">
+          <div class="nav-brand">
+            <a href="./index.html" class="brand-text">上节好课</a>
+          </div>
+          <div class="nav-menu">
+            <a href="./index.html" class="nav-link">初见之页</a>
+            <a href="./works.html" class="nav-link">些许尝试</a>
+            <a href="./contact.html" class="nav-link">一点想法</a>
+            <div class="feedback-container">
+              <a href="#" class="nav-link">意见之箱</a>
+              <div class="qr-popup">
+                <img src="./public/erweima.png" alt="公众号二维码" class="qr-code">
+                <p class="qr-text">扫码分享您的想法<br>让我们一起成长</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
 
-    <div class="hero-section">
-      <div class="container">
-        <h1 class="hero-title">一点想法</h1>
-        <p class="hero-subtitle">记录思考的轨迹，分享智慧的火花，在这里遇见更好的自己</p>
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="thoughts-layout">
-        <div class="main-thoughts">
-          <h2 class="section-title">📝 最新文章</h2>
+      <!-- 主内容区 -->
+      <main class="quote-container">
+        <div class="quote-display">
+          <div class="quote-decorations">
+            <span class="quote-mark opening">"</span>
+            <span class="quote-mark closing">"</span>
+          </div>
           
-          <article class="article-card">
-            <div class="article-meta">
-              <div class="article-date">
-                <span>📅</span>
-                <span>2024年1月15日</span>
-              </div>
-              <span class="article-category">教育思考</span>
-            </div>
-            <h3 class="article-title">数字化时代的教育变革：从传统课堂到智能学习</h3>
-            <p class="article-excerpt">
-              在这个快速变化的数字化时代，教育正在经历前所未有的变革。从传统的黑板粉笔到智能化的学习平台，我们见证了教育技术的飞跃发展。本文探讨了如何在保持教育本质的同时，拥抱技术带来的无限可能...
-            </p>
-            <a href="#" class="article-link">
-              阅读全文 <span>→</span>
-            </a>
-          </article>
-
-          <article class="article-card">
-            <div class="article-meta">
-              <div class="article-date">
-                <span>📅</span>
-                <span>2024年1月10日</span>
-              </div>
-              <span class="article-category">技术分享</span>
-            </div>
-            <h3 class="article-title">游戏化学习的设计原则：让学习变得有趣而有效</h3>
-            <p class="article-excerpt">
-              游戏化学习不仅仅是在教育中加入游戏元素，更是一种全新的教学理念。通过精心设计的挑战、奖励机制和进度反馈，我们可以激发学习者的内在动机，让学习过程变得既有趣又高效...
-            </p>
-            <a href="#" class="article-link">
-              阅读全文 <span>→</span>
-            </a>
-          </article>
-
-          <article class="article-card">
-            <div class="article-meta">
-              <div class="article-date">
-                <span>📅</span>
-                <span>2024年1月5日</span>
-              </div>
-              <span class="article-category">产品设计</span>
-            </div>
-            <h3 class="article-title">用户体验设计中的情感化设计：创造有温度的产品</h3>
-            <p class="article-excerpt">
-              好的产品不仅要功能完善，更要能触动用户的情感。情感化设计通过色彩、动画、交互细节等元素，为用户创造愉悦的使用体验。本文分享了一些实用的情感化设计技巧和案例分析...
-            </p>
-            <a href="#" class="article-link">
-              阅读全文 <span>→</span>
-            </a>
-          </article>
-
-          <article class="article-card">
-            <div class="article-meta">
-              <div class="article-date">
-                <span>📅</span>
-                <span>2023年12月28日</span>
-              </div>
-              <span class="article-category">行业观察</span>
-            </div>
-            <h3 class="article-title">AI时代的教育：机遇与挑战并存</h3>
-            <p class="article-excerpt">
-              人工智能正在重塑教育行业的方方面面。从个性化学习推荐到智能作业批改，AI技术为教育带来了前所未有的可能性。然而，我们也需要思考如何在拥抱技术的同时，保持教育的人文关怀...
-            </p>
-            <a href="#" class="article-link">
-              阅读全文 <span>→</span>
-            </a>
-          </article>
+          <blockquote class="quote-text" id="quote-text" role="main" aria-live="polite">
+            <!-- 金句内容将通过JavaScript动态加载 -->
+          </blockquote>
+          
+          <footer class="quote-footer">
+            <cite class="quote-author" id="quote-author"><!-- 作者 --></cite>
+          </footer>
         </div>
-
-        <div class="sidebar">
-          <div class="sidebar-card">
-            <h3 class="sidebar-title">💭 用户想法</h3>
-            
-            <div class="thought-item">
-              <p class="thought-text">"这个登山游戏真的很有创意！我家孩子玩了一个小时都不愿意停下来，不知不觉就练习了很多乘法题。"</p>
-              <p class="thought-author">— 张妈妈</p>
-            </div>
-
-            <div class="thought-item">
-              <p class="thought-text">"作为一名数学老师，我觉得这种游戏化的学习方式很值得推广。孩子们在玩中学，效果比传统的练习册好太多了。"</p>
-              <p class="thought-author">— 李老师</p>
-            </div>
-
-            <div class="thought-item">
-              <p class="thought-text">"希望能开发更多这样的教育游戏，比如除法、分数等等。寓教于乐真的是最好的学习方式。"</p>
-              <p class="thought-author">— 小明爸爸</p>
-            </div>
-
-            <div class="thought-item">
-              <p class="thought-text">"界面设计很清新，操作也很简单。我觉得这种淡紫色的配色很舒服，不会让眼睛疲劳。"</p>
-              <p class="thought-author">— 设计师小王</p>
-            </div>
-          </div>
-
-          <div class="sidebar-card">
-            <h3 class="sidebar-title">📊 数据统计</h3>
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-number">1,234</div>
-                <div class="stat-label">文章阅读</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-number">567</div>
-                <div class="stat-label">用户反馈</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-number">89</div>
-                <div class="stat-label">发布文章</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-number">23</div>
-                <div class="stat-label">精选想法</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="sidebar-card">
-            <h3 class="sidebar-title">🌟 精选推荐</h3>
-            <p style="color: #4a5568; line-height: 1.6; margin-bottom: 1rem;">探索更多有趣的教育内容和创新思维，让学习变得更加精彩。</p>
-            <a href="./mubiaoqiang.html" class="featured-link" style="display: block; margin-bottom: 0.75rem;">
-              🌈 我的彩虹目标墙 <span>→</span>
-            </a>
-            <a href="./works.html" class="featured-link">
-              查看更多作品 <span>→</span>
-            </a>
-          </div>
+        
+        <div class="action-bar" role="toolbar" aria-label="金句操作按钮">
+          <button class="btn btn-primary" id="btn-random" aria-label="随机获取一句新的金句">换一句</button>
+          <button class="btn" id="btn-favorite" aria-label="收藏当前金句">收藏</button>
+          <button class="btn" id="btn-download" aria-label="下载金句卡片">下载</button>
         </div>
+      </main>
+      
+      <!-- 背景装饰 -->
+      <div class="background-elements">
+        <div class="texture-overlay"></div>
       </div>
     </div>
 
+    <!-- 检查文件是否正确加载 -->
+    <script>
+      // 简单的备用金句数据，以防外部文件加载失败
+      window.backupQuotes = [
+        {
+          id: "001",
+          text: "教育的本质不是传授知识，而是点燃火焰。",
+          author: "威廉·巴特勒·叶芝",
+          category: "education"
+        },
+        {
+          id: "002", 
+          text: "学而时习之，不亦说乎？",
+          author: "孔子",
+          category: "learning"
+        },
+        {
+          id: "003",
+          text: "知识就是力量。",
+          author: "培根", 
+          category: "wisdom"
+        }
+      ];
+      
+      // 检查外部文件加载状态
+      window.addEventListener('load', function() {
+        console.log('页面加载完成');
+        console.log('QuotesData 状态:', !!window.QuotesData);
+        console.log('QuoteManager 状态:', !!window.QuoteManager);
+        
+        // 如果外部文件未加载，使用备用数据
+        if (!window.QuotesData) {
+          console.warn('使用备用金句数据');
+          window.QuotesData = { educationQuotes: window.backupQuotes };
+        }
+      });
+    </script>
+    
+    <!-- 引入数据和管理器 -->
+    <script src="./public/quotes-data.js"></script>
+    <script src="./public/quote-manager.js"></script>
+    <script src="./public/quote-card-generator.js"></script>
+    <script>
+      // 金句应用主逻辑
+      document.addEventListener('DOMContentLoaded', function() {
+        // 检查数据是否加载成功
+        console.log('QuotesData:', window.QuotesData);
+        console.log('QuoteManager:', window.QuoteManager);
+        console.log('QuoteCardGenerator:', window.QuoteCardGenerator);
+                
+        if (!window.QuotesData || !window.QuotesData.educationQuotes) {
+          console.error('金句数据未加载');
+          document.getElementById('quote-text').textContent = '数据加载失败，请刷新页面';
+          return;
+        }
+                
+        if (!window.QuoteManager) {
+          console.error('QuoteManager未加载');
+          document.getElementById('quote-text').textContent = 'QuoteManager加载失败';
+          return;
+        }
+                
+        // 初始化金句管理器和图片生成器
+        const quoteManager = new QuoteManager(window.QuotesData.educationQuotes);
+        let cardGenerator = null;
+                  
+        // 安全地初始化卡片生成器
+        try {
+          if (window.QuoteCardGenerator) {
+            cardGenerator = new QuoteCardGenerator();
+            console.log('QuoteCardGenerator 初始化成功');
+          } else {
+            console.warn('QuoteCardGenerator 未加载，下载功能将不可用');
+          }
+        } catch (error) {
+          console.error('QuoteCardGenerator 初始化失败:', error);
+        }
+                
+        console.log('初始化完成，金句数量:', window.QuotesData.educationQuotes.length);
+        
+        // DOM 元素引用
+        const quoteText = document.getElementById('quote-text');
+        const quoteAuthor = document.getElementById('quote-author');
+        // const quoteCategory = document.getElementById('quote-category'); // 已删除分类标签
+        const btnRandom = document.getElementById('btn-random');
+        const btnFavorite = document.getElementById('btn-favorite');
+        const btnDownload = document.getElementById('btn-download');
+        
+        // 显示金句
+        function displayQuote(quote) {
+          console.log('显示金句:', quote);
+          if (!quote) {
+            console.error('没有金句数据');
+            quoteText.textContent = '没有可显示的金句';
+            return;
+          }
+          
+          // 添加退出动画
+          quoteText.parentElement.classList.add('quote-transition-exit');
+          
+          setTimeout(() => {
+            quoteText.textContent = quote.text;
+            quoteAuthor.textContent = `— ${quote.author}`;
+            // quoteCategory.textContent = getCategoryName(quote.category); // 已删除分类显示
+            
+            // 移除退出动画，添加进入动画
+            quoteText.parentElement.classList.remove('quote-transition-exit');
+            quoteText.parentElement.classList.add('quote-transition-enter');
+            
+            // 更新收藏按钮状态
+            updateFavoriteButton();
+            
+            setTimeout(() => {
+              quoteText.parentElement.classList.remove('quote-transition-enter');
+            }, 600);
+          }, 300);
+        }
+        
+        // 获取分类显示名称
+        function getCategoryName(category) {
+          const names = {
+            education: '教育哲学',
+            wisdom: '人生智慧', 
+            inspiration: '启发思考',
+            learning: '学习方法'
+          };
+          return names[category] || category;
+        }
+        
+        // 更新收藏按钮
+        function updateFavoriteButton() {
+          const isFavorited = quoteManager.isFavorited();
+          btnFavorite.textContent = isFavorited ? '已收藏' : '收藏';
+          btnFavorite.classList.toggle('favorited', isFavorited);
+        }
+        
+        // 事件监听器
+        btnRandom.addEventListener('click', () => {
+          btnRandom.classList.add('loading');
+          setTimeout(() => {
+            const newQuote = quoteManager.nextQuote();
+            displayQuote(newQuote);
+            btnRandom.classList.remove('loading');
+          }, 100);
+        });
+        
+        btnFavorite.addEventListener('click', () => {
+          quoteManager.toggleFavorite();
+          updateFavoriteButton();
+        });
+        
 
+        
+        // 下载功能
+        btnDownload.addEventListener('click', async () => {
+          // 检查是否有卡片生成器
+          if (!cardGenerator) {
+            alert('图片生成功能未加载，无法下载卡片');
+            return;
+          }
+          
+          if (!window.ImageUtils || !window.ImageUtils.isSupported()) {
+            alert('您的浏览器不支持图片生成功能');
+            return;
+          }
+          
+          const currentQuote = quoteManager.getCurrentQuote();
+          if (!currentQuote) {
+            alert('没有可下载的金句');
+            return;
+          }
+          
+          btnDownload.classList.add('loading');
+          btnDownload.textContent = '生成中...';
+          
+          try {
+            const success = await cardGenerator.generateAndDownload(currentQuote);
+            if (success) {
+              // 下载成功反馈
+              btnDownload.textContent = '下载成功!';
+              setTimeout(() => {
+                btnDownload.textContent = '下载';
+                btnDownload.classList.remove('loading');
+              }, 2000);
+            } else {
+              throw new Error('生成失败');
+            }
+          } catch (error) {
+            console.error('下载失败:', error);
+            alert('图片生成失败，请稍后重试');
+            btnDownload.textContent = '下载';
+            btnDownload.classList.remove('loading');
+          }
+        });
+        
+        // 初始显示
+        const initialQuote = quoteManager.getCurrentQuote();
+        console.log('初始金句:', initialQuote);
+        displayQuote(initialQuote);
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+          if (e.code === 'Space' && !e.target.matches('input, textarea, button')) {
+            e.preventDefault();
+            btnRandom.click();
+          }
+        });
+      });
+    </script>
   </body>
 </html>
