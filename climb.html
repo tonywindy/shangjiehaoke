@@ -117,13 +117,7 @@
 
         <!-- 欢迎/主菜单界面 -->
         <div id="lobby-screen" class="text-center bg-white p-8 rounded-2xl shadow-lg">
-            <div class="flex justify-between items-center mb-4">
-                <a href="./works.html" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md transition-transform transform hover:scale-105">
-                    ← 返回作品
-                </a>
-                <div class="flex-1"></div>
-            </div>
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-700">两位数乘法登山挑战</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-gray-700">混合运算登山挑战</h1>
             <p class="text-gray-500 mb-8">选择一个模式开始你的计算之旅吧！</p>
             <div class="flex flex-col md:flex-row gap-4 justify-center">
                 <button onclick="showSinglePlayerSetup()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
@@ -147,10 +141,11 @@
                 </div>
                 <div class="mb-6">
                     <label class="block text-lg font-medium text-gray-700 mb-2">难易度:</label>
-                    <div class="flex justify-center gap-3" data-setting-type="difficulty">
+                    <div class="flex flex-wrap justify-center gap-3" data-setting-type="difficulty">
                         <button onclick="setGameOption('single', 'difficulty', 'easy', this)" class="game-option-btn bg-white border-2 border-green-500 text-green-500 py-2 px-5 rounded-lg font-semibold">简单</button>
                         <button onclick="setGameOption('single', 'difficulty', 'normal', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">普通</button>
                         <button onclick="setGameOption('single', 'difficulty', 'hard', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">困难</button>
+                        <button onclick="setGameOption('single', 'difficulty', 'mixed', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">混合运算</button>
                     </div>
                 </div>
                 <button onclick="setupGame('single')" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
@@ -171,10 +166,11 @@
                 </div>
                 <div class="mb-6">
                     <label class="block text-lg font-medium text-gray-700 mb-2">难易度:</label>
-                    <div class="flex justify-center gap-3" data-setting-type="difficulty">
+                    <div class="flex flex-wrap justify-center gap-3" data-setting-type="difficulty">
                         <button onclick="setGameOption('dual', 'difficulty', 'easy', this)" class="game-option-btn bg-white border-2 border-green-500 text-green-500 py-2 px-5 rounded-lg font-semibold">简单</button>
                         <button onclick="setGameOption('dual', 'difficulty', 'normal', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">普通</button>
                         <button onclick="setGameOption('dual', 'difficulty', 'hard', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">困难</button>
+                        <button onclick="setGameOption('dual', 'difficulty', 'mixed', this)" class="game-option-btn bg-white border-2 border-gray-300 text-gray-500 py-2 px-5 rounded-lg font-semibold">混合运算</button>
                     </div>
                 </div>
                 <button onclick="setupGame('dual')" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
@@ -185,14 +181,6 @@
 
         <!-- 游戏界面 -->
         <div id="game-screen" class="hidden w-full">
-            <div class="flex justify-between items-center mb-4">
-                <button onclick="showLobby()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md transition-transform transform hover:scale-105">
-                    ← 返回主菜单
-                </button>
-                <a href="./works.html" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm shadow-md transition-transform transform hover:scale-105">
-                    ← 返回作品
-                </a>
-            </div>
             <div id="game-area" class="flex flex-col md:flex-row gap-4 w-full">
                 <!-- 玩家模板，JS会复制这个结构 -->
             </div>
@@ -202,14 +190,9 @@
         <div id="game-over-screen" class="hidden text-center bg-white p-8 rounded-2xl shadow-lg">
             <h2 id="game-over-title" class="text-4xl md:text-5xl font-bold mb-4">游戏结束</h2>
             <p id="game-over-message" class="text-2xl text-gray-600 mb-8"></p>
-            <div class="flex flex-col md:flex-row gap-4 justify-center">
-                <button onclick="showLobby()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
-                    返回主菜单
-                </button>
-                <a href="./works.html" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
-                    返回作品页面
-                </a>
-            </div>
+            <button onclick="showLobby()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
+                返回主菜单
+            </button>
         </div>
     </div>
 
@@ -336,7 +319,6 @@
             const playerNode = playerTemplate.content.cloneNode(true);
             const playerContainer = playerNode.querySelector('.player-container');
             
-            // *** 修正逻辑：为双人模式的右边玩家(玩家2)反转布局 ***
             if (gameState.mode === 'dual' && index === 1) {
                 playerContainer.classList.add('md:flex-row-reverse');
             }
@@ -390,27 +372,104 @@
             playerData.ui.container.querySelector('.numpad').addEventListener('click', (e) => handleNumpad(e, index));
             gameState.players.push(playerData);
         }
-
+        
         function generateQuestionBank(count, difficulty) {
             const questions = new Set();
-            const ranges = {
-                easy: { min: 10, max: 30 },
-                normal: { min: 10, max: 70 },
-                hard: { min: 30, max: 99 }
-            };
-            const { min, max } = ranges[difficulty];
-
-            while (questions.size < count) {
-                const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
-                const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
-                const key = `${Math.min(num1, num2)}x${Math.max(num1, num2)}`;
-                if (!questions.has(key)) questions.add(key);
-            }
+            const questionArray = [];
             
-            return Array.from(questions).map(q => {
-                const [num1, num2] = q.split('x').map(Number);
-                return { num1, num2, answer: num1 * num2 };
-            });
+            if (difficulty === 'mixed') {
+                const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+                const mulDivOps = [2, 3, 4, 5, 6, 7, 8, 9];
+
+                while(questions.size < count) {
+                    let qText, qAnswer;
+                    const type = randInt(1, 6);
+
+                    try {
+                        switch(type) {
+                            case 1: { // (a + b) * c
+                                const c = mulDivOps[randInt(0, 7)];
+                                const sum = randInt(2, 9);
+                                const a = randInt(1, sum - 1);
+                                const b = sum - a;
+                                qText = `(${a} + ${b}) × ${c}`;
+                                qAnswer = (a + b) * c;
+                                break;
+                            }
+                            case 2: { // a * b + c
+                                const a = mulDivOps[randInt(0, 7)];
+                                const b = mulDivOps[randInt(0, 7)];
+                                const c = randInt(1, 99 - a * b);
+                                qText = `${a} × ${b} + ${c}`;
+                                qAnswer = a * b + c;
+                                break;
+                            }
+                            case 3: { // a - b * c
+                                const b = mulDivOps[randInt(0, 7)];
+                                const c = mulDivOps[randInt(0, 7)];
+                                const product = b * c;
+                                const a = randInt(product + 1, 99);
+                                qText = `${a} - ${b} × ${c}`;
+                                qAnswer = a - product;
+                                break;
+                            }
+                            case 4: { // a + b / c
+                                const c = mulDivOps[randInt(0, 7)];
+                                const quotient = randInt(2, 9);
+                                const b = c * quotient;
+                                const a = randInt(1, 99 - quotient);
+                                qText = `${a} + ${b} ÷ ${c}`;
+                                qAnswer = a + quotient;
+                                break;
+                            }
+                            case 5: { // a - b / c
+                                const c = mulDivOps[randInt(0, 7)];
+                                const quotient = randInt(2, 9);
+                                const b = c * quotient;
+                                const a = randInt(quotient + 1, 99);
+                                qText = `${a} - ${b} ÷ ${c}`;
+                                qAnswer = a - quotient;
+                                break;
+                            }
+                            case 6: { // (a - b) * c
+                                const c = mulDivOps[randInt(0, 7)];
+                                const diff = randInt(2, 9);
+                                const b = randInt(1, 15);
+                                const a = b + diff;
+                                qText = `(${a} - ${b}) × ${c}`;
+                                qAnswer = diff * c;
+                                break;
+                            }
+                        }
+
+                        if (!questions.has(qText) && qAnswer > 0) {
+                            questions.add(qText);
+                            questionArray.push({ displayText: `${qText} = ?`, answer: qAnswer });
+                        }
+                    } catch (e) { /* continue loop */ }
+                }
+                return questionArray;
+
+            } else { // easy, normal, hard
+                const ranges = {
+                    easy: { min: 10, max: 30 },
+                    normal: { min: 10, max: 70 },
+                    hard: { min: 30, max: 99 }
+                };
+                const { min, max } = ranges[difficulty];
+
+                while (questions.size < count) {
+                    const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+                    const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+                    const key = `${Math.min(num1, num2)}x${Math.max(num1, num2)}`;
+                    if (!questions.has(key)) questions.add(key);
+                }
+                
+                return Array.from(questions).map(q => {
+                    const [num1, num2] = q.split('x').map(Number);
+                    return { displayText: `${num1} × ${num2} = ?`, answer: num1 * num2 };
+                });
+            }
         }
 
         function startGame() {
@@ -438,7 +497,7 @@
             const player = gameState.players[playerId];
             if (player.currentQuestionIndex < player.questions.length) {
                 const q = player.questions[player.currentQuestionIndex];
-                player.ui.questionDisplay.textContent = `${q.num1} × ${q.num2} = ?`;
+                player.ui.questionDisplay.textContent = q.displayText;
                 player.answer = '';
                 player.ui.answerInput.textContent = '';
             }
@@ -552,3 +611,4 @@
     </script>
 </body>
 </html>
+

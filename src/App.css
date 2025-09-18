@@ -3,7 +3,7 @@
   position: relative;
   width: 100%;
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "LXGW WenKai", serif;
 }
 
 /* 视频背景 */
@@ -216,7 +216,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  padding: 1rem 0;
+  padding: 16px 0;
   background: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -225,9 +225,9 @@
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -236,19 +236,19 @@
 .nav-brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .brand-text {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #00d4ff;
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  color: #2c5aa0;
+  text-shadow: 0 0 10px rgba(44, 90, 160, 0.5);
 }
 
 .nav-menu {
   display: flex;
-  gap: 2rem;
+  gap: 32px;
   align-items: center;
 }
 
@@ -258,7 +258,7 @@
   font-weight: 500;
   transition: all 0.3s ease;
   position: relative;
-  padding: 0.5rem 0;
+  padding: 8px 0;
 }
 
 .nav-link::after {
@@ -268,13 +268,13 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #00d4ff, #ff0080);
+  background: #2c5aa0;
   transition: width 0.3s ease;
 }
 
 .nav-link:hover {
-  color: #00d4ff;
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  color: #2c5aa0;
+  text-shadow: 0 0 10px rgba(44, 90, 160, 0.5);
 }
 
 .nav-link:hover::after {

@@ -5,7 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>作品展示 - 上节好课</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+      /* CSS变量定义 */
+      :root {
+        /* 动画时长 */
+        --transition-fast: 0.3s;
+      }
+      
       * {
         margin: 0;
         padding: 0;
@@ -13,7 +22,7 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        font-family: "Noto Serif SC", "Source Han Serif SC", "LXGW WenKai", serif;
         background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 50%, #e8ebff 100%);
         min-height: 100vh;
         color: #2d3748;
@@ -67,7 +76,7 @@
         backdrop-filter: blur(20px);
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         z-index: 100;
-        transition: all 0.3s ease;
+        transition: all var(--transition-fast) ease;
       }
 
       .nav-container {
@@ -88,7 +97,7 @@
       .brand-text {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #667eea;
+        color: #2c5aa0;
         text-decoration: none;
       }
 
@@ -99,10 +108,10 @@
       }
 
       .nav-link {
-        color: #4a5568;
+        color: #718096;
         text-decoration: none;
         font-weight: 500;
-        transition: all 0.3s ease;
+        transition: all var(--transition-fast) ease;
         position: relative;
         padding: 8px 0;
       }
@@ -114,12 +123,12 @@
         left: 0;
         width: 0;
         height: 2px;
-        background: #667eea;
-        transition: width 0.3s ease;
+        background: #2c5aa0;
+        transition: width var(--transition-fast) ease;
       }
 
       .nav-link:hover {
-        color: #667eea;
+        color: #2c5aa0;
       }
 
       .nav-link:hover::after {
@@ -143,7 +152,7 @@
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
+        transition: all var(--transition-fast) ease;
         border: 1px solid rgba(0, 0, 0, 0.05);
       }
 
@@ -209,7 +218,7 @@
         text-decoration: none;
         border-radius: 8px;
         font-weight: 500;
-        transition: all 0.3s ease;
+        transition: all var(--transition-fast) ease;
       }
 
       .work-link:hover {
@@ -227,7 +236,7 @@
         border-radius: 12px;
         padding: 24px;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        transition: all 0.3s ease;
+        transition: all var(--transition-fast) ease;
         border: 1px solid rgba(0, 0, 0, 0.05);
       }
 
