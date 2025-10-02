@@ -16,6 +16,8 @@ export default defineConfig({
         zhouchang: resolve(__dirname, 'zhouchang.html'),
         shuxueyouxi: resolve(__dirname, 'shuxueyouxi.html'),
         mubiaoqiang: resolve(__dirname, 'mubiaoqiang.html'),
+        danweihuansuan: resolve(__dirname, 'danweihuansuan.html'),
+        renshixiaoshu: resolve(__dirname, 'renshixiaoshu.html'),
       },
     },
   },

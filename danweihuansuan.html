@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>长度单位换算交互式学习工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .page-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: headerGlow 8s ease-in-out infinite;
+        }
+        
+        @keyframes headerGlow {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10%, 10%); }
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            background: white;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                min-height: 650px;
+            }
+        }
+        
+        /* 左侧楼梯区域 */
+        .staircase-container {
+            flex: 3;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e3e9f0 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .staircase-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(102, 126, 234, 0.02) 10px,
+                    rgba(102, 126, 234, 0.02) 20px
+                );
+            pointer-events: none;
+        }
+        
+        .staircase {
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .step {
+            height: 85px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 600;
+            position: relative;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .step:hover::before {
+            left: 100%;
+        }
+        
+        .step:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .step.km {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: 3px solid rgba(245, 87, 108, 0.5);
+        }
+        
+        .step.m {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: 3px solid rgba(79, 172, 254, 0.5);
+        }
+        
+        .step.dm {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            border: 3px solid rgba(67, 233, 123, 0.5);
+        }
+        
+        .step.cm {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            border: 3px solid rgba(250, 112, 154, 0.5);
+        }
+        
+        .step.mm {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            border: 3px solid rgba(48, 207, 208, 0.5);
+        }
+        
+        .step-label {
+            position: absolute;
+            left: 25px;
+            font-size: 1.3rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 1px;
+        }
+        
+        /* 数值卡片 */
+        .value-card {
+            width: 130px;
+            height: 75px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 700;
+            position: absolute;
+            cursor: grab;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            transition: box-shadow 0.2s ease;
+            z-index: 10;
+            user-select: none;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            will-change: transform;
+        }
+        
+        .value-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            animation: cardGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes cardGlow {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(5%, 5%) rotate(180deg); }
+        }
+        
+        .value-card:active,
+        .value-card.dragging {
+            cursor: grabbing;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+            transform: scale(1.05);
+            transition: none;
+        }
+        
+        /* 触控设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .value-card {
+                width: 150px;
+                height: 85px;
+                font-size: 1.5rem;
+            }
+            
+            .step {
+                height: 95px;
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* 右侧控制区域 */
+        .controls-container {
+            flex: 2;
+            padding: 40px 35px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .controls-container::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .input-group {
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.15rem;
+            letter-spacing: 0.5px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        input:focus, select:focus {
+            border-color: #667eea;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(-1px);
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe6cc 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 35px;
+            border-left: 6px solid #ff9800;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.15);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .instructions::before {
+            content: '💡';
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            font-size: 2rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .instructions h3 {
+            margin-bottom: 12px;
+            color: #e67e22;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .instructions ol {
+            padding-left: 22px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            color: #5d4037;
+            line-height: 1.6;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 -4px 20px rgba(102, 126, 234, 0.3);
+            margin-top: -1px;
+        }
+        
+        /* 响应式优化 */
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .description {
+                font-size: 0.95rem;
+            }
+            
+            .staircase-container,
+            .controls-container {
+                padding: 30px 20px;
+            }
+            
+            .step {
+                height: 75px;
+                font-size: 1.2rem;
+            }
+            
+            .step-label {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header>
+            <h1>长度单位换算交互式学习工具</h1>
+            <p class="description">通过拖拽直观理解千米、米、分米、厘米和毫米之间的换算关系</p>
+        </header>
+        
+        <div class="container">
+            <div class="staircase-container">
+                <div class="staircase">
+                    <div class="step km">
+                        <span class="step-label">千米 (km)</span>
+                    </div>
+                    <div class="step m">
+                        <span class="step-label">米 (m)</span>
+                    </div>
+                    <div class="step dm">
+                        <span class="step-label">分米 (dm)</span>
+                    </div>
+                    <div class="step cm">
+                        <span class="step-label">厘米 (cm)</span>
+                    </div>
+                    <div class="step mm">
+                        <span class="step-label">毫米 (mm)</span>
+                    </div>
+                    
+                    <!-- 数值卡片将由JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="controls-container">
+                <div class="input-group">
+                    <label for="value-input">📊 输入数值</label>
+                    <input type="number" id="value-input" min="0" step="0.1" placeholder="例如:5">
+                </div>
+                
+                <div class="input-group">
+                    <label for="unit-select">📏 选择单位</label>
+                    <select id="unit-select">
+                        <option value="km">千米 (km)</option>
+                        <option value="m">米 (m)</option>
+                        <option value="dm">分米 (dm)</option>
+                        <option value="cm">厘米 (cm)</option>
+                        <option value="mm">毫米 (mm)</option>
+                    </select>
+                </div>
+                
+                <button id="generate-btn">🎯 生成卡片</button>
+                
+                <div class="instructions">
+                    <h3>📖 使用说明</h3>
+                    <ol>
+                        <li>输入数值并选择单位</li>
+                        <li>点击"生成卡片"按钮</li>
+                        <li>拖动卡片到不同的单位台阶</li>
+                        <li>观察数值如何随着单位变化</li>
+                        <li>小数点末尾的零会自动省略</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>✨ 设计用于小学数学教学 | 单位换算可视化工具 ✨</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 格式化数字,省略小数点末尾的零
+            function formatNumber(num) {
+                let formatted = parseFloat(num.toFixed(6)).toString();
+                return formatted;
+            }
+            
+            // 获取DOM元素
+            const valueInput = document.getElementById('value-input');
+            const unitSelect = document.getElementById('unit-select');
+            const generateBtn = document.getElementById('generate-btn');
+            const staircase = document.querySelector('.staircase');
+            
+            // 单位台阶信息
+            const steps = [
+                { unit: 'km', element: document.querySelector('.step.km'), factor: 0.001 },
+                { unit: 'm', element: document.querySelector('.step.m'), factor: 1 },
+                { unit: 'dm', element: document.querySelector('.step.dm'), factor: 10 },
+                { unit: 'cm', element: document.querySelector('.step.cm'), factor: 100 },
+                { unit: 'mm', element: document.querySelector('.step.mm'), factor: 1000 }
+            ];
+            
+            // 当前活动的卡片
+            let activeCard = null;
+            
+            // 生成卡片按钮点击事件
+            generateBtn.addEventListener('click', function() {
+                const value = parseFloat(valueInput.value);
+                const unit = unitSelect.value;
+                
+                if (isNaN(value) || value <= 0) {
+                    alert('请输入有效的正数数值!');
+                    return;
+                }
+                
+                // 移除现有的卡片
+                const existingCard = document.querySelector('.value-card');
+                if (existingCard) {
+                    existingCard.remove();
+                }
+                
+                // 创建新卡片
+                createCard(value, unit);
+            });
+            
+            // 创建可拖动的卡片
+            function createCard(value, unit) {
+                activeCard = document.createElement('div');
+                activeCard.className = 'value-card';
+                activeCard.textContent = `${formatNumber(value)} ${unit}`;
+                activeCard.dataset.value = value;
+                activeCard.dataset.unit = unit;
+                
+                // 找到对应单位台阶的位置
+                const targetStep = steps.find(step => step.unit === unit);
+                if (targetStep) {
+                    const stepRect = targetStep.element.getBoundingClientRect();
+                    const staircaseRect = staircase.getBoundingClientRect();
+                    
+                    // 定位卡片在对应台阶上
+                    activeCard.style.left = `${stepRect.left - staircaseRect.left + (stepRect.width - 130) / 2}px`;
+                    activeCard.style.top = `${stepRect.top - staircaseRect.top + (stepRect.height - 75) / 2}px`;
+                }
+                
+                staircase.appendChild(activeCard);
+                
+                // 添加拖拽功能
+                makeDraggable(activeCard);
+            }
+            
+            // 使卡片可拖动 - 重构版本
+            function makeDraggable(card) {
+                let isDragging = false;
+                let startX = 0;
+                let startY = 0;
+                let initialLeft = 0;
+                let initialTop = 0;
+                
+                // 统一的事件处理函数
+                function getEventCoords(e) {
+                    if (e.type.startsWith('touch')) {
+                        return { 
+                            x: e.touches[0].clientX, 
+                            y: e.touches[0].clientY 
+                        };
+                    }
+                    return { x: e.clientX, y: e.clientY };
+                }
+                
+                function startDrag(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    isDragging = true;
+                    card.classList.add('dragging');
+                    
+                    const coords = getEventCoords(e);
+                    startX = coords.x;
+                    startY = coords.y;
+                    
+                    // 获取当前位置 - 使用getBoundingClientRect获取准确位置
+                    const cardRect = card.getBoundingClientRect();
+                    const staircaseRect = staircase.getBoundingClientRect();
+                    initialLeft = cardRect.left - staircaseRect.left;
+                    initialTop = cardRect.top - staircaseRect.top;
+                    
+                    // 添加移动和结束事件监听器到document
+                    document.addEventListener('mousemove', elementDrag);
+                    document.addEventListener('mouseup', closeDragElement);
+                    document.addEventListener('touchmove', elementDrag, { passive: false });
+                    document.addEventListener('touchend', closeDragElement);
+                    document.addEventListener('touchcancel', closeDragElement);
+                }
+                
+                function elementDrag(e) {
+                    if (!isDragging) return;
+                    
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const coords = getEventCoords(e);
+                    
+                    // 计算移动距离
+                    const deltaX = coords.x - startX;
+                    const deltaY = coords.y - startY;
+                    
+                    // 使用transform而非left/top,性能更好
+                    card.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.05)`;
+                }
+                
+                function closeDragElement(e) {
+                    if (!isDragging) return;
+                    
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    
+                    isDragging = false;
+                    card.classList.remove('dragging');
+                    
+                    // 移除所有事件监听器
+                    document.removeEventListener('mousemove', elementDrag);
+                    document.removeEventListener('mouseup', closeDragElement);
+                    document.removeEventListener('touchmove', elementDrag);
+                    document.removeEventListener('touchend', closeDragElement);
+                    document.removeEventListener('touchcancel', closeDragElement);
+                    
+                    // 获取最终坐标并应用到position
+                    let coords;
+                    if (e.type.startsWith('touch') && e.changedTouches && e.changedTouches.length > 0) {
+                        coords = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+                    } else {
+                        coords = { x: e.clientX, y: e.clientY };
+                    }
+                    
+                    const deltaX = coords.x - startX;
+                    const deltaY = coords.y - startY;
+                    card.style.left = `${initialLeft + deltaX}px`;
+                    card.style.top = `${initialTop + deltaY}px`;
+                    card.style.transform = '';
+                    
+                    // 吸附到最近的台阶
+                    snapToClosestStep();
+                }
+                
+                // 添加鼠标和触控事件监听器
+                card.addEventListener('mousedown', startDrag);
+                card.addEventListener('touchstart', startDrag, { passive: false });
+                
+                // 检查卡片是否靠近某个台阶
+                function checkProximityToSteps() {
+                    const cardRect = card.getBoundingClientRect();
+                    const cardCenterX = cardRect.left + cardRect.width / 2;
+                    const cardCenterY = cardRect.top + cardRect.height / 2;
+                    
+                    steps.forEach(step => {
+                        const stepRect = step.element.getBoundingClientRect();
+                        const stepCenterX = stepRect.left + stepRect.width / 2;
+                        const stepCenterY = stepRect.top + stepRect.height / 2;
+                        
+                        // 计算卡片中心与台阶中心的距离
+                        const distance = Math.sqrt(
+                            Math.pow(cardCenterX - stepCenterX, 2) + 
+                            Math.pow(cardCenterY - stepCenterY, 2)
+                        );
+                        
+                        // 如果距离较近,高亮台阶
+                        if (distance < 150) {
+                            step.element.style.transform = 'scale(1.03)';
+                        } else {
+                            step.element.style.transform = 'scale(1)';
+                        }
+                    });
+                }
+                
+                // 吸附到最近的台阶
+                function snapToClosestStep() {
+                    const cardRect = card.getBoundingClientRect();
+                    const cardCenterX = cardRect.left + cardRect.width / 2;
+                    const cardCenterY = cardRect.top + cardRect.height / 2;
+                    
+                    let closestStep = null;
+                    let minDistance = Infinity;
+                    
+                    steps.forEach(step => {
+                        const stepRect = step.element.getBoundingClientRect();
+                        const stepCenterX = stepRect.left + stepRect.width / 2;
+                        const stepCenterY = stepRect.top + stepRect.height / 2;
+                        
+                        // 计算卡片中心与台阶中心的距离
+                        const distance = Math.sqrt(
+                            Math.pow(cardCenterX - stepCenterX, 2) +
+                            Math.pow(cardCenterY - stepCenterY, 2)
+                        );
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestStep = step;
+                        }
+                        
+                        // 移除所有高亮
+                        step.element.style.transform = '';
+                    });
+                    
+                    if (closestStep && minDistance < 200) {
+                        // 吸附到最近的台阶
+                        const staircaseRect = staircase.getBoundingClientRect();
+                        const stepRect = closestStep.element.getBoundingClientRect();
+                        
+                        // 添加平滑过渡效果
+                        card.style.transition = 'left 0.3s ease-out, top 0.3s ease-out';
+                        card.style.left = `${stepRect.left - staircaseRect.left + (stepRect.width - 130) / 2}px`;
+                        card.style.top = `${stepRect.top - staircaseRect.top + (stepRect.height - 75) / 2}px`;
+                        
+                        // 过渡完成后移除transition
+                        setTimeout(() => {
+                            card.style.transition = '';
+                        }, 300);
+                        
+                        // 更新卡片上的值和单位
+                        updateCardValue(closestStep);
+                    }
+                }
+                
+                // 更新卡片上的值
+                function updateCardValue(targetStep) {
+                    const originalValue = parseFloat(card.dataset.value);
+                    const originalUnit = card.dataset.unit;
+                    
+                    // 找到原始单位
+                    const originalStep = steps.find(step => step.unit === originalUnit);
+                    
+                    if (originalStep) {
+                        // 计算新值
+                        const conversionFactor = targetStep.factor / originalStep.factor;
+                        const newValue = originalValue * conversionFactor;
+                        
+                        // 更新卡片,使用格式化函数省略末尾零
+                        card.textContent = `${formatNumber(newValue)} ${targetStep.unit}`;
+                        card.dataset.value = newValue;
+                        card.dataset.unit = targetStep.unit;
+                    }
+                }
+            }
+            
+            // 添加示例值
+            valueInput.value = "5";
+            unitSelect.value = "m";
+        });
+    </script>
+</body>
+</html>

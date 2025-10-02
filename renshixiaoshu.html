@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认识小数 - 互动教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+            background-color: #f0f9ff;
+            /* 禁止在触摸设备上因拖动而滚动页面 */
+            touch-action: none; 
+        }
+        .cute-font {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+        .coin, .dropped-coin {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: white;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        }
+        .coin:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+            z-index: 100;
+        }
+        .yuan-coin { background: linear-gradient(145deg, #fce588, #f8c94a); border: 3px solid #e6a23c; }
+        .jiao-coin { background: linear-gradient(145deg, #e0e0e0, #b0b0b0); border: 3px solid #909399; }
+        .fen-coin { background: linear-gradient(145deg, #f5d1b7, #e6a77c); border: 3px solid #d18f5a; }
+
+        .drop-zone {
+            min-height: 200px;
+            border: 3px dashed #60a5fa;
+            border-radius: 16px;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+        .drop-zone.drag-over {
+            background-color: #dbeafe;
+            border-color: #2563eb;
+        }
+        .dropped-coin {
+            width: 48px;
+            height: 48px;
+            font-size: 1rem;
+            margin: 4px;
+        }
+        .money-container {
+            min-height: 100px;
+        }
+
+        /* 进位动画 */
+        .carry-over-animate {
+            animation: carry-over 0.8s ease-in-out forwards;
+            position: relative;
+        }
+
+        @keyframes carry-over {
+            0% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(0.5) translateY(-50px);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0) translateY(-100px);
+                opacity: 0;
+            }
+        }
+        
+        /* 新硬币出现动画 */
+        .new-coin-animate {
+            animation: new-coin 0.5s ease-out backwards;
+            animation-delay: 0.5s;
+        }
+        @keyframes new-coin {
+            0% {
+                transform: scale(0.5) translateY(50px);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-6xl mx-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-8">
+
+        <!-- 标题区域 -->
+        <header class="text-center mb-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600 cute-font">认识小数：元角分大探险</h1>
+            <p class="text-gray-500 mt-2 text-lg">把左边的钱币拖到中间的格子里，看看会发生什么吧！</p>
+        </header>
+
+        <!-- 主要互动区域 -->
+        <main class="grid md:grid-cols-3 gap-6">
+
+            <!-- 左侧：钱币源区域 -->
+            <aside class="bg-blue-50 p-6 rounded-xl flex flex-col items-center justify-center space-y-6">
+                <h2 class="text-2xl font-bold text-blue-800 cute-font mb-4">钱币区</h2>
+                <div id="yuan-source" class="coin yuan-coin" draggable="true" data-type="yuan">1元</div>
+                <div id="jiao-source" class="coin jiao-coin" draggable="true" data-type="jiao">1角</div>
+                <div id="fen-source" class="coin fen-coin" draggable="true" data-type="fen">1分</div>
+            </aside>
+
+            <!-- 中间：放置与计算区域 -->
+            <section id="drop-zone" class="drop-zone md:col-span-2 grid grid-cols-3 gap-4">
+                <!-- 元 -->
+                <div class="text-center bg-amber-50 rounded-lg p-2">
+                    <h3 class="text-2xl font-bold text-amber-600 cute-font">元</h3>
+                    <div id="yuan-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+                </div>
+                <!-- 角 -->
+                <div class="text-center bg-gray-50 rounded-lg p-2">
+                    <h3 class="text-2xl font-bold text-gray-600 cute-font">角</h3>
+                    <div id="jiao-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+                </div>
+                <!-- 分 -->
+                <div class="text-center bg-orange-50 rounded-lg p-2">
+                    <h3 class="text-2xl font-bold text-orange-600 cute-font">分</h3>
+                    <div id="fen-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部：结果显示和控制区域 -->
+        <footer class="mt-8 text-center">
+             <div class="bg-gray-800 inline-block text-white rounded-xl px-8 py-4 shadow-lg">
+                <span class="text-2xl text-gray-400 mr-2">总计:</span>
+                <span id="decimal-display" class="text-6xl font-bold text-yellow-300 tracking-widest">0.00</span>
+                <span class="text-2xl text-gray-400 ml-2">元</span>
+            </div>
+            <div class="mt-6 flex justify-center space-x-4">
+                <button id="reset-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-full text-xl cute-font shadow-md transition-transform transform hover:scale-105">
+                    清空重置
+                </button>
+                <button id="read-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full text-xl cute-font shadow-md transition-transform transform hover:scale-105">
+                    🔊 读数
+                </button>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- DOM 元素获取 ---
+        const yuanSource = document.getElementById('yuan-source');
+        const jiaoSource = document.getElementById('jiao-source');
+        const fenSource = document.getElementById('fen-source');
+        const dropZone = document.getElementById('drop-zone');
+        const yuanContainer = document.getElementById('yuan-container');
+        const jiaoContainer = document.getElementById('jiao-container');
+        const fenContainer = document.getElementById('fen-container');
+        const decimalDisplay = document.getElementById('decimal-display');
+        const resetButton = document.getElementById('reset-button');
+        const readButton = document.getElementById('read-button');
+        
+        // --- 状态变量 ---
+        let money = { yuan: 0, jiao: 0, fen: 0 };
+        let draggedType = null;
+        let isProcessing = false; // 防止动画期间重复操作
+
+        // --- 拖动事件监听 (鼠标) ---
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('coin')) {
+                draggedType = e.target.dataset.type;
+                setTimeout(() => e.target.style.opacity = '0.5', 0);
+            }
+        });
+
+        document.addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('coin')) {
+                e.target.style.opacity = '1';
+                draggedType = null;
+            }
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault(); 
+            if (!isProcessing) {
+                dropZone.classList.add('drag-over');
+            }
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (draggedType && !isProcessing) {
+                addMoney(draggedType);
+            }
+        });
+        
+        // --- 触摸事件监听 (用于智慧黑板) ---
+        let clonedCoin = null;
+
+        function handleTouchStart(e) {
+            if (isProcessing || !e.target.classList.contains('coin')) return;
+            const touch = e.touches[0];
+            draggedType = e.target.dataset.type;
+
+            clonedCoin = e.target.cloneNode(true);
+            clonedCoin.style.position = 'absolute';
+            clonedCoin.style.zIndex = '1000';
+            clonedCoin.style.pointerEvents = 'none';
+            document.body.appendChild(clonedCoin);
+            updateClonedCoinPosition(touch);
+        }
+
+        function handleTouchMove(e) {
+            if (!clonedCoin || isProcessing) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            updateClonedCoinPosition(touch);
+
+            const dropZoneRect = dropZone.getBoundingClientRect();
+            if (touch.clientX > dropZoneRect.left && touch.clientX < dropZoneRect.right &&
+                touch.clientY > dropZoneRect.top && touch.clientY < dropZoneRect.bottom) {
+                dropZone.classList.add('drag-over');
+            } else {
+                dropZone.classList.remove('drag-over');
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!clonedCoin || isProcessing) return;
+            
+            const touch = e.changedTouches[0];
+            const dropZoneRect = dropZone.getBoundingClientRect();
+            if (touch.clientX > dropZoneRect.left && touch.clientX < dropZoneRect.right &&
+                touch.clientY > dropZoneRect.top && touch.clientY < dropZoneRect.bottom) {
+                addMoney(draggedType);
+            }
+            
+            document.body.removeChild(clonedCoin);
+            clonedCoin = null;
+            draggedType = null;
+            dropZone.classList.remove('drag-over');
+        }
+
+        function updateClonedCoinPosition(touch) {
+            clonedCoin.style.left = `${touch.clientX - clonedCoin.offsetWidth / 2}px`;
+            clonedCoin.style.top = `${touch.clientY - clonedCoin.offsetHeight / 2}px`;
+        }
+
+        [yuanSource, jiaoSource, fenSource].forEach(el => {
+            el.addEventListener('touchstart', handleTouchStart);
+        });
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd);
+
+        // --- 核心逻辑函数 ---
+        function addMoney(type) {
+            money[type]++;
+            updateUI();
+        }
+
+        function updateUI() {
+            isProcessing = true;
+            // 检查并处理“分”的进位
+            let fenCarryOver = Math.floor(money.fen / 10);
+            if (fenCarryOver > 0) {
+                animateCarryOver('fen', fenCarryOver, () => {
+                    money.fen %= 10;
+                    money.jiao += fenCarryOver;
+                    // 检查并处理“角”的进位
+                    let jiaoCarryOver = Math.floor(money.jiao / 10);
+                    if (jiaoCarryOver > 0) {
+                       animateCarryOver('jiao', jiaoCarryOver, () => {
+                           money.jiao %= 10;
+                           money.yuan += jiaoCarryOver;
+                           redrawAllCoins();
+                           updateDecimalDisplay();
+                           isProcessing = false;
+                       });
+                    } else {
+                        redrawAllCoins();
+                        updateDecimalDisplay();
+                        isProcessing = false;
+                    }
+                });
+            } else {
+                // 如果“分”没有进位，再检查“角”的进位
+                let jiaoCarryOver = Math.floor(money.jiao / 10);
+                if (jiaoCarryOver > 0) {
+                    animateCarryOver('jiao', jiaoCarryOver, () => {
+                        money.jiao %= 10;
+                        money.yuan += jiaoCarryOver;
+                        redrawAllCoins();
+                        updateDecimalDisplay();
+                        isProcessing = false;
+                    });
+                } else {
+                    // 没有任何进位，直接重绘
+                    redrawAllCoins();
+                    updateDecimalDisplay();
+                    isProcessing = false;
+                }
+            }
+        }
+
+        function animateCarryOver(type, count, callback) {
+            const fromContainer = document.getElementById(`${type}-container`);
+            const children = Array.from(fromContainer.children);
+            const coinsToAnimate = children.slice(-10 * count);
+
+            coinsToAnimate.forEach(coin => {
+                coin.classList.add('carry-over-animate');
+            });
+            
+            // 动画结束后执行回调
+            setTimeout(callback, 800); 
+        }
+
+        function redrawAllCoins() {
+            yuanContainer.innerHTML = '';
+            jiaoContainer.innerHTML = '';
+            fenContainer.innerHTML = '';
+
+            for (let i = 0; i < money.yuan; i++) {
+                yuanContainer.appendChild(createCoinDOM('yuan'));
+            }
+            for (let i = 0; i < money.jiao; i++) {
+                jiaoContainer.appendChild(createCoinDOM('jiao'));
+            }
+            for (let i = 0; i < money.fen; i++) {
+                fenContainer.appendChild(createCoinDOM('fen'));
+            }
+        }
+
+        function createCoinDOM(type) {
+            const coinDiv = document.createElement('div');
+            coinDiv.className = `dropped-coin ${type}-coin`;
+            coinDiv.textContent = type === 'yuan' ? '1元' : type === 'jiao' ? '1角' : '1分';
+            return coinDiv;
+        }
+
+        function updateDecimalDisplay() {
+            const total = money.yuan + money.jiao * 0.1 + money.fen * 0.01;
+            decimalDisplay.textContent = total.toFixed(2);
+        }
+
+        resetButton.addEventListener('click', () => {
+            if (isProcessing) return;
+            money = { yuan: 0, jiao: 0, fen: 0 };
+            redrawAllCoins();
+            updateDecimalDisplay();
+        });
+        
+        // --- 读数功能 ---
+        readButton.addEventListener('click', () => {
+            if (isProcessing) return;
+            
+            const total = money.yuan + money.jiao * 0.1 + money.fen * 0.01;
+            const decimalString = total.toFixed(2);
+            
+            // 将数字转换为中文读法(如3.15 -> "三点一五")
+            const numberToChinese = (num) => {
+                const digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+                return num.split('').map(char => {
+                    if (char === '.') return '点';
+                    return digits[parseInt(char)];
+                }).join('');
+            };
+            
+            const readText = numberToChinese(decimalString) + '元';
+            
+            // 使用Web Speech API朗读
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(readText);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.8; // 语速稍慢,便于学生理解
+                utterance.pitch = 1.2; // 音调稍高,更友好
+                window.speechSynthesis.cancel(); // 取消之前的朗读
+                window.speechSynthesis.speak(utterance);
+            } else {
+                // 浏览器不支持语音合成,显示文本提示
+                alert(`读作: ${readText}`);
+            }
+        });
+        
+        // --- 初始状态 ---
+        updateDecimalDisplay();
+    </script>
+</body>
+</html>
+

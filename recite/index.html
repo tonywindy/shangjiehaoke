@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>背诵冒险记</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <div class="current-task-display" id="currentTaskDisplay">
+            <!-- 当前任务信息将通过JS动态更新 -->
+        </div>
+        <div class="controls game-ui">
+            <div class="add-character">
+                <input type="text" id="newStudentName" placeholder="输入冒险者姓名">
+                <button onclick="addNewStudent()" class="game-btn">添加冒险者</button>
+                <div class="import-wrapper">
+                    <button onclick="document.getElementById('importFile').click()" class="game-btn">
+                        <span>批量导入</span>
+                    </button>
+                    <input type="file" id="importFile" accept=".xlsx,.xls,.csv,.txt" style="display: none" onchange="importStudents(this)">
+                </div>
+            </div>
+            <div class="task-controls">
+                <button onclick="showTaskModal()" class="game-btn task-btn">
+                    管理背诵任务
+                </button>
+            </div>
+            <div class="save-export">
+                <button onclick="exportData()" class="game-btn">导出记录</button>
+                <button onclick="resetStudents()" class="game-btn reset-btn">重置位置</button>
+                <button onclick="resetAdventure()" class="game-btn danger-btn">重置冒险</button>
+            </div>
+        </div>
+        <div class="game-world">
+            <div class="palace-area">
+                <h2 class="area-title">知识宫殿</h2>
+                <div class="character-list palace" id="completed" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                    <!-- 已完成背诵的角色会出现在这里 -->
+                </div>
+            </div>
+            <div class="wilderness-area">
+                <h2 class="area-title">修炼野外</h2>
+                <div id="disguiseBox" class="disguise-box" ondrop="dropForDisguise(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" title="将冒险者头像拖到此处，使用易容术更换头像">
+                    <!-- 易容术方框 -->
+                </div>
+                <div class="character-list wilderness" id="pending" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                    <!-- 初始示例学生 -->
+                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student1">
+                        <div class="character-avatar">
+                            <img src="images/avatar1.png" alt="角色头像">
+                        </div>
+                        <span class="character-name">张三</span>
+                    </div>
+                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student2">
+                        <div class="character-avatar">
+                            <img src="images/avatar2.png" alt="角色头像">
+                        </div>
+                        <span class="character-name">李四</span>
+                    </div>
+                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student3">
+                        <div class="character-avatar">
+                            <img src="images/avatar3.png" alt="角色头像">
+                        </div>
+                        <span class="character-name">王五</span>
+                    </div>
+                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student4">
+                        <div class="character-avatar">
+                            <img src="images/avatar4.png" alt="角色头像">
+                        </div>
+                        <span class="character-name">赵六</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 将模态框移到这里 -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>背诵任务管理</h2>
+                <span class="close" onclick="closeTaskModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="task-input">
+                    <input type="text" id="newTaskName" placeholder="输入任务名称（如：第一单元课文背诵）">
+                    <button onclick="addTask()" class="game-btn">添加任务</button>
+                </div>
+                <div class="task-list" id="taskList">
+                    <!-- 任务列表将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 头像选择模态框 -->
+    <div id="avatarSelection" class="avatar-selection">
+        <div class="avatar-selection-content">
+            <div class="avatar-selection-header">
+                <h2>选择新头像</h2>
+                <span class="close" onclick="closeAvatarSelection()">&times;</span>
+            </div>
+            <div class="avatar-grid" id="avatarGrid">
+                <!-- 头像选项将在这里动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function allowDrop(ev) {
+            ev.preventDefault();
+            // 获取放置区域
+            const dropZone = ev.currentTarget;
+            if (dropZone && (dropZone.classList.contains('character-list') || dropZone.classList.contains('disguise-box'))) {
+                dropZone.classList.add('drag-over');
+            }
+        }
+
+        function drag(ev) {
+            // 获取被拖拽的卡片
+            const card = ev.target.closest('.character-card');
+            if (!card) return;
+
+            // 设置拖拽数据
+            ev.dataTransfer.setData("text/plain", card.id);
+            card.classList.add('dragging');
+            
+            // 设置允许的拖拽效果
+            ev.dataTransfer.effectAllowed = "move";
+
+            // 创建拖拽预览
+            const dragImage = document.createElement('div');
+            dragImage.className = 'drag-preview';
+            
+            const avatar = card.querySelector('.character-avatar').cloneNode(true);
+            const name = card.querySelector('.character-name').cloneNode(true);
+            
+            dragImage.appendChild(avatar);
+            dragImage.appendChild(name);
+            
+            document.body.appendChild(dragImage);
+            ev.dataTransfer.setDragImage(dragImage, 30, 30);
+            setTimeout(() => document.body.removeChild(dragImage), 0);
+            
+            // 防止事件冒泡
+            ev.stopPropagation();
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            
+            // 获取放置区域
+            const dropZone = ev.currentTarget;
+            if (!dropZone.classList.contains('character-list')) return;
+
+            // 获取被拖拽元素
+            const data = ev.dataTransfer.getData("text/plain");
+            const draggedElement = document.getElementById(data);
+            if (!draggedElement) return;
+
+            // 移除拖拽相关的类
+            document.querySelectorAll('.drag-over').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+            draggedElement.classList.remove('dragging');
+
+            // 检查是否从未完成区域拖拽到完成区域
+            const isMovingToCompleted = dropZone.id === 'completed';
+            const wasInPending = draggedElement.parentElement && draggedElement.parentElement.id === 'pending';
+            
+            // 添加到新位置
+            dropZone.appendChild(draggedElement);
+
+            // 如果是新完成任务，分配奖牌
+            if (isMovingToCompleted && wasInPending) {
+                assignMedal(draggedElement);
+            }
+
+            // 添加放置动画
+            draggedElement.classList.add('dropped');
+            setTimeout(() => {
+                draggedElement.classList.remove('dropped');
+            }, 300);
+            
+            // 自动保存进度
+            saveData();
+        }
+
+        // 易容术功能：拖动到易容术方框
+        function dropForDisguise(ev) {
+            ev.preventDefault();
+            
+            // 获取放置区域
+            const dropZone = ev.currentTarget;
+            if (!dropZone.classList.contains('disguise-box')) return;
+
+            // 获取被拖拽元素
+            const data = ev.dataTransfer.getData("text/plain");
+            const draggedElement = document.getElementById(data);
+            if (!draggedElement) return;
+
+            // 移除拖拽相关的类
+            document.querySelectorAll('.drag-over').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+            draggedElement.classList.remove('dragging');
+
+            // 保存当前选中的学生ID
+            window.currentStudentId = data;
+
+            // 显示头像选择模态框
+            showAvatarSelection();
+            
+            // 自动保存进度
+            saveData();
+        }
+
+        // 显示头像选择模态框
+        function showAvatarSelection() {
+            const avatarSelection = document.getElementById('avatarSelection');
+            const avatarGrid = document.getElementById('avatarGrid');
+            
+            // 清空之前的头像选项
+            avatarGrid.innerHTML = '';
+            
+            // 添加所有头像选项
+            const avatars = [
+                'avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png',
+                'avatar5.png', 'avatar6.png', 'avatar7.png', 'avatar8.png',
+                'avatar9.png', 'avatar10.png', 'avatar11.png', 'avatar12.png',
+                'avatar13.png', 'avatar14.png', 'avatar15.png', 'avatar16.png'
+            ];
+            
+            avatars.forEach(avatar => {
+                const avatarOption = document.createElement('div');
+                avatarOption.className = 'avatar-option';
+                avatarOption.innerHTML = `<img src="images/${avatar}" alt="头像选项">`;
+                avatarOption.onclick = function() {
+                    changeAvatar(`images/${avatar}`);
+                };
+                avatarGrid.appendChild(avatarOption);
+            });
+            
+            // 显示模态框
+            avatarSelection.style.display = 'flex';
+        }
+
+        // 关闭头像选择模态框
+        function closeAvatarSelection() {
+            const avatarSelection = document.getElementById('avatarSelection');
+            avatarSelection.style.display = 'none';
+            window.currentStudentId = null;
+        }
+
+        // 更换头像函数修改，确保全局更新头像信息
+        function changeAvatar(newAvatarPath) {
+            if (!window.currentStudentId) return;
+            
+            const studentElement = document.getElementById(window.currentStudentId);
+            if (!studentElement) return;
+            
+            // 获取头像图片元素
+            const avatarImg = studentElement.querySelector('.character-avatar img');
+            const avatarContainer = studentElement.querySelector('.character-avatar');
+            
+            // 添加动画效果
+            avatarContainer.classList.add('avatar-changing');
+            
+            // 提取学生ID和姓名，用于全局更新
+            const studentId = studentElement.id;
+            const studentName = studentElement.querySelector('.character-name').textContent;
+            
+            // 延迟更换头像，让动画有时间显示
+            setTimeout(() => {
+                avatarImg.src = newAvatarPath;
+                
+                // 提取头像文件名
+                const fileName = newAvatarPath.split('/').pop();
+                const standardPath = `images/${fileName}`;
+                
+                // 更新全局头像信息
+                updateGlobalStudentAvatar(studentId, studentName, standardPath);
+                
+                // 保存当前任务状态
+                saveCurrentTaskState();
+            }, 400);
+            
+            // 动画结束后移除动画类
+            setTimeout(() => {
+                avatarContainer.classList.remove('avatar-changing');
+                studentElement.classList.add('dropped');
+                
+                setTimeout(() => {
+                    studentElement.classList.remove('dropped');
+                }, 300);
+            }, 800);
+            
+            // 关闭模态框
+            closeAvatarSelection();
+            
+            // 显示通知
+            showNotification('易容术施展成功！');
+        }
+        
+        // 改进版的全局头像更新函数
+        function updateGlobalStudentAvatar(studentId, studentName, avatarPath) {
+            // 获取所有任务
+            const allTasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+            let updated = false;
+            
+            // 遍历所有任务
+            allTasks.forEach(task => {
+                // 更新已完成列表中的学生头像
+                task.completed = task.completed.map(student => {
+                    if (student.id === studentId || 
+                        (student.name === studentName && !student.id)) {
+                        return {...student, avatar: avatarPath, id: studentId};
+                    }
+                    return student;
+                });
+                
+                // 更新未完成列表中的学生头像
+                task.pending = task.pending.map(student => {
+                    if (student.id === studentId || 
+                        (student.name === studentName && !student.id)) {
+                        return {...student, avatar: avatarPath, id: studentId};
+                    }
+                    return student;
+                });
+                
+                updated = true;
+            });
+            
+            // 保存更新后的数据
+            if (updated) {
+                localStorage.setItem('recitationTasks', JSON.stringify(allTasks));
+            }
+        }
+
+        function dragLeave(ev) {
+            const dropZone = ev.currentTarget;
+            if (dropZone && (dropZone.classList.contains('character-list') || dropZone.classList.contains('disguise-box'))) {
+                dropZone.classList.remove('drag-over');
+            }
+        }
+
+        // 奖牌分配函数
+        function assignMedal(studentElement) {
+            // 移除已有的奖牌
+            const existingMedal = studentElement.querySelector('.medal');
+            if (existingMedal) {
+                existingMedal.remove();
+            }
+            
+            // 获取完成区域的学生数量（包括刚添加的这个）
+            const completedArea = document.getElementById('completed');
+            const completedCount = completedArea.children.length;
+            
+            let medalType = '';
+            
+            // 根据完成顺序分配奖牌
+            if (completedCount <= 5) {
+                medalType = 'gold';
+            } else if (completedCount <= 15) {
+                medalType = 'silver';
+            } else if (completedCount <= 30) {
+                medalType = 'bronze';
+            }
+            
+            // 如果有奖牌，创建并添加
+            if (medalType) {
+                const medal = document.createElement('div');
+                medal.className = `medal ${medalType}`;
+                medal.title = `第${completedCount}名完成 - ${medalType === 'gold' ? '金牌' : medalType === 'silver' ? '银牌' : '铜牌'}`;
+                
+                // 添加到学生卡片
+                studentElement.style.position = 'relative';
+                studentElement.appendChild(medal);
+                
+                // 显示奖牌获得通知
+                const studentName = studentElement.querySelector('.character-name').textContent;
+                const medalName = medalType === 'gold' ? '金牌' : medalType === 'silver' ? '银牌' : '铜牌';
+                showNotification(`🎉 ${studentName} 获得${medalName}！第${completedCount}名完成任务！`);
+            }
+        }
+        
+        // 更新所有学生的奖牌（用于加载任务时）
+        function updateAllMedals() {
+            const completedArea = document.getElementById('completed');
+            const students = Array.from(completedArea.children);
+            
+            students.forEach((student, index) => {
+                // 移除已有的奖牌
+                const existingMedal = student.querySelector('.medal');
+                if (existingMedal) {
+                    existingMedal.remove();
+                }
+                
+                const position = index + 1;
+                let medalType = '';
+                
+                // 根据位置分配奖牌
+                if (position <= 5) {
+                    medalType = 'gold';
+                } else if (position <= 15) {
+                    medalType = 'silver';
+                } else if (position <= 30) {
+                    medalType = 'bronze';
+                }
+                
+                // 如果有奖牌，创建并添加
+                if (medalType) {
+                    const medal = document.createElement('div');
+                    medal.className = `medal ${medalType}`;
+                    medal.title = `第${position}名完成 - ${medalType === 'gold' ? '金牌' : medalType === 'silver' ? '银牌' : '铜牌'}`;
+                    
+                    // 添加到学生卡片
+                    student.style.position = 'relative';
+                    student.appendChild(medal);
+                }
+            });
+        }
+
+        // 修改获取头像的函数，改为随机分配而不是循环分配
+        function getNextAvatar() {
+            const avatars = [
+                'avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png',
+                'avatar5.png', 'avatar6.png', 'avatar7.png', 'avatar8.png',
+                'avatar9.png', 'avatar10.png', 'avatar11.png', 'avatar12.png',
+                'avatar13.png', 'avatar14.png', 'avatar15.png', 'avatar16.png'
+            ];
+            const randomIndex = Math.floor(Math.random() * avatars.length);
+            const avatarPath = `images/${avatars[randomIndex]}`;
+            return avatarPath;
+        }
+
+        // 创建学生元素函数，优化头像处理
+        function createStudentElement(student) {
+            const characterCard = document.createElement('div');
+            characterCard.className = 'character-card';
+            characterCard.draggable = true;
+            characterCard.id = student.id || 'student' + Date.now() + Math.random().toString(36).substr(2, 9);
+            
+            // 确保头像路径正确
+            let avatarPath = student.avatar;
+            
+            if (!avatarPath) {
+                // 如果没有头像，随机分配一个
+                avatarPath = getNextAvatar();
+            } else if (typeof avatarPath === 'string') {
+                // 处理头像路径，统一格式为 images/avatarX.png
+                if (avatarPath.includes('/')) {
+                    // 从完整URL中提取文件名
+                    const fileName = avatarPath.split('/').pop();
+                    if (fileName && fileName.match(/avatar\d+\.png/)) {
+                        avatarPath = `images/${fileName}`;
+                    } else {
+                        avatarPath = getNextAvatar();
+                    }
+                } else if (avatarPath.match(/avatar\d+\.png/)) {
+                    // 如果只有文件名，添加路径前缀
+                    avatarPath = `images/${avatarPath}`;
+                } else {
+                    avatarPath = getNextAvatar();
+                }
+            } else {
+                avatarPath = getNextAvatar();
+            }
+            
+            characterCard.innerHTML = `
+                <div class="character-avatar">
+                    <img src="${avatarPath}" 
+                         alt="角色头像" 
+                         onerror="this.src='images/avatar1.png'">
+                </div>
+                <span class="character-name">${student.name}</span>
+            `;
+            
+            characterCard.ondragstart = function(event) {
+                drag(event);
+            };
+            return characterCard;
+        }
+
+        // 修改添加新学生的函数
+        function addNewStudent() {
+            const nameInput = document.getElementById('newStudentName');
+            const name = nameInput.value.trim();
+            
+            if (name) {
+                // 检查是否已经存在同名学生，如果存在则使用相同的头像
+                const existingStudent = findStudentByName(name);
+                const studentId = 'student' + Date.now() + Math.random().toString(36).substr(2, 9);
+                
+                const studentData = {
+                    id: studentId,
+                    name: name,
+                    avatar: existingStudent ? existingStudent.avatar : getNextAvatar()
+                };
+                
+                const pendingList = document.getElementById('pending');
+                const studentDiv = createStudentElement(studentData);
+                pendingList.appendChild(studentDiv);
+                
+                // 更新所有任务以保持一致性
+                if (!existingStudent) {
+                    updateGlobalStudentAvatar(studentId, name, studentData.avatar);
+                }
+                
+                nameInput.value = '';
+                showNotification(`冒险者 ${name} 已被召唤！`);
+                
+                // 保存当前任务状态
+                saveCurrentTaskState();
+                // 自动保存进度
+                saveData();
+            } else {
+                alert('请输入冒险者姓名');
+            }
+        }
+        
+        // 查找所有任务中是否存在同名学生
+        function findStudentByName(name) {
+            const allTasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+            if (!allTasks.length) return null;
+            
+            for (const task of allTasks) {
+                // 在已完成区域查找
+                const completedStudent = task.completed.find(s => s.name === name);
+                if (completedStudent) return completedStudent;
+                
+                // 在未完成区域查找
+                const pendingStudent = task.pending.find(s => s.name === name);
+                if (pendingStudent) return pendingStudent;
+            }
+            
+            return null;
+        }
+
+        // 修改添加学生到列表的函数
+        function addStudentsToList(names) {
+            const pendingList = document.getElementById('pending');
+            
+            // 检查是否是初始示例学生
+            const isInitialState = pendingList.children.length === 4 && 
+                Array.from(pendingList.children).every((child, index) => {
+                    const defaultNames = ['张三', '李四', '王五', '赵六'];
+                    return child.querySelector('.character-name').textContent === defaultNames[index];
+                });
+            
+            // 如果是初始状态，清空列表
+            if (isInitialState) {
+                pendingList.innerHTML = '';
+            }
+            
+            // 过滤并处理有效的名字
+            const validNames = names.filter(name => name && name.trim().length > 0);
+            const addedStudents = [];
+            
+            validNames.forEach(name => {
+                const trimmedName = name.trim();
+                
+                // 检查是否已经存在同名学生，如果存在则使用相同的头像
+                const existingStudent = findStudentByName(trimmedName);
+                const studentId = 'student' + Date.now() + Math.random().toString(36).substr(2, 9);
+                
+                const studentData = {
+                    id: studentId,
+                    name: trimmedName,
+                    avatar: existingStudent ? existingStudent.avatar : getNextAvatar()
+                };
+                
+                const studentDiv = createStudentElement(studentData);
+                pendingList.appendChild(studentDiv);
+                addedStudents.push(studentData);
+            });
+            
+            // 批量更新所有新添加的学生
+            if (addedStudents.length > 0) {
+                addedStudents.forEach(student => {
+                    if (!findStudentByName(student.name) || 
+                        findStudentByName(student.name).id === student.id) {
+                        updateGlobalStudentAvatar(student.id, student.name, student.avatar);
+                    }
+                });
+                
+                // 保存当前任务状态
+                saveCurrentTaskState();
+            }
+            
+            showNotification(`成功导入 ${validNames.length} 名学生`);
+        }
+
+        // 修改保存数据的函数，添加头像信息
+        function saveData() {
+            // 保存当前任务状态
+            saveCurrentTaskState();
+            showNotification('进度已保存');
+            
+            // 确保所有学生的头像信息都被正确保存
+            const allTasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+            if (allTasks.length > 0) {
+                localStorage.setItem('recitationTasks', JSON.stringify(allTasks));
+            }
+        }
+
+        // 导出数据为CSV文件
+        function exportData() {
+            const completed = document.getElementById('completed');
+            const pending = document.getElementById('pending');
+            
+            let csvContent = "状态,学生姓名,头像\n";
+            
+            Array.from(completed.children).forEach(student => {
+                csvContent += `已背诵,${student.innerText},${student.querySelector('.character-avatar img').src}\n`;
+            });
+            
+            Array.from(pending.children).forEach(student => {
+                csvContent += `未背诵,${student.innerText},${student.querySelector('.character-avatar img').src}\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", "背诵记录.csv");
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 修改页面加载时恢复数据的函数
+        window.onload = function() {
+            const savedData = localStorage.getItem('recitationData');
+            const completed = document.getElementById('completed');
+            const pending = document.getElementById('pending');
+            
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    
+                    // 清空现有数据
+                    completed.innerHTML = '';
+                    pending.innerHTML = '';
+                    
+                    // 恢复已背诵学生
+                    data.completed.forEach(student => {
+                        const studentDiv = createStudentElement(student);
+                        completed.appendChild(studentDiv);
+                    });
+                    
+                    // 恢复未背诵学生
+                    data.pending.forEach(student => {
+                        const studentDiv = createStudentElement(student);
+                        pending.appendChild(studentDiv);
+                    });
+                } catch (error) {
+                    // 如果数据解析出错，清除localStorage
+                    localStorage.removeItem('recitationData');
+                    console.error('数据恢复失败:', error);
+                }
+            } else {
+                // 如果没有保存的数据，确保示例学生在野外区域
+                completed.innerHTML = '';  // 清空宫殿区域
+            }
+        };
+
+        // 修改导入学生名单函数
+        function importStudents(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            
+            // 根据文件类型选择不同的处理方式
+            if (file.name.endsWith('.txt') || file.name.endsWith('.csv')) {
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    const names = text.split(/[\n,]/) // 支持换行或逗号分隔
+                        .map(name => name.trim())
+                        .filter(name => name.length > 0);
+                    
+                    addStudentsToList(names);
+                };
+                reader.readAsText(file);
+            } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // 获取第一个工作表
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // 将工作表转换为数组
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                    
+                    // 提取所有非空的名字
+                    const names = jsonData.flat()
+                        .map(name => String(name).trim())
+                        .filter(name => name.length > 0);
+                    
+                    addStudentsToList(names);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+            
+            // 清空文件输入
+            input.value = '';
+        }
+
+        // 显示通知提示
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'game-notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // 页面加载时为拖放区域添加事件监听
+        let touchDragging = false;
+        let draggedElement = null;
+        let startX, startY;
+        let initialX, initialY;
+        let currentDropZone = null;
+
+        function handleTouchStart(e) {
+            const touch = e.touches[0];
+            const card = touch.target.closest('.character-card');
+            if (!card) return;
+
+            e.preventDefault();
+            touchDragging = true;
+            draggedElement = card;
+            
+            // 记录初始触摸位置
+            startX = touch.clientX;
+            startY = touch.clientY;
+            
+            // 记录卡片初始位置
+            const rect = card.getBoundingClientRect();
+            initialX = rect.left;
+            initialY = rect.top;
+            
+            // 添加拖动样式
+            card.style.position = 'fixed';
+            card.style.zIndex = '1000';
+            card.style.width = rect.width + 'px';
+            card.style.left = initialX + 'px';
+            card.style.top = initialY + 'px';
+            card.classList.add('dragging');
+        }
+
+        function handleTouchMove(e) {
+            if (!touchDragging || !draggedElement) return;
+            e.preventDefault();
+
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - startX;
+            const deltaY = touch.clientY - startY;
+
+            // 移动卡片
+            draggedElement.style.left = (initialX + deltaX) + 'px';
+            draggedElement.style.top = (initialY + deltaY) + 'px';
+
+            // 检测放置区域
+            const dropZones = document.querySelectorAll('.character-list, .disguise-box');
+            let foundDropZone = null;
+
+            dropZones.forEach(zone => {
+                const rect = zone.getBoundingClientRect();
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                    touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                    foundDropZone = zone;
+                }
+            });
+
+            // 更新放置区域高亮
+            if (currentDropZone && currentDropZone !== foundDropZone) {
+                currentDropZone.classList.remove('drag-over');
+            }
+            if (foundDropZone) {
+                foundDropZone.classList.add('drag-over');
+                currentDropZone = foundDropZone;
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchDragging || !draggedElement) return;
+            e.preventDefault();
+
+            // 重置卡片样式
+            draggedElement.style.position = '';
+            draggedElement.style.zIndex = '';
+            draggedElement.style.width = '';
+            draggedElement.style.left = '';
+            draggedElement.style.top = '';
+            draggedElement.classList.remove('dragging');
+
+            // 处理放置
+            if (currentDropZone) {
+                currentDropZone.classList.remove('drag-over');
+                
+                // 如果是易容术方框，则启动头像选择功能
+                if (currentDropZone.classList.contains('disguise-box')) {
+                    window.currentStudentId = draggedElement.id;
+                    showAvatarSelection();
+                } else {
+                    currentDropZone.appendChild(draggedElement);
+                    draggedElement.classList.add('dropped');
+                    setTimeout(() => {
+                        draggedElement.classList.remove('dropped');
+                    }, 300);
+                }
+            }
+
+            // 重置状态
+            touchDragging = false;
+            draggedElement = null;
+            currentDropZone = null;
+        }
+
+        window.addEventListener('load', function() {
+            const dropZones = document.querySelectorAll('.character-list, .disguise-box');
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', allowDrop);
+                zone.addEventListener('dragleave', dragLeave);
+                zone.addEventListener('drop', zone.classList.contains('disguise-box') ? dropForDisguise : drop);
+            });
+
+            // 添加触摸事件监听
+            document.addEventListener('touchstart', handleTouchStart, { passive: false });
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd, { passive: false });
+        });
+
+        // 添加重置函数
+        function resetStudents() {
+            const completed = document.getElementById('completed');
+            const pending = document.getElementById('pending');
+            
+            // 获取所有学生
+            const allStudents = Array.from(completed.children);
+            
+            // 将所有学生移动到野外区域
+            allStudents.forEach(student => {
+                // 添加移动动画
+                student.classList.add('resetting');
+                
+                // 移动到野外区域
+                pending.appendChild(student);
+                
+                // 移除动画类
+                setTimeout(() => {
+                    student.classList.remove('resetting');
+                }, 500);
+            });
+            
+            // 显示提示
+            if (allStudents.length > 0) {
+                showNotification(`已将 ${allStudents.length} 名学生重置到野外`);
+            } else {
+                showNotification('宫殿中没有需要重置的学生');
+            }
+        }
+
+        // 重置整个冒险的函数
+        function resetAdventure() {
+            if (confirm('确定要重置整个冒险吗？这将删除所有学生和任务数据，恢复到初始状态。此操作不可撤销！')) {
+                // 清除所有本地存储数据
+                localStorage.removeItem('recitationData');
+                localStorage.removeItem('recitationTasks');
+                localStorage.removeItem('currentTaskId');
+                
+                // 重置当前任务ID
+                currentTaskId = null;
+                
+                // 清空已完成区域
+                document.getElementById('completed').innerHTML = '';
+                
+                // 重置未完成区域为初始状态
+                document.getElementById('pending').innerHTML = `
+                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student1">
+                        <div class="character-avatar">
+                            <img src="images/avatar1.png" alt="角色头像">
+                        </div>
+                        <span class="character-name">张三</span>
+                    </div>
+                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student2">
+                        <div class="character-avatar">
+                            <img src="images/avatar2.png" alt="角色头像">
+                        </div>
+                        <span class="character-name">李四</span>
+                    </div>
+                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student3">
+                        <div class="character-avatar">
+                            <img src="images/avatar3.png" alt="角色头像">
+                        </div>
+                        <span class="character-name">王五</span>
+                    </div>
+                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student4">
+                        <div class="character-avatar">
+                            <img src="images/avatar4.png" alt="角色头像">
+                        </div>
+                        <span class="character-name">赵六</span>
+                    </div>
+                `;
+                
+                // 更新当前任务显示
+                updateCurrentTaskDisplay();
+                
+                // 显示通知
+                showNotification('冒险已重置到初始状态');
+            }
+        }
+
+        // 修改任务管理相关函数
+        let currentTaskId = null;  // 添加当前任务ID的全局变量
+
+        function showTaskModal() {
+            const modal = document.getElementById('taskModal');
+            if (modal) {
+                modal.style.display = 'block';
+                loadTasks();
+            }
+        }
+
+        function closeTaskModal() {
+            const modal = document.getElementById('taskModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('newTaskName');
+            const taskName = taskInput.value.trim();
+            
+            if (taskName) {
+                // 保存当前任务状态，以防有未保存的更改
+                if (currentTaskId) {
+                    saveCurrentTaskState();
+                }
+                
+                const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+                
+                // 合并已完成区域和未完成区域的学生，全部移至未完成区域
+                const completedStudents = Array.from(document.getElementById('completed').children);
+                const pendingStudents = Array.from(document.getElementById('pending').children);
+                
+                // 从所有学生创建标准格式的数据
+                const allStudents = [...completedStudents, ...pendingStudents].map(el => {
+                    const avatarSrc = el.querySelector('img').src;
+                    // 提取头像文件名
+                    const fileName = avatarSrc.split('/').pop();
+                    return {
+                        id: el.id,
+                        name: el.querySelector('.character-name').textContent,
+                        avatar: `images/${fileName}`
+                    };
+                });
+                
+                const newTask = {
+                    id: Date.now(),
+                    name: taskName,
+                    date: new Date().toLocaleDateString(),
+                    completed: [],
+                    pending: allStudents // 将所有学生放在未完成区域
+                };
+                
+                tasks.push(newTask);
+                localStorage.setItem('recitationTasks', JSON.stringify(tasks));
+                
+                currentTaskId = newTask.id;
+                localStorage.setItem('currentTaskId', newTask.id);
+                
+                // 更新界面，将所有学生放到未完成区域
+                const completed = document.getElementById('completed');
+                const pending = document.getElementById('pending');
+                
+                completed.innerHTML = '';
+                pending.innerHTML = '';
+                
+                allStudents.forEach(student => {
+                    const studentDiv = createStudentElement(student);
+                    pending.appendChild(studentDiv);
+                });
+                
+                taskInput.value = '';
+                loadTasks();
+                updateCurrentTaskDisplay();
+                showNotification(`已添加新任务：${taskName}，所有冒险者已重置到修炼野外`);
+                closeTaskModal();
+            }
+        }
+
+        function loadTasks() {
+            const taskList = document.getElementById('taskList');
+            const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+            
+            taskList.innerHTML = tasks.map(task => `
+                <div class="task-item ${currentTaskId === task.id ? 'active' : ''}">
+                    <div class="task-info">
+                        <span class="task-name">${task.name}</span>
+                        <span class="task-date">${task.date}</span>
+                        <div class="task-stats">
+                            已完成: ${task.completed.length} / 总人数: ${task.completed.length + task.pending.length}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button onclick="switchToTask(${task.id})" class="game-btn switch-btn">
+                            ${currentTaskId === task.id ? '当前任务' : '切换至此任务'}
+                        </button>
+                        <button onclick="deleteTask(${task.id})" class="game-btn delete-btn">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 修改切换任务函数，确保全局一致的头像处理
+        function switchToTask(taskId) {
+            const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+            const task = tasks.find(t => t.id === taskId);
+            
+            if (task) {
+                // 保存当前任务的状态
+                if (currentTaskId) {
+                    saveCurrentTaskState();
+                }
+                
+                // 切换到新任务
+                currentTaskId = taskId;
+                localStorage.setItem('currentTaskId', taskId);
+                
+                // 更新界面
+                const completed = document.getElementById('completed');
+                const pending = document.getElementById('pending');
+                
+                completed.innerHTML = '';
+                pending.innerHTML = '';
+                
+                // 确保学生ID是唯一的，避免重复
+                const studentIds = new Set();
+                
+                // 恢复已完成学生
+                task.completed.forEach(student => {
+                    if (!student.id || studentIds.has(student.id)) {
+                        student.id = 'student' + Date.now() + Math.random().toString(36).substr(2, 9);
+                    }
+                    studentIds.add(student.id);
+                    const studentDiv = createStudentElement(student);
+                    completed.appendChild(studentDiv);
+                });
+                
+                // 恢复未完成学生
+                task.pending.forEach(student => {
+                    if (!student.id || studentIds.has(student.id)) {
+                        student.id = 'student' + Date.now() + Math.random().toString(36).substr(2, 9);
+                    }
+                    studentIds.add(student.id);
+                    const studentDiv = createStudentElement(student);
+                    pending.appendChild(studentDiv);
+                });
+                
+                // 更新奖牌显示
+                updateAllMedals();
+                
+                updateCurrentTaskDisplay();
+                closeTaskModal();
+                showNotification(`已切换到任务：${task.name}`);
+                loadTasks();
+            }
+        }
+
+        // 修改保存任务状态的函数，确保保存头像信息
+        function saveCurrentTaskState() {
+            if (!currentTaskId) return;
+            
+            const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+            const taskIndex = tasks.findIndex(t => t.id === currentTaskId);
+            
+            if (taskIndex !== -1) {
+                // 保存当前状态
+                const completed = Array.from(document.getElementById('completed').children)
+                    .map(el => {
+                        const avatarSrc = el.querySelector('img').src;
+                        // 提取头像文件名
+                        const fileName = avatarSrc.split('/').pop();
+                        return {
+                            id: el.id,
+                            name: el.querySelector('.character-name').textContent,
+                            avatar: `images/${fileName}`
+                        };
+                    });
+                    
+                const pending = Array.from(document.getElementById('pending').children)
+                    .map(el => {
+                        const avatarSrc = el.querySelector('img').src;
+                        // 提取头像文件名
+                        const fileName = avatarSrc.split('/').pop();
+                        return {
+                            id: el.id,
+                            name: el.querySelector('.character-name').textContent,
+                            avatar: `images/${fileName}`
+                        };
+                    });
+                
+                tasks[taskIndex].completed = completed;
+                tasks[taskIndex].pending = pending;
+                
+                localStorage.setItem('recitationTasks', JSON.stringify(tasks));
+            }
+        }
+
+        // 在页面关闭或刷新前自动保存
+        window.addEventListener('beforeunload', function() {
+            saveCurrentTaskState();
+        });
+
+        function deleteTask(taskId) {
+            if (confirm('确定要删除此任务吗？删除后无法恢复。')) {
+                const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+                const updatedTasks = tasks.filter(task => task.id !== taskId);
+                localStorage.setItem('recitationTasks', JSON.stringify(updatedTasks));
+                
+                if (currentTaskId === taskId) {
+                    currentTaskId = null;
+                    localStorage.removeItem('currentTaskId');
+                    document.getElementById('completed').innerHTML = '';
+                    document.getElementById('pending').innerHTML = '';
+                }
+                
+                loadTasks();
+                showNotification('任务已删除');
+            }
+        }
+
+        // 添加更新当前任务显示的函数
+        function updateCurrentTaskDisplay() {
+            const display = document.getElementById('currentTaskDisplay');
+            if (currentTaskId) {
+                const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+                const currentTask = tasks.find(t => t.id === currentTaskId);
+                if (currentTask) {
+                    display.innerHTML = `
+                        <span class="task-label">当前任务:</span>
+                        <span class="task-name">${currentTask.name}</span>
+                    `;
+                }
+            } else {
+                display.innerHTML = `
+                    <span class="task-label">当前任务:</span>
+                    <span class="task-name">未选择任务</span>
+                `;
+            }
+        }
+
+        // 确保在页面加载完成后再添加事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            // 点击模态框外部关闭
+            const modal = document.getElementById('taskModal');
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        closeTaskModal();
+                    }
+                });
+            }
+
+            // 恢复当前任务
+            const savedTaskId = localStorage.getItem('currentTaskId');
+            if (savedTaskId) {
+                switchToTask(parseInt(savedTaskId));
+            } else {
+                const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+                if (tasks.length > 0) {
+                    switchToTask(tasks[tasks.length - 1].id);
+                }
+            }
+            updateCurrentTaskDisplay();
+        });
+    </script>
+</body>
+</html>

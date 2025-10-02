@@ -1,0 +1,974 @@
+/* 全局样式优化 */
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f39c12;
+    --palace-color: #9b59b6;
+    --wilderness-color: #27ae60;
+    --card-bg: #fff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --title-font: 'YouYuan', 'STKaiti', serif;  /* 优先使用幼圆字体 */
+    --gold-color: #ffd700;
+    --silver-color: #c0c0c0;
+    --bronze-color: #cd7f32;
+}
+
+/* 修改网页背景为更活泼的渐变色 */
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #43cea2, #185a9d);  /* 清新的蓝绿渐变 */
+    position: relative;
+    min-height: 100vh;
+}
+
+/* 添加活泼的背景图案 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 25px 25px, rgba(255,255,255,0.2) 2%, transparent 0%),
+        radial-gradient(circle at 75px 75px, rgba(255,255,255,0.2) 2%, transparent 0%);
+    background-size: 100px 100px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 游戏容器优化 */
+.game-container {
+    max-width: 1600px;  /* 增加最大宽度 */
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+}
+
+/* 添加游戏标题 */
+.game-container::before {
+    content: "背诵冒险记";
+    display: block;
+    text-align: center;
+    font-size: 36px;
+    color: #fff;
+    text-shadow: 0 0 15px rgba(74, 144, 226, 0.9),
+                 0 0 30px rgba(74, 144, 226, 0.6);
+    margin-bottom: 30px;
+    font-family: var(--title-font);
+    letter-spacing: 5px;
+    animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+/* 添加标题发光动画 */
+@keyframes titleGlow {
+    from {
+        text-shadow: 0 0 15px rgba(74, 144, 226, 0.9),
+                     0 0 30px rgba(74, 144, 226, 0.6);
+    }
+    to {
+        text-shadow: 0 0 25px rgba(74, 144, 226, 0.9),
+                     0 0 50px rgba(74, 144, 226, 0.6);
+    }
+}
+
+/* 控制面板样式优化 */
+.controls.game-ui {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 左侧添加角色区域 */
+.add-character {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+/* 右侧保存导出区域 */
+.save-export {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* 导入按钮包装器 */
+.import-wrapper {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 按钮样式优化 */
+.game-btn {
+    background: linear-gradient(145deg, var(--primary-color), #2980b9);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+    white-space: nowrap;
+}
+
+.game-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+    background: linear-gradient(145deg, #5a9ee6, var(--primary-color));
+}
+
+/* 输入框样式调整 */
+input[type="text"] {
+    padding: 8px 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    margin-right: 0;
+    font-size: 14px;
+    height: 38px;
+    box-sizing: border-box;
+    min-width: 200px;
+}
+
+/* 游戏世界 */
+.game-world {
+    display: flex;
+    gap: 40px;
+    min-height: auto;
+}
+
+/* 宫殿和野外区域 */
+.palace-area, .wilderness-area {
+    flex: 1;
+    border-radius: 15px;
+    padding: 30px 25px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 600px;
+    display: flex;  /* 添加flex布局 */
+    flex-direction: column;  /* 垂直排列 */
+}
+
+/* 宫殿区域背景 */
+.palace-area {
+    background: url('images/background1.jpg') center/cover;
+}
+
+/* 野外区域背景 */
+.wilderness-area {
+    background: url('images/background2.jpg') center/cover;
+}
+
+/* 修改区域标题样式 */
+.area-title {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 25px;  /* 增加底部间距 */
+    font-size: 36px;  /* 增大字体 */
+    font-family: var(--title-font);
+    position: relative;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6),  /* 加深文字阴影 */
+                 0 0 25px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+    flex-shrink: 0;
+    letter-spacing: 4px;  /* 增加字间距 */
+    font-weight: bold;  /* 加粗 */
+}
+
+.area-title::after {
+    content: '';
+    display: block;
+    width: 80px;  /* 增加下划线宽度 */
+    height: 4px;  /* 增加下划线高度 */
+    background: currentColor;
+    margin: 12px auto;  /* 增加间距 */
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);  /* 添加阴影 */
+}
+
+/* 为不同区域添加不同的发光效果 */
+.palace-area .area-title {
+    text-shadow: 0 2px 6px rgba(155, 89, 182, 0.6),
+                 0 0 25px rgba(155, 89, 182, 0.4);
+}
+
+.wilderness-area .area-title {
+    text-shadow: 0 2px 6px rgba(39, 174, 96, 0.6),
+                 0 0 25px rgba(39, 174, 96, 0.4);
+}
+
+/* 修改角色列表容器样式 */
+.character-list {
+    min-height: 400px;
+    height: 100%;  /* 填充剩余空间 */
+    max-height: none;  /* 移除最大高度限制 */
+    padding: 15px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-content: flex-start;
+    justify-content: flex-start;
+    overflow-y: auto;
+    flex: 1;  /* 填充剩余空间 */
+}
+
+/* 添加滚动条样式 */
+.character-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.character-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.character-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.character-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* 修改宫殿和野外的列表样式 */
+.palace {
+    background: rgba(155, 89, 182, 0.15);  /* 恢复原来的透明度 */
+    box-shadow: inset 0 0 30px rgba(155, 89, 182, 0.2);
+}
+
+.wilderness {
+    background: rgba(39, 174, 96, 0.15);  /* 恢复原来的透明度 */
+    box-shadow: inset 0 0 30px rgba(39, 174, 96, 0.2);
+}
+
+/* 修改角色卡片样式 */
+.character-card {
+    width: calc((100% - 32px) / 8);  /* 修正计算：8个卡片需要7个间隔，7 * 4px(gap) = 28px，加上一些余量 */
+    min-width: 62px;  /* 稍微调整最小宽度 */
+    max-width: 68px;  /* 调整最大宽度 */
+    margin: 0;
+    background: transparent;
+    padding: 1px;
+    text-align: center;
+    cursor: move;
+    transition: transform 0.2s;
+    box-shadow: none;
+    user-select: none;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    touch-action: none; /* 防止触摸设备上的滚动干扰拖拽 */
+}
+
+.character-card:hover {
+    transform: translateY(-5px);
+    box-shadow: none;
+}
+
+/* 拖拽预览样式 */
+.drag-preview {
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    background: transparent;
+    padding: 0;
+    pointer-events: none;
+    width: 30px;
+}
+
+.drag-preview .character-avatar {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 2px;
+    box-shadow: none;
+}
+
+.drag-preview .character-name {
+    font-size: 10px;
+    color: #333;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 0 2px white;
+}
+
+/* 拖拽时的卡片样式 */
+.character-card.dragging {
+    opacity: 0.3;
+    transform: scale(0.95);
+}
+
+/* 拖拽悬停时的放置区域样式 */
+.character-list.drag-over {
+    background: rgba(255, 255, 255, 0.25);  /* 增加高亮效果 */
+    border: 2px dashed rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    animation: pulse 1.5s infinite;
+}
+
+/* 放置区域的动画 */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(74, 144, 226, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
+    }
+}
+
+/* 放置动画 */
+@keyframes dropIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.character-card.dropped {
+    animation: dropIn 0.3s ease-out forwards;
+}
+
+/* 修改头像尺寸 */
+.character-avatar {
+    width: 56px;  /* 稍微调整头像尺寸 */
+    height: 56px;
+    margin: 0 auto 1px;
+    border-radius: 50%;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.character-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    user-select: none;
+}
+
+.character-card:hover .character-avatar {
+    transform: scale(1.1);
+}
+
+/* 修改名字样式 */
+.character-name {
+    font-size: 12px;  /* 稍微增大字体 */
+    color: #fff;
+    display: block;
+    margin-top: 1px;  /* 减小顶部间距 */
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8),
+                 0 0 8px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* 游戏通知 */
+.game-notification {
+    background: linear-gradient(145deg, #2c3e50, #34495e);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 重置按钮样式 */
+.reset-btn {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+}
+
+.reset-btn:hover {
+    background: linear-gradient(145deg, #f85d4c, #e74c3c);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+}
+
+/* 危险按钮样式 */
+.danger-btn {
+    background: linear-gradient(145deg, #c0392b, #962d22);
+}
+
+.danger-btn:hover {
+    background: linear-gradient(145deg, #d14836, #c0392b);
+    box-shadow: 0 6px 20px rgba(192, 57, 43, 0.3);
+}
+
+/* 重置动画 */
+@keyframes resetMove {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-50px) scale(0.8);
+        opacity: 0.5;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.character-card.resetting {
+    animation: resetMove 0.5s ease-in-out;
+}
+
+/* 响应式设计调整 */
+@media (max-width: 1600px) {
+    .palace-area, .wilderness-area {
+        min-width: 450px;  /* 较小屏幕时减小最小宽度 */
+    }
+}
+
+@media (max-width: 1200px) {
+    .palace-area, .wilderness-area {
+        min-width: 350px;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-world {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .palace-area, .wilderness-area {
+        min-width: unset;  /* 移动端取消最小宽度限制 */
+        padding: 20px;
+    }
+    
+    .character-list {
+        gap: 6px;  /* 移动端进一步减小间距 */
+        padding: 10px;
+        justify-content: center;
+    }
+    
+    .game-container::before {
+        font-size: 28px;
+    }
+    
+    .controls.game-ui {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .add-character {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .save-export {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .game-btn {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    input[type="text"] {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* 任务按钮样式 */
+.task-btn {
+    background: linear-gradient(145deg, #9b59b6, #8e44ad);
+    margin: 0 20px;
+}
+
+.task-btn:hover {
+    background: linear-gradient(145deg, #a66bbe, #9b59b6);
+    box-shadow: 0 6px 20px rgba(155, 89, 182, 0.3);
+}
+
+/* 模态框样式 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: modalShow 0.3s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-family: var(--title-font);
+}
+
+.close {
+    font-size: 28px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.task-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.task-input input {
+    flex: 1;
+}
+
+.task-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* 添加任务项样式 */
+.task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.task-item.active {
+    border-color: var(--primary-color);
+    background: #f0f7ff;
+}
+
+.task-info {
+    flex: 1;
+}
+
+.task-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2c3e50;
+    display: block;
+}
+
+.task-date {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    display: block;
+}
+
+.task-stats {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.task-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.switch-btn {
+    background: linear-gradient(145deg, var(--primary-color), #2980b9);
+}
+
+.delete-btn {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+}
+
+.delete-btn:hover {
+    background: linear-gradient(145deg, #f85d4c, #e74c3c);
+}
+
+/* 模态框动画 */
+@keyframes modalShow {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 90%;
+        margin: 20% auto;
+    }
+    
+    .task-input {
+        flex-direction: column;
+    }
+}
+
+/* 当前任务显示样式 */
+.current-task-display {
+    text-align: center;
+    color: #fff;
+    font-size: 20px;
+    margin: -20px 0 20px;
+    padding: 10px;
+    font-family: var(--title-font);
+    opacity: 0.9;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.current-task-display:empty {
+    display: none;
+}
+
+.current-task-display .task-label {
+    color: rgba(255, 255, 255, 0.8);
+    margin-right: 10px;
+}
+
+.current-task-display .task-name {
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(155, 89, 182, 0.6);
+}
+
+/* 易容术方框样式 */
+.disguise-box {
+    width: 120px;
+    height: 120px;
+    background: rgba(243, 156, 18, 0.2);
+    border: 3px dashed #f39c12;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 30px;
+    top: 30px;
+    margin: 0;
+    box-shadow: 0 0 15px rgba(243, 156, 18, 0.3);
+    transition: all 0.3s ease;
+    z-index: 10;
+    backdrop-filter: blur(5px);
+    animation: disguiseGlow 2s infinite alternate;
+}
+
+@keyframes disguiseGlow {
+    0% {
+        box-shadow: 0 0 15px rgba(243, 156, 18, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 25px rgba(243, 156, 18, 0.6);
+    }
+}
+
+.disguise-box:hover {
+    transform: scale(1.05);
+}
+
+.disguise-box::before {
+    content: "易容术";
+    display: block;
+    text-align: center;
+    font-family: var(--title-font);
+    font-size: 20px;
+    color: #f39c12;
+    margin-bottom: 10px;
+    text-shadow: 0 0 5px rgba(243, 156, 18, 0.3);
+}
+
+.disguise-box::after {
+    content: "拖放头像至此";
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    color: #f39c12;
+    margin-top: 8px;
+}
+
+.disguise-box.drag-over {
+    background: rgba(243, 156, 18, 0.3);
+    border: 3px dashed #f5b041;
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(243, 156, 18, 0.5);
+}
+
+.avatar-selection {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.avatar-selection-content {
+    background: white;
+    padding: 20px;
+    width: 90%;
+    max-width: 700px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: modalShow 0.3s ease-out;
+}
+
+.avatar-selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+}
+
+.avatar-selection-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-family: var(--title-font);
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.avatar-option {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+}
+
+.avatar-option:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+    border-color: #4a90e2;
+}
+
+.avatar-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 768px) {
+    .avatar-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .disguise-box {
+        width: 80px;
+        height: 80px;
+        right: 15px;
+        top: 15px;
+    }
+    
+    .disguise-box::before {
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+    
+    .disguise-box::after {
+        font-size: 10px;
+        margin-top: 2px;
+    }
+}
+
+/* 头像选择后的易容动画 */
+@keyframes disguiseEffect {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    25% {
+        transform: scale(1.2);
+        filter: brightness(1.5) hue-rotate(90deg);
+    }
+    50% {
+        transform: scale(0.8);
+        filter: brightness(0.8) hue-rotate(180deg);
+    }
+    75% {
+        transform: scale(1.1);
+        filter: brightness(1.2) hue-rotate(270deg);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1) hue-rotate(360deg);
+    }
+}
+
+.avatar-changing {
+    animation: disguiseEffect 0.8s ease;
+}
+
+/* 奖牌系统样式 - 皇冠图标 */
+.medal {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: medalGlow 2s infinite alternate;
+}
+
+/* 使用Unicode皇冠符号 */
+.medal::before {
+    content: '♔';
+    display: block;
+    line-height: 1;
+}
+
+/* 金色皇冠 */
+.medal.gold::before {
+    color: #ffd700;
+    filter: drop-shadow(0 0 3px #ffed4e);
+}
+
+/* 银色皇冠 */
+.medal.silver::before {
+    color: #c0c0c0;
+    filter: drop-shadow(0 0 3px #e8e8e8);
+}
+
+/* 铜色皇冠 */
+.medal.bronze::before {
+    color: #cd7f32;
+    filter: drop-shadow(0 0 3px #d4a574);
+}
+
+@keyframes medalGlow {
+    0% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    100% {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 215, 0, 0.6);
+    }
+}
+
+.medal.gold {
+    animation: goldMedalGlow 2s infinite alternate;
+}
+
+.medal.silver {
+    animation: silverMedalGlow 2s infinite alternate;
+}
+
+.medal.bronze {
+    animation: bronzeMedalGlow 2s infinite alternate;
+}
+
+@keyframes goldMedalGlow {
+    0% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    100% {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 215, 0, 0.8);
+    }
+}
+
+@keyframes silverMedalGlow {
+    0% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    100% {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(192, 192, 192, 0.8);
+    }
+}
+
+@keyframes bronzeMedalGlow {
+    0% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    100% {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(205, 127, 50, 0.8);
+    }
+}
