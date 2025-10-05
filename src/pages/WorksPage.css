@@ -332,22 +332,24 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #ffffff;
   border-radius: 6px;
-  border: 2px solid #f1f1f1;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #f8f8f8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Firefox 滚动条样式 */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #ffffff #f1f1f1;
+  scrollbar-color: #ffffff rgba(0, 0, 0, 0.1);
 }

@@ -94,7 +94,7 @@ body {
   font-size: 4rem;
   color: var(--accent-primary);
   opacity: 0.6;
-  font-family: var(--font-english);
+  font-family: "Noto Serif SC", "Source Han Serif SC", "LXGW WenKai", serif;
   line-height: 1;
   position: absolute;
   pointer-events: none;
@@ -114,7 +114,7 @@ body {
   font-family: "Source Han Serif SC", "Source Han Serif", "Noto Serif SC", "LXGW WenKai", serif;
   font-size: clamp(var(--quote-size-mobile), 4vw, var(--quote-size-desktop));
   line-height: var(--quote-line-height);
-  color: #2d3748 !important; /* 强制设置深色文字 */
+  color: #144a74 !important; /* 修改为指定的蓝色 */
   margin: 2rem 0;
   font-weight: 450;
   max-width: 100%;
@@ -137,7 +137,7 @@ body {
 
 .quote-author {
   font-size: var(--author-size);
-  color: var(--text-secondary);
+  color: #134857;
   font-style: normal;
   line-height: var(--author-line-height);
   font-weight: 500;

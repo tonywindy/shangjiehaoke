@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import { loadQuotesData, getQuotesData } from '../services/quoteService';
+import { generateQuoteCard, downloadCard } from '../utils/cardGenerator';
 import './QuotesPage.css';
 
 const QuotesPage = () => {
@@ -47,11 +49,8 @@ const QuotesPage = () => {
   useEffect(() => {
     const loadQuotes = async () => {
       try {
-        const response = await fetch('./quotes.json');
-        if (!response.ok) {
-          throw new Error('金句数据加载失败');
-        }
-        const quotesData = await response.json();
+        // 使用内联数据服务，避免HTTP请求
+        const quotesData = await loadQuotesData();
         setQuotes(quotesData);
         setCurrentQuote(quotesData[0] || backupQuotes[0]);
       } catch (error) {
@@ -123,18 +122,17 @@ const QuotesPage = () => {
       return;
     }
 
-    // 简单的文本下载实现
-    const content = `${currentQuote.text}\n\n— ${currentQuote.author}`;
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `金句_${currentQuote.author}_${Date.now()}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      // 生成卡片图片
+      const cardBlob = await generateQuoteCard(currentQuote);
+      
+      // 下载卡片
+      const filename = `金句卡片_${currentQuote.author}_${Date.now()}.png`;
+      downloadCard(cardBlob, filename);
+    } catch (error) {
+      console.error('生成卡片失败:', error);
+      alert('生成卡片失败，请重试');
+    }
   };
 
   // 键盘快捷键
