@@ -10,7 +10,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        works: resolve(__dirname, 'works.html'),
         contact: resolve(__dirname, 'contact.html'),
         climb: resolve(__dirname, 'climb.html'),
         zhouchang: resolve(__dirname, 'zhouchang.html'),

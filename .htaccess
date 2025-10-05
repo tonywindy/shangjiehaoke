@@ -3,8 +3,10 @@
 
 RewriteEngine On
 
+# Redirect old works.html to new React route
+RewriteRule ^works\.html$ /works [R=301,L]
+
 # Handle specific HTML files
-RewriteRule ^works$ /works.html [L]
 RewriteRule ^contact$ /contact.html [L]
 
 # Handle Angular and other SPA routes

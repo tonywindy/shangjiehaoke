@@ -859,7 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 返回作品按钮事件监听器
     backToWorksBtn.addEventListener('click', () => {
         // 跳转到作品页面
-        window.location.href = '/works.html';
+        window.location.href = '/works';
     });
 
     // 提示按钮事件监听器 - 修改为集成到AI伙伴对话框

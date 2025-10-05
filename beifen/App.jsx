@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import './App.css'
 import videoSrc from '/your-video.mp4';
 
@@ -96,12 +95,12 @@ function App() {
         <nav className="navbar">
           <div className="nav-container">
             <div className="nav-brand">
-              <Link to="/" className="brand-text">上节好课</Link>
+              <span className="brand-text">上节好课</span>
             </div>
             <div className="nav-menu">
-              <Link to="/" className="nav-link active">初见之页</Link>
-              <Link to="/works" className="nav-link">些许尝试</Link>
-              <Link to="/quotes" className="nav-link">一点想法</Link>
+              <a href="/" className="nav-link">初见之页</a>
+              <a href="./works.html" className="nav-link">些许尝试</a>
+              <a href="./contact.html" className="nav-link">一点想法</a>
               <div className="feedback-container">
                 <span className="nav-link" style={{cursor: 'pointer'}}>意见之箱</span>
                 <div className="qr-popup">

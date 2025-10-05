@@ -1,0 +1,157 @@
+/* 导航栏样式 */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px 0;
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: none;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c5aa0;
+  text-decoration: none;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.nav-link {
+  color: #718096;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 8px 0;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #2c5aa0;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #2c5aa0;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+.nav-link.active {
+  color: #2c5aa0;
+}
+
+/* 二维码弹窗样式 */
+.feedback-container {
+  position: relative;
+}
+
+.qr-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  min-width: 200px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.feedback-container:hover .qr-popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.qr-popup::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid white;
+}
+
+.qr-code {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.qr-text {
+  font-size: 0.875rem;
+  color: #718096;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .nav-container {
+    padding: 0 16px;
+  }
+  
+  .nav-menu {
+    gap: 16px;
+  }
+  
+  .nav-link {
+    font-size: 0.875rem;
+  }
+  
+  .brand-text {
+    font-size: 1.25rem;
+  }
+  
+  .qr-popup {
+    right: -50px;
+    min-width: 160px;
+  }
+  
+  .qr-code {
+    width: 100px;
+    height: 100px;
+  }
+}
