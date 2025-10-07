@@ -40,6 +40,677 @@
         .jiao-coin { background: linear-gradient(145deg, #e0e0e0, #b0b0b0); border: 3px solid #909399; }
         .fen-coin { background: linear-gradient(145deg, #f5d1b7, #e6a77c); border: 3px solid #d18f5a; }
 
+        /* 新增钱币样式 */
+        .yuan2-coin {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: 3px solid #FF8C00;
+            color: #8B4513;
+            font-weight: bold;
+        }
+
+        .yuan5-coin {
+            background: linear-gradient(135deg, #FF6B6B, #FF4757);
+            border: 3px solid #FF3742;
+            color: white;
+            font-weight: bold;
+        }
+
+        .jiao5-coin {
+            background: linear-gradient(135deg, #A8E6CF, #7FCDCD);
+            border: 3px solid #5DADE2;
+            color: #2C3E50;
+            font-weight: bold;
+        }
+
+        /* 双人对战模式样式 */
+        .battle-mode {
+            display: none;
+        }
+
+        .battle-mode.active {
+            display: block;
+        }
+
+        .battle-container {
+            display: flex;
+            gap: 2rem;
+            min-height: 80vh;
+        }
+
+        .player-area {
+            flex: 1;
+            border: 3px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .player-area.player1 {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        }
+
+        .player-area.player2 {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        }
+
+        .player-header {
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .player1 .player-header {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .player2 .player-header {
+            background: #ef4444;
+            color: white;
+        }
+
+        .player-coin-area {
+            min-height: 200px;
+            border: 2px dashed #d1d5db;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: flex-start;
+            align-content: flex-start;
+        }
+
+        .player-answer-section {
+            margin-bottom: 1rem;
+        }
+
+        .player-input {
+            width: 100%;
+            max-width: 200px;
+            padding: 0.75rem;
+            font-size: 1.25rem;
+            text-align: center;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: white;
+        }
+
+        .player-number-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            max-width: 200px;
+            margin: 1rem auto;
+        }
+
+        .player-number-btn {
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .player-number-btn:hover {
+            background: #f3f4f6;
+            transform: scale(1.05);
+        }
+
+        .player-submit-btn {
+            width: 100%;
+            max-width: 200px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0.5rem auto;
+            display: block;
+        }
+
+        .player1 .player-submit-btn {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .player1 .player-submit-btn:hover {
+            background: #2563eb;
+        }
+
+        .player2 .player-submit-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .player2 .player-submit-btn:hover {
+            background: #dc2626;
+        }
+
+        .player-status {
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .player-status.correct {
+            background: #dcfce7;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+
+        .player-status.incorrect {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 2px solid #ef4444;
+        }
+
+        .player-status.waiting {
+            background: #fef3c7;
+            color: #92400e;
+            border: 2px solid #f59e0b;
+        }
+
+        .player-progress {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-dot {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background: #d1d5db;
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.completed {
+            background: #22c55e;
+        }
+
+        .progress-dot.current {
+            background: #f59e0b;
+            transform: scale(1.2);
+        }
+
+        .battle-controls {
+            text-align: center;
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .audio-control-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .audio-control-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .audio-control-btn.muted {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        #volume-slider {
+            width: 100px;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .start-battle-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .start-battle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .start-battle-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 庆祝动画 */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes confetti {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* 金牌收银员庆祝动画 - 华丽版 */
+        @keyframes goldCelebration {
+            0% {
+                transform: scale(1) rotate(0deg) translateY(0px);
+                opacity: 1;
+                text-shadow: 2px 2px 4px rgba(255, 215, 0, 0.5);
+                filter: brightness(1) hue-rotate(0deg) drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
+            }
+            8% {
+                transform: scale(1.2) rotate(-5deg) translateY(-5px);
+                text-shadow: 3px 3px 6px rgba(255, 215, 0, 0.7), 0 0 15px rgba(255, 215, 0, 0.5);
+                filter: brightness(1.2) hue-rotate(30deg) drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+            }
+            15% {
+                transform: scale(1.4) rotate(-12deg) translateY(-12px);
+                text-shadow: 4px 4px 8px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 165, 0, 0.4);
+                filter: brightness(1.4) hue-rotate(60deg) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
+            }
+            22% {
+                transform: scale(1.6) rotate(8deg) translateY(-18px);
+                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 165, 0, 0.5);
+                filter: brightness(1.6) hue-rotate(90deg) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+            }
+            30% {
+                transform: scale(1.8) rotate(15deg) translateY(-25px);
+                text-shadow: 6px 6px 12px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 165, 0, 0.6), 0 0 50px rgba(255, 140, 0, 0.4);
+                filter: brightness(1.8) hue-rotate(120deg) drop-shadow(0 0 25px rgba(255, 215, 0, 1));
+            }
+            38% {
+                transform: scale(1.5) rotate(-10deg) translateY(-20px);
+                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 165, 0, 0.5);
+                filter: brightness(1.5) hue-rotate(150deg) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+            }
+            45% {
+                transform: scale(1.7) rotate(-18deg) translateY(-22px);
+                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7);
+                filter: brightness(1.7) hue-rotate(180deg) drop-shadow(0 0 22px rgba(255, 215, 0, 0.9));
+            }
+            52% {
+                transform: scale(1.9) rotate(20deg) translateY(-28px);
+                text-shadow: 7px 7px 14px rgba(255, 215, 0, 1), 0 0 35px rgba(255, 215, 0, 0.9), 0 0 45px rgba(255, 165, 0, 0.7), 0 0 55px rgba(255, 140, 0, 0.5);
+                filter: brightness(1.9) hue-rotate(210deg) drop-shadow(0 0 30px rgba(255, 215, 0, 1));
+            }
+            60% {
+                transform: scale(2.0) rotate(25deg) translateY(-30px);
+                text-shadow: 8px 8px 16px rgba(255, 215, 0, 1), 0 0 35px rgba(255, 215, 0, 0.9), 0 0 50px rgba(255, 165, 0, 0.7), 0 0 60px rgba(255, 140, 0, 0.5), 0 0 70px rgba(255, 255, 0, 0.3);
+                filter: brightness(2.0) hue-rotate(240deg) drop-shadow(0 0 35px rgba(255, 215, 0, 1));
+            }
+            68% {
+                transform: scale(1.6) rotate(-15deg) translateY(-18px);
+                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 165, 0, 0.5);
+                filter: brightness(1.6) hue-rotate(270deg) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+            }
+            75% {
+                transform: scale(1.4) rotate(-8deg) translateY(-15px);
+                text-shadow: 4px 4px 8px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6);
+                filter: brightness(1.4) hue-rotate(300deg) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
+            }
+            82% {
+                transform: scale(1.3) rotate(6deg) translateY(-12px);
+                text-shadow: 4px 4px 8px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6);
+                filter: brightness(1.3) hue-rotate(330deg) drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
+            }
+            90% {
+                transform: scale(1.2) rotate(4deg) translateY(-8px);
+                text-shadow: 3px 3px 6px rgba(255, 215, 0, 0.7), 0 0 15px rgba(255, 215, 0, 0.5);
+                filter: brightness(1.2) hue-rotate(350deg) drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+            }
+            100% {
+                transform: scale(1.1) rotate(0deg) translateY(0px);
+                opacity: 1;
+                text-shadow: 2px 2px 4px rgba(255, 215, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.3);
+                filter: brightness(1.1) hue-rotate(360deg) drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
+            }
+        }
+
+        /* 银牌收银员庆祝动画 - 华丽版 */
+        @keyframes silverCelebration {
+            0% {
+                transform: scale(1) rotate(0deg) translateY(0px);
+                opacity: 1;
+                text-shadow: 2px 2px 4px rgba(192, 192, 192, 0.5);
+                filter: brightness(1) drop-shadow(0 0 3px rgba(192, 192, 192, 0.3));
+            }
+            10% {
+                transform: scale(1.15) rotate(-4deg) translateY(-4px);
+                text-shadow: 3px 3px 6px rgba(192, 192, 192, 0.7), 0 0 12px rgba(192, 192, 192, 0.5);
+                filter: brightness(1.2) drop-shadow(0 0 8px rgba(192, 192, 192, 0.5));
+            }
+            20% {
+                transform: scale(1.3) rotate(6deg) translateY(-10px);
+                text-shadow: 4px 4px 8px rgba(192, 192, 192, 0.8), 0 0 15px rgba(192, 192, 192, 0.6), 0 0 25px rgba(169, 169, 169, 0.4);
+                filter: brightness(1.4) drop-shadow(0 0 12px rgba(192, 192, 192, 0.7));
+            }
+            30% {
+                transform: scale(1.45) rotate(-8deg) translateY(-14px);
+                text-shadow: 5px 5px 10px rgba(192, 192, 192, 0.9), 0 0 20px rgba(192, 192, 192, 0.7), 0 0 30px rgba(169, 169, 169, 0.5);
+                filter: brightness(1.5) drop-shadow(0 0 15px rgba(192, 192, 192, 0.8));
+            }
+            40% {
+                transform: scale(1.6) rotate(10deg) translateY(-18px);
+                text-shadow: 6px 6px 12px rgba(192, 192, 192, 1), 0 0 25px rgba(192, 192, 192, 0.8), 0 0 35px rgba(169, 169, 169, 0.6), 0 0 45px rgba(211, 211, 211, 0.4);
+                filter: brightness(1.6) drop-shadow(0 0 18px rgba(192, 192, 192, 0.9));
+            }
+            50% {
+                transform: scale(1.7) rotate(-12deg) translateY(-20px);
+                text-shadow: 7px 7px 14px rgba(192, 192, 192, 1), 0 0 30px rgba(192, 192, 192, 0.9), 0 0 40px rgba(169, 169, 169, 0.7), 0 0 50px rgba(211, 211, 211, 0.5);
+                filter: brightness(1.7) drop-shadow(0 0 22px rgba(192, 192, 192, 1));
+            }
+            60% {
+                transform: scale(1.5) rotate(8deg) translateY(-16px);
+                text-shadow: 5px 5px 10px rgba(192, 192, 192, 0.9), 0 0 20px rgba(192, 192, 192, 0.7), 0 0 30px rgba(169, 169, 169, 0.5);
+                filter: brightness(1.5) drop-shadow(0 0 16px rgba(192, 192, 192, 0.8));
+            }
+            70% {
+                transform: scale(1.35) rotate(-6deg) translateY(-12px);
+                text-shadow: 4px 4px 8px rgba(192, 192, 192, 0.8), 0 0 18px rgba(192, 192, 192, 0.6);
+                filter: brightness(1.4) drop-shadow(0 0 12px rgba(192, 192, 192, 0.7));
+            }
+            80% {
+                transform: scale(1.25) rotate(4deg) translateY(-8px);
+                text-shadow: 3px 3px 6px rgba(192, 192, 192, 0.7), 0 0 12px rgba(192, 192, 192, 0.5);
+                filter: brightness(1.3) drop-shadow(0 0 8px rgba(192, 192, 192, 0.6));
+            }
+            90% {
+                transform: scale(1.15) rotate(-2deg) translateY(-4px);
+                text-shadow: 3px 3px 6px rgba(192, 192, 192, 0.6), 0 0 10px rgba(192, 192, 192, 0.4);
+                filter: brightness(1.2) drop-shadow(0 0 6px rgba(192, 192, 192, 0.5));
+            }
+            100% {
+                transform: scale(1.1) rotate(0deg) translateY(0px);
+                opacity: 1;
+                text-shadow: 2px 2px 4px rgba(192, 192, 192, 0.5), 0 0 8px rgba(192, 192, 192, 0.3);
+                filter: brightness(1.1) drop-shadow(0 0 4px rgba(192, 192, 192, 0.3));
+            }
+        }
+
+        /* 闪烁光效动画 - 华丽版 */
+        @keyframes sparkle {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg) translateZ(0);
+                filter: brightness(1) hue-rotate(0deg);
+            }
+            10% {
+                opacity: 0.3;
+                transform: scale(0.5) rotate(36deg) translateZ(0);
+                filter: brightness(1.2) hue-rotate(30deg);
+            }
+            20% {
+                opacity: 0.7;
+                transform: scale(0.8) rotate(72deg) translateZ(0);
+                filter: brightness(1.5) hue-rotate(60deg);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1.2) rotate(108deg) translateZ(0);
+                filter: brightness(1.8) hue-rotate(90deg);
+            }
+            40% {
+                opacity: 0.8;
+                transform: scale(1.5) rotate(144deg) translateZ(0);
+                filter: brightness(2) hue-rotate(120deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.8) rotate(180deg) translateZ(0);
+                filter: brightness(2.2) hue-rotate(150deg);
+            }
+            60% {
+                opacity: 0.9;
+                transform: scale(1.5) rotate(216deg) translateZ(0);
+                filter: brightness(2) hue-rotate(180deg);
+            }
+            70% {
+                opacity: 0.7;
+                transform: scale(1.2) rotate(252deg) translateZ(0);
+                filter: brightness(1.8) hue-rotate(210deg);
+            }
+            80% {
+                opacity: 0.5;
+                transform: scale(0.8) rotate(288deg) translateZ(0);
+                filter: brightness(1.5) hue-rotate(240deg);
+            }
+            90% {
+                opacity: 0.3;
+                transform: scale(0.4) rotate(324deg) translateZ(0);
+                filter: brightness(1.2) hue-rotate(270deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) rotate(360deg) translateZ(0);
+                filter: brightness(1) hue-rotate(360deg);
+            }
+        }
+
+        .result-title.winner {
+            animation: pulse 1s ease-in-out infinite;
+            color: #22c55e;
+            text-shadow: 2px 2px 4px rgba(34, 197, 94, 0.3);
+        }
+
+        .result-title.tie {
+            color: #f59e0b;
+        }
+
+        .celebration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 1rem;
+            z-index: 100;
+        }
+
+        .celebration-text {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #f59e0b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: bounce 1s infinite;
+        }
+
+        .celebration-emoji {
+            font-size: 4rem;
+            animation: rotate 2s linear infinite;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f59e0b;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        .confetti:nth-child(odd) {
+            background: #ef4444;
+            animation-delay: 0.5s;
+        }
+
+        .confetti:nth-child(3n) {
+            background: #22c55e;
+            animation-delay: 1s;
+        }
+
+        .confetti:nth-child(4n) {
+            background: #3b82f6;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .game-result {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #fef3c7, #fed7aa);
+            border-radius: 1rem;
+            margin: 2rem 0;
+            border: 3px solid #f59e0b;
+        }
+
+        .result-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+
+        .result-score {
+            font-size: 1.5rem;
+            color: #451a03;
+            margin-bottom: 1rem;
+        }
+
+        .play-again-btn {
+            background: #22c55e;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-again-btn:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+        }
+
         .drop-zone {
             min-height: 200px;
             border: 3px dashed #60a5fa;
@@ -97,64 +768,200 @@
                 opacity: 1;
             }
         }
+
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-1 md:p-2">
 
-    <div class="w-full max-w-6xl mx-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-8">
+    <!-- 音频元素 -->
+    <audio id="bgm-audio" loop preload="auto">
+        <source src="./public/xiaoshuyouxibgm.MP3" type="audio/mpeg">
+        您的浏览器不支持音频播放。
+    </audio>
+    
+    <audio id="correct-answer-audio" preload="auto">
+        <source src="./public/qianbi.mp3" type="audio/mpeg">
+        您的浏览器不支持音频播放。
+    </audio>
+    
+    <audio id="celebration-audio" preload="auto">
+        <source src="./public/qingzhu.mp3" type="audio/mpeg">
+        您的浏览器不支持音频播放。
+    </audio>
+
+    <div class="w-full max-w-7xl mx-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-3 md:p-4">
 
         <!-- 标题区域 -->
         <header class="text-center mb-6">
             <h1 class="text-4xl md:text-5xl font-bold text-blue-600 cute-font">认识小数：元角分大探险</h1>
             <p class="text-gray-500 mt-2 text-lg">把左边的钱币拖到中间的格子里，看看会发生什么吧！</p>
+            
+            <!-- 游戏模式切换按钮 -->
+            <div class="mt-4 flex justify-center space-x-4">
+                <button id="learning-mode-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full cute-font transition-all transform hover:scale-105 shadow-md">
+                    学习模式
+                </button>
+                <button id="battle-mode-btn" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full cute-font transition-all transform hover:scale-105 shadow-md">
+                    双人对战
+                </button>
+            </div>
         </header>
 
         <!-- 主要互动区域 -->
         <main class="grid md:grid-cols-3 gap-6">
 
-            <!-- 左侧：钱币源区域 -->
-            <aside class="bg-blue-50 p-6 rounded-xl flex flex-col items-center justify-center space-y-6">
-                <h2 class="text-2xl font-bold text-blue-800 cute-font mb-4">钱币区</h2>
-                <div id="yuan-source" class="coin yuan-coin" draggable="true" data-type="yuan">1元</div>
-                <div id="jiao-source" class="coin jiao-coin" draggable="true" data-type="jiao">1角</div>
-                <div id="fen-source" class="coin fen-coin" draggable="true" data-type="fen">1分</div>
-            </aside>
+            <!-- 学习模式 -->
+            <div id="learning-mode" class="learning-mode contents">
+                <!-- 左侧：钱币源区域 -->
+                <aside class="bg-blue-50 p-6 rounded-xl flex flex-col items-center justify-center space-y-6">
+                    <h2 class="text-2xl font-bold text-blue-800 cute-font mb-4">钱币区</h2>
+                    <div id="yuan-source" class="coin yuan-coin" draggable="true" data-type="yuan">1元</div>
+                    <div id="jiao-source" class="coin jiao-coin" draggable="true" data-type="jiao">1角</div>
+                    <div id="fen-source" class="coin fen-coin" draggable="true" data-type="fen">1分</div>
+                </aside>
 
-            <!-- 中间：放置与计算区域 -->
-            <section id="drop-zone" class="drop-zone md:col-span-2 grid grid-cols-3 gap-4">
-                <!-- 元 -->
-                <div class="text-center bg-amber-50 rounded-lg p-2">
-                    <h3 class="text-2xl font-bold text-amber-600 cute-font">元</h3>
-                    <div id="yuan-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+                <!-- 中间：放置与计算区域 -->
+                <section id="drop-zone" class="drop-zone md:col-span-2 grid grid-cols-3 gap-4">
+                    <!-- 元 -->
+                    <div class="text-center bg-amber-50 rounded-lg p-2">
+                        <h3 class="text-2xl font-bold text-amber-600 cute-font">元</h3>
+                        <div id="yuan-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+                    </div>
+                    <!-- 角 -->
+                    <div class="text-center bg-gray-50 rounded-lg p-2">
+                        <h3 class="text-2xl font-bold text-gray-600 cute-font">角</h3>
+                        <div id="jiao-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+                    </div>
+                    <!-- 分 -->
+                    <div class="text-center bg-orange-50 rounded-lg p-2">
+                        <h3 class="text-2xl font-bold text-orange-600 cute-font">分</h3>
+                        <div id="fen-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 双人对战模式 -->
+            <div id="battle-mode" class="battle-mode md:col-span-3">
+                <!-- 游戏开始控制 -->
+                <div class="battle-controls">
+                    <button class="start-battle-btn" id="start-battle-btn">开始对战</button>
+                    <div class="audio-controls">
+                        <button class="audio-control-btn" id="mute-btn" title="静音/取消静音">🔊</button>
+                        <input type="range" id="volume-slider" min="0" max="100" value="50" title="音量调节">
+                    </div>
                 </div>
-                <!-- 角 -->
-                <div class="text-center bg-gray-50 rounded-lg p-2">
-                    <h3 class="text-2xl font-bold text-gray-600 cute-font">角</h3>
-                    <div id="jiao-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+
+                <!-- 双人对战容器 -->
+                <div class="battle-container" id="battle-container" style="display: none;">
+                    <!-- 玩家1区域 -->
+                    <div class="player-area player1" id="player1-area">
+                        <div class="player-header">玩家1</div>
+                        
+                        <div class="player-progress" id="player1-progress">
+                            <div class="progress-dot current"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                        </div>
+
+                        <div class="player-coin-area" id="player1-coin-area">
+                            <!-- 玩家1的钱币区域 -->
+                        </div>
+
+                        <div class="player-answer-section">
+                            <input type="text" class="player-input" id="player1-input" placeholder="0.00" readonly>
+                            
+                            <div class="player-number-pad">
+                                <button class="player-number-btn" data-player="1" data-number="7">7</button>
+                                <button class="player-number-btn" data-player="1" data-number="8">8</button>
+                                <button class="player-number-btn" data-player="1" data-number="9">9</button>
+                                <button class="player-number-btn" data-player="1" data-number="4">4</button>
+                                <button class="player-number-btn" data-player="1" data-number="5">5</button>
+                                <button class="player-number-btn" data-player="1" data-number="6">6</button>
+                                <button class="player-number-btn" data-player="1" data-number="1">1</button>
+                                <button class="player-number-btn" data-player="1" data-number="2">2</button>
+                                <button class="player-number-btn" data-player="1" data-number="3">3</button>
+                                <button class="player-number-btn" data-player="1" data-number=".">.</button>
+                                <button class="player-number-btn" data-player="1" data-number="0">0</button>
+                                <button class="player-number-btn" data-player="1" data-action="delete">⌫</button>
+                            </div>
+
+                            <button class="player-submit-btn" id="player1-submit-btn" data-player="1">提交答案</button>
+                        </div>
+
+                        <div class="player-status" id="player1-status"></div>
+                    </div>
+
+                    <!-- 玩家2区域 -->
+                    <div class="player-area player2" id="player2-area">
+                        <div class="player-header">玩家2</div>
+                        
+                        <div class="player-progress" id="player2-progress">
+                            <div class="progress-dot current"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                        </div>
+
+                        <div class="player-coin-area" id="player2-coin-area">
+                            <!-- 玩家2的钱币区域 -->
+                        </div>
+
+                        <div class="player-answer-section">
+                            <input type="text" class="player-input" id="player2-input" placeholder="0.00" readonly>
+                            
+                            <div class="player-number-pad">
+                                <button class="player-number-btn" data-player="2" data-number="7">7</button>
+                                <button class="player-number-btn" data-player="2" data-number="8">8</button>
+                                <button class="player-number-btn" data-player="2" data-number="9">9</button>
+                                <button class="player-number-btn" data-player="2" data-number="4">4</button>
+                                <button class="player-number-btn" data-player="2" data-number="5">5</button>
+                                <button class="player-number-btn" data-player="2" data-number="6">6</button>
+                                <button class="player-number-btn" data-player="2" data-number="1">1</button>
+                                <button class="player-number-btn" data-player="2" data-number="2">2</button>
+                                <button class="player-number-btn" data-player="2" data-number="3">3</button>
+                                <button class="player-number-btn" data-player="2" data-number=".">.</button>
+                                <button class="player-number-btn" data-player="2" data-number="0">0</button>
+                                <button class="player-number-btn" data-player="2" data-action="delete">⌫</button>
+                            </div>
+
+                            <button class="player-submit-btn" id="player2-submit-btn" data-player="2">提交答案</button>
+                        </div>
+
+                        <div class="player-status" id="player2-status"></div>
+                    </div>
                 </div>
-                <!-- 分 -->
-                <div class="text-center bg-orange-50 rounded-lg p-2">
-                    <h3 class="text-2xl font-bold text-orange-600 cute-font">分</h3>
-                    <div id="fen-container" class="money-container flex flex-wrap justify-center items-start p-2"></div>
+
+                <!-- 游戏结果显示 -->
+                <div class="game-result" id="game-result" style="display: none;">
+                    <div class="result-title" id="result-title"></div>
+                    <div class="result-score" id="result-score"></div>
+                    <button class="play-again-btn" id="play-again-btn">再来一局</button>
                 </div>
-            </section>
+            </div>
         </main>
 
         <!-- 底部：结果显示和控制区域 -->
         <footer class="mt-8 text-center">
-             <div class="bg-gray-800 inline-block text-white rounded-xl px-8 py-4 shadow-lg">
-                <span class="text-2xl text-gray-400 mr-2">总计:</span>
-                <span id="decimal-display" class="text-6xl font-bold text-yellow-300 tracking-widest">0.00</span>
-                <span class="text-2xl text-gray-400 ml-2">元</span>
+            <!-- 学习模式的底部控制 -->
+            <div id="learning-footer" class="learning-mode">
+                <div class="bg-gray-800 inline-block text-white rounded-xl px-8 py-4 shadow-lg">
+                    <span class="text-2xl text-gray-400 mr-2">总计:</span>
+                    <span id="decimal-display" class="text-6xl font-bold text-yellow-300 tracking-widest">0.00</span>
+                    <span class="text-2xl text-gray-400 ml-2">元</span>
+                </div>
+                <div class="mt-6 flex justify-center space-x-4">
+                    <button id="reset-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-full text-xl cute-font shadow-md transition-transform transform hover:scale-105">
+                        清空重置
+                    </button>
+                    <button id="read-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full text-xl cute-font shadow-md transition-transform transform hover:scale-105">
+                        🔊 读数
+                    </button>
+                </div>
             </div>
-            <div class="mt-6 flex justify-center space-x-4">
-                <button id="reset-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-full text-xl cute-font shadow-md transition-transform transform hover:scale-105">
-                    清空重置
-                </button>
-                <button id="read-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full text-xl cute-font shadow-md transition-transform transform hover:scale-105">
-                    🔊 读数
-                </button>
-            </div>
+
         </footer>
 
     </div>
@@ -172,10 +979,716 @@
         const resetButton = document.getElementById('reset-button');
         const readButton = document.getElementById('read-button');
         
+        // 模式切换相关元素
+        const learningModeBtn = document.getElementById('learning-mode-btn');
+        const battleModeBtn = document.getElementById('battle-mode-btn');
+        const learningMode = document.getElementById('learning-mode');
+        const battleMode = document.getElementById('battle-mode');
+        const learningFooter = document.getElementById('learning-footer');
+        const newQuestionBtn = document.getElementById('new-question-btn');
+        
+        // 双人对战模式相关元素
+        const startBattleBtn = document.getElementById('start-battle-btn');
+        const battleContainer = document.getElementById('battle-container');
+        const player1Area = document.getElementById('player1-area');
+        const player2Area = document.getElementById('player2-area');
+        const player1Progress = document.getElementById('player1-progress');
+        const player2Progress = document.getElementById('player2-progress');
+        const player1CoinArea = document.getElementById('player1-coin-area');
+        const player2CoinArea = document.getElementById('player2-coin-area');
+        const player1Input = document.getElementById('player1-input');
+        const player2Input = document.getElementById('player2-input');
+        const player1SubmitBtn = document.getElementById('player1-submit-btn');
+        const player2SubmitBtn = document.getElementById('player2-submit-btn');
+        const player1Status = document.getElementById('player1-status');
+        const player2Status = document.getElementById('player2-status');
+        const gameResult = document.getElementById('game-result');
+        const resultTitle = document.getElementById('result-title');
+        const resultScore = document.getElementById('result-score');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const playerNumberBtns = document.querySelectorAll('.player-number-btn');
+        const player1NumberBtns = document.querySelectorAll('.player1 .player-number-btn');
+        const player2NumberBtns = document.querySelectorAll('.player2 .player-number-btn');
+        
+        // 音频元素
+        const bgmAudio = document.getElementById('bgm-audio');
+        const correctAnswerAudio = document.getElementById('correct-answer-audio');
+        const celebrationAudio = document.getElementById('celebration-audio');
+        
+        // 音频控制元素
+        const muteBtn = document.getElementById('mute-btn');
+        const volumeSlider = document.getElementById('volume-slider');
+        
+        // 音频控制状态
+        let isMuted = false;
+        let currentVolume = 0.5;
+        
         // --- 状态变量 ---
         let money = { yuan: 0, jiao: 0, fen: 0 };
         let draggedType = null;
         let isProcessing = false; // 防止动画期间重复操作
+        let currentMode = 'learning'; // 当前游戏模式
+        
+        // 双人对战模式状态变量
+        let battleQuestions = []; // 5道题目的数组
+        let player1Questions = []; // 玩家1的题目顺序
+        let player2Questions = []; // 玩家2的题目顺序
+        let player1CurrentIndex = 0; // 玩家1当前题目索引
+        let player2CurrentIndex = 0; // 玩家2当前题目索引
+        let player1Answer = ''; // 玩家1当前答案
+        let player2Answer = ''; // 玩家2当前答案
+        let player1Score = 0; // 玩家1得分
+        let player2Score = 0; // 玩家2得分
+        let battleGameActive = false; // 对战游戏是否进行中
+
+        // --- 双人对战模式相关函数 ---
+        
+        /**
+         * 生成5道相同题目但顺序不同的题目集合
+         * @returns {Object} 包含原始题目和两个玩家题目顺序的对象
+         */
+        function generateBattleQuestions() {
+            const questions = [];
+            
+            // 生成5道不同的题目
+            for (let i = 0; i < 5; i++) {
+                questions.push(generateRandomCoins());
+            }
+            
+            // 为两个玩家创建不同的题目顺序
+            const player1Order = [...questions];
+            const player2Order = [...questions];
+            
+            // 打乱玩家2的题目顺序，确保与玩家1不同
+            do {
+                shuffleArray(player2Order);
+            } while (arraysEqual(player1Order, player2Order));
+            
+            return {
+                originalQuestions: questions,
+                player1Questions: player1Order,
+                player2Questions: player2Order
+            };
+        }
+        
+        /**
+         * 数组洗牌算法（Fisher-Yates）
+         * @param {Array} array - 要洗牌的数组
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        
+        /**
+         * 比较两个数组是否相等
+         * @param {Array} arr1 - 第一个数组
+         * @param {Array} arr2 - 第二个数组
+         * @returns {boolean} 是否相等
+         */
+        function arraysEqual(arr1, arr2) {
+            if (arr1.length !== arr2.length) return false;
+            for (let i = 0; i < arr1.length; i++) {
+                if (arr1[i].correctAnswer !== arr2[i].correctAnswer) return false;
+            }
+            return true;
+        }
+        
+        /**
+         * 开始双人对战游戏
+         */
+        function startBattleGame() {
+            // 播放背景音乐
+            try {
+                bgmAudio.currentTime = 0;
+                bgmAudio.play().catch(e => console.log('背景音乐播放失败:', e));
+            } catch (e) {
+                console.log('背景音乐播放失败:', e);
+            }
+            
+            // 生成题目
+            const questionData = generateBattleQuestions();
+            battleQuestions = questionData.originalQuestions;
+            player1Questions = questionData.player1Questions;
+            player2Questions = questionData.player2Questions;
+            
+            // 重置游戏状态
+            player1CurrentIndex = 0;
+            player2CurrentIndex = 0;
+            player1Answer = '';
+            player2Answer = '';
+            player1Score = 0;
+            player2Score = 0;
+            battleGameActive = true;
+            
+            // 显示对战界面
+            startBattleBtn.style.display = 'none';
+            battleContainer.style.display = 'flex';
+            gameResult.style.display = 'none';
+            
+            // 显示第一题
+            showPlayerQuestion(1);
+            showPlayerQuestion(2);
+            
+            // 更新进度显示
+            updatePlayerProgress(1);
+            updatePlayerProgress(2);
+        }
+        
+        /**
+         * 显示玩家的当前题目
+         * @param {number} playerNum - 玩家编号 (1 或 2)
+         */
+        function showPlayerQuestion(playerNum) {
+            const questions = playerNum === 1 ? player1Questions : player2Questions;
+            const currentIndex = playerNum === 1 ? player1CurrentIndex : player2CurrentIndex;
+            const coinArea = playerNum === 1 ? player1CoinArea : player2CoinArea;
+            
+            if (currentIndex >= questions.length) return;
+            
+            const question = questions[currentIndex];
+            
+            // 清空钱币显示区域
+            coinArea.innerHTML = '';
+            
+            // 按照面额大小排序钱币（元角分顺序，面额大的在前）
+            const sortedCoins = [...question.coins].sort((a, b) => {
+                // 定义钱币排序优先级（面额大的在前）
+                const order = {
+                    'yuan5': 1,   // 5元
+                    'yuan2': 2,   // 2元
+                    'yuan': 3,    // 1元
+                    'jiao5': 4,   // 5角
+                    'jiao': 5,    // 1角
+                    'fen': 6      // 1分
+                };
+                return order[a.type] - order[b.type];
+            });
+            
+            // 显示排序后的钱币
+            sortedCoins.forEach(coinData => {
+                for (let i = 0; i < coinData.count; i++) {
+                    coinArea.appendChild(createCashierCoin(coinData.type, coinData.name));
+                }
+            });
+        }
+        
+        /**
+         * 更新玩家进度显示
+         * @param {number} playerNum - 玩家编号 (1 或 2)
+         */
+        function updatePlayerProgress(playerNum) {
+            const progress = playerNum === 1 ? player1Progress : player2Progress;
+            const currentIndex = playerNum === 1 ? player1CurrentIndex : player2CurrentIndex;
+            const dots = progress.querySelectorAll('.progress-dot');
+            
+            dots.forEach((dot, index) => {
+                dot.classList.remove('current', 'completed');
+                if (index < currentIndex) {
+                    dot.classList.add('completed');
+                } else if (index === currentIndex) {
+                    dot.classList.add('current');
+                }
+            });
+        }
+        
+        /**
+         * 处理玩家数字输入
+         * @param {number} playerNum - 玩家编号 (1 或 2)
+         * @param {string} input - 输入的字符
+         */
+        function handlePlayerNumberInput(playerNum, input) {
+            if (!battleGameActive) return;
+            
+            let currentAnswer = playerNum === 1 ? player1Answer : player2Answer;
+            const inputElement = playerNum === 1 ? player1Input : player2Input;
+            
+            if (input === 'delete') {
+                currentAnswer = currentAnswer.slice(0, -1);
+            } else if (input === '.') {
+                // 只允许一个小数点
+                if (!currentAnswer.includes('.')) {
+                    currentAnswer += input;
+                }
+            } else {
+                // 限制输入长度和格式
+                if (currentAnswer.length < 6) { // 最多输入6位数字（如：19.99）
+                    currentAnswer += input;
+                }
+            }
+            
+            // 更新状态和显示
+            if (playerNum === 1) {
+                player1Answer = currentAnswer;
+            } else {
+                player2Answer = currentAnswer;
+            }
+            inputElement.value = currentAnswer;
+        }
+        
+        /**
+         * 检查玩家答案
+         * @param {number} playerNum - 玩家编号 (1 或 2)
+         */
+        function checkPlayerAnswer(playerNum) {
+            if (!battleGameActive) return;
+            
+            const questions = playerNum === 1 ? player1Questions : player2Questions;
+            const currentIndex = playerNum === 1 ? player1CurrentIndex : player2CurrentIndex;
+            const currentAnswer = playerNum === 1 ? player1Answer : player2Answer;
+            const statusElement = playerNum === 1 ? player1Status : player2Status;
+            const inputElement = playerNum === 1 ? player1Input : player2Input;
+            
+            if (currentIndex >= questions.length) return;
+            
+            const question = questions[currentIndex];
+            
+            if (!currentAnswer) {
+                statusElement.className = 'player-status incorrect';
+                statusElement.textContent = '请先输入答案！';
+                return;
+            }
+            
+            const userAnswer = parseFloat(currentAnswer);
+            const correctAnswer = parseFloat(question.correctAnswer);
+            
+            if (isNaN(userAnswer)) {
+                statusElement.className = 'player-status incorrect';
+                statusElement.textContent = '请输入有效的数字！';
+                return;
+            }
+            
+            if (Math.abs(userAnswer - correctAnswer) < 0.001) {
+                // 答对了
+                statusElement.className = 'player-status correct';
+                statusElement.textContent = '🎉 答对了！';
+                
+                // 播放答对音效
+                try {
+                    correctAnswerAudio.currentTime = 0;
+                    correctAnswerAudio.play();
+                } catch (error) {
+                    console.log('播放答对音效失败:', error);
+                }
+                
+                // 增加分数
+                if (playerNum === 1) {
+                    player1Score++;
+                    player1CurrentIndex++;
+                    player1Answer = '';
+                } else {
+                    player2Score++;
+                    player2CurrentIndex++;
+                    player2Answer = '';
+                }
+                
+                // 清空输入
+                inputElement.value = '';
+                
+                // 更新进度
+                updatePlayerProgress(playerNum);
+                
+                // 检查是否完成所有题目
+                if ((playerNum === 1 ? player1CurrentIndex : player2CurrentIndex) >= 5) {
+                    // 检查是否是第一个完成的
+                    const otherPlayerIndex = playerNum === 1 ? player2CurrentIndex : player1CurrentIndex;
+                    if (otherPlayerIndex >= 5) {
+                        // 另一个玩家也完成了，显示银牌收银员称号并结束游戏
+                        showSilverCashierTitle(playerNum);
+                        setTimeout(() => {
+                            endBattleGame();
+                        }, 2000);
+                    } else {
+                        // 第一个完成，显示金牌收银员称号
+                        checkGameEnd();
+                    }
+                } else {
+                    // 显示下一题
+                    setTimeout(() => {
+                        showPlayerQuestion(playerNum);
+                        statusElement.textContent = '';
+                    }, 1000);
+                }
+            } else {
+                // 答错了
+                statusElement.className = 'player-status incorrect';
+                statusElement.textContent = `❌ 答错了！`;
+                
+                // 清空输入框
+                inputElement.value = '';
+                
+                // 清空当前答案
+                if (playerNum === 1) {
+                    player1Answer = '';
+                } else {
+                    player2Answer = '';
+                }
+                
+                // 1秒后清空状态提示
+                setTimeout(() => {
+                    statusElement.textContent = '';
+                }, 1000);
+            }
+        }
+        
+        /**
+         * 检查游戏是否结束
+         */
+        function checkGameEnd() {
+            if (player1CurrentIndex >= 5 && player2CurrentIndex >= 5) {
+                // 两个玩家都完成了
+                endBattleGame();
+            } else if (player1CurrentIndex >= 5 && player2CurrentIndex < 5) {
+                // 玩家1先完成，获得金牌收银员称号
+                showGoldCashierTitle(1);
+            } else if (player2CurrentIndex >= 5 && player1CurrentIndex < 5) {
+                // 玩家2先完成，获得金牌收银员称号
+                showGoldCashierTitle(2);
+            }
+        }
+        
+        /**
+         * 显示金牌收银员称号和庆祝动画
+         */
+        function showGoldCashierTitle(playerNum) {
+            const statusElement = playerNum === 1 ? player1Status : player2Status;
+            statusElement.className = 'player-status gold-cashier';
+            statusElement.innerHTML = '🏆 金牌收银员！';
+            
+            // 添加华丽庆祝动画
+            statusElement.style.animation = 'goldCelebration 3s ease-in-out';
+            statusElement.style.fontSize = '1.3em';
+            statusElement.style.fontWeight = 'bold';
+            statusElement.style.color = '#FFD700';
+            statusElement.style.textShadow = '2px 2px 4px rgba(255, 215, 0, 0.5)';
+            statusElement.style.position = 'relative';
+            statusElement.style.zIndex = '10';
+            
+            // 创建闪烁光效
+            createSparkleEffect(statusElement);
+            
+            // 播放庆祝音效
+            try {
+                celebrationAudio.currentTime = 0;
+                celebrationAudio.play();
+            } catch (error) {
+                console.log('播放庆祝音效失败:', error);
+            }
+        }
+        
+        /**
+         * 显示银牌收银员称号
+         */
+        function showSilverCashierTitle(playerNum) {
+            const statusElement = playerNum === 1 ? player1Status : player2Status;
+            statusElement.className = 'player-status silver-cashier';
+            statusElement.innerHTML = '🥈 银牌收银员！';
+            
+            // 添加华丽银牌样式
+            statusElement.style.animation = 'silverCelebration 2.5s ease-in-out';
+            statusElement.style.fontSize = '1.2em';
+            statusElement.style.fontWeight = 'bold';
+            statusElement.style.color = '#C0C0C0';
+            statusElement.style.textShadow = '2px 2px 4px rgba(192, 192, 192, 0.5)';
+            statusElement.style.position = 'relative';
+            statusElement.style.zIndex = '10';
+            
+            // 创建银色光效
+            createSparkleEffect(statusElement, 'silver');
+            
+            // 播放庆祝音效
+            try {
+                celebrationAudio.currentTime = 0;
+                celebrationAudio.play();
+            } catch (error) {
+                console.log('播放庆祝音效失败:', error);
+            }
+        }
+        
+        /**
+         * 创建闪烁光效
+         */
+        function createSparkleEffect(element, type = 'gold') {
+            const sparkleCount = 8;
+            const colors = type === 'gold' ? 
+                ['#FFD700', '#FFA500', '#FFFF00', '#FF8C00'] : 
+                ['#C0C0C0', '#A9A9A9', '#D3D3D3', '#B0B0B0'];
+            
+            for (let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.innerHTML = '✨';
+                sparkle.style.position = 'absolute';
+                sparkle.style.fontSize = '0.8em';
+                sparkle.style.color = colors[i % colors.length];
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.zIndex = '11';
+                sparkle.style.animation = `sparkle 2s ease-in-out infinite`;
+                sparkle.style.animationDelay = `${i * 0.2}s`;
+                
+                // 随机位置
+                const angle = (i / sparkleCount) * 2 * Math.PI;
+                const radius = 40 + Math.random() * 20;
+                sparkle.style.left = `${Math.cos(angle) * radius}px`;
+                sparkle.style.top = `${Math.sin(angle) * radius}px`;
+                
+                element.style.position = 'relative';
+                element.appendChild(sparkle);
+                
+                // 3秒后移除光效
+                setTimeout(() => {
+                    if (sparkle.parentNode) {
+                        sparkle.parentNode.removeChild(sparkle);
+                    }
+                }, 3000);
+            }
+        }
+        
+        /**
+         * 结束对战游戏并显示结果
+         */
+        function endBattleGame() {
+            battleGameActive = false;
+            battleContainer.style.display = 'none';
+            gameResult.style.display = 'block';
+            
+            // 停止背景音乐
+            try {
+                bgmAudio.pause();
+                bgmAudio.currentTime = 0;
+            } catch (e) {
+                console.log('停止背景音乐失败:', e);
+            }
+            
+            // 确定胜负
+            if (player1Score > player2Score) {
+                resultTitle.textContent = '🎉 玩家1获胜！';
+                resultTitle.className = 'result-title winner';
+                // 添加庆祝动画
+                resultTitle.style.animation = 'bounce 1s ease-in-out infinite';
+            } else if (player2Score > player1Score) {
+                resultTitle.textContent = '🎉 玩家2获胜！';
+                resultTitle.className = 'result-title winner';
+                // 添加庆祝动画
+                resultTitle.style.animation = 'bounce 1s ease-in-out infinite';
+            } else {
+                resultTitle.textContent = '🤝 平局！';
+                resultTitle.className = 'result-title tie';
+            }
+            
+            resultScore.textContent = `玩家1: ${player1Score}分  |  玩家2: ${player2Score}分`;
+        }
+        
+        /**
+         * 重新开始对战游戏
+         */
+        function restartBattleGame() {
+            // 重置显示
+            battleContainer.style.display = 'none';
+            gameResult.style.display = 'none';
+            startBattleBtn.style.display = 'block';
+            
+            // 清空状态显示
+            player1Status.textContent = '';
+            player2Status.textContent = '';
+            player1Input.value = '';
+            player2Input.value = '';
+            
+            // 停止动画
+            resultTitle.style.animation = '';
+        }
+
+        // --- 收银员模式相关函数 ---
+        
+        /**
+         * 生成随机钱币组合，总金额不超过20元，结果为两位小数，不涉及进位
+         * @returns {Object} 包含钱币数量和正确答案的对象
+         */
+        function generateRandomCoins() {
+            const coinTypes = [
+                { type: 'yuan5', value: 5.00, name: '5元' },
+                { type: 'yuan2', value: 2.00, name: '2元' },
+                { type: 'yuan', value: 1.00, name: '1元' },
+                { type: 'jiao5', value: 0.50, name: '5角' },
+                { type: 'jiao', value: 0.10, name: '1角' },
+                { type: 'fen', value: 0.01, name: '1分' }
+            ];
+            
+            let coins = [];
+            let totalValue = 0;
+            
+            // 随机选择2-4种不同类型的钱币，避免复杂的进位计算
+            const numTypes = Math.floor(Math.random() * 3) + 2; // 2-4种类型
+            const selectedTypes = [];
+            
+            // 随机选择钱币类型
+            while (selectedTypes.length < numTypes) {
+                const randomIndex = Math.floor(Math.random() * coinTypes.length);
+                const coinType = coinTypes[randomIndex];
+                if (!selectedTypes.find(t => t.type === coinType.type)) {
+                    selectedTypes.push(coinType);
+                }
+            }
+            
+            // 为每种选中的钱币类型生成数量
+            selectedTypes.forEach(coinType => {
+                let maxCount;
+                // 根据钱币面值设置合理的数量范围，限制5元和5角的数量
+                if (coinType.type === 'yuan5') {
+                    maxCount = Math.floor(Math.random() * 3) + 1; // 5元最多3个
+                } else if (coinType.type === 'jiao5') {
+                    maxCount = 1; // 5角最多1个
+                } else if (coinType.value >= 1.00) {
+                    maxCount = Math.floor(Math.random() * 5) + 1; // 其他大面值1-5个
+                } else if (coinType.value >= 0.10) {
+                    maxCount = Math.floor(Math.random() * 8) + 1; // 1角1-8个
+                } else {
+                    maxCount = Math.floor(Math.random() * 10) + 1; // 1分1-10个
+                }
+                
+                coins.push({ ...coinType, count: maxCount });
+                totalValue += coinType.value * maxCount;
+            });
+            
+            // 确保总金额不超过20元
+            if (totalValue > 20) {
+                // 如果超过20元，按比例缩减每种钱币的数量，但保持5元和5角的限制
+                const scale = 19 / totalValue;
+                totalValue = 0;
+                coins.forEach(coin => {
+                    if (coin.type === 'yuan5') {
+                        coin.count = Math.min(3, Math.max(1, Math.floor(coin.count * scale)));
+                    } else if (coin.type === 'jiao5') {
+                        coin.count = 1; // 5角保持1个
+                    } else {
+                        coin.count = Math.max(1, Math.floor(coin.count * scale));
+                    }
+                    totalValue += coin.value * coin.count;
+                });
+            }
+            
+            // 重新计算精确的总金额
+            totalValue = coins.reduce((sum, coin) => sum + coin.value * coin.count, 0);
+            
+            return {
+                coins: coins,
+                correctAnswer: totalValue.toFixed(2)
+            };
+        }
+
+        /**
+         * 创建钱币DOM元素（用于双人对战模式）
+         * @param {string} type - 钱币类型
+         * @param {string} name - 钱币名称
+         * @returns {HTMLElement} 钱币DOM元素
+         */
+        function createCashierCoin(type, name) {
+            const coinDiv = document.createElement('div');
+            coinDiv.className = `dropped-coin ${type}-coin`;
+            coinDiv.textContent = name;
+            return coinDiv;
+        }
+
+
+
+        /**
+         * 切换游戏模式
+         * @param {string} mode - 游戏模式 ('learning' 或 'battle')
+         */
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // 隐藏所有模式
+            learningMode.classList.add('hidden');
+            learningFooter.classList.add('hidden');
+            battleMode.classList.remove('active');
+            
+            // 重置所有按钮状态
+            learningModeBtn.classList.remove('bg-blue-600');
+            learningModeBtn.classList.add('bg-blue-500');
+            battleModeBtn.classList.remove('bg-purple-600');
+            battleModeBtn.classList.add('bg-purple-500');
+            
+            if (mode === 'learning') {
+                // 显示学习模式
+                learningMode.classList.remove('hidden');
+                learningFooter.classList.remove('hidden');
+                
+                // 更新按钮状态
+                learningModeBtn.classList.add('bg-blue-600');
+                learningModeBtn.classList.remove('bg-blue-500');
+            } else if (mode === 'battle') {
+                // 显示双人对战模式
+                battleMode.classList.add('active');
+                
+                // 更新按钮状态
+                battleModeBtn.classList.add('bg-purple-600');
+                battleModeBtn.classList.remove('bg-purple-500');
+                
+                // 重置对战模式状态
+                restartBattleGame();
+            }
+        }
+
+        // --- 事件监听器 ---
+        
+        // 音频控制事件监听器
+        muteBtn.addEventListener('click', toggleMute);
+        volumeSlider.addEventListener('input', updateVolume);
+        
+        // 模式切换按钮
+        learningModeBtn.addEventListener('click', () => switchMode('learning'));
+        battleModeBtn.addEventListener('click', () => switchMode('battle'));
+        
+        // 双人对战模式按钮
+        startBattleBtn.addEventListener('click', startBattleGame);
+        playAgainBtn.addEventListener('click', restartBattleGame);
+        
+        // 玩家1数字键盘
+        player1NumberBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const number = btn.dataset.number;
+                const action = btn.dataset.action;
+                
+                if (action) {
+                    handlePlayerNumberInput(1, action);
+                } else if (number) {
+                    handlePlayerNumberInput(1, number);
+                }
+            });
+        });
+        
+        // 玩家2数字键盘
+        player2NumberBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const number = btn.dataset.number;
+                const action = btn.dataset.action;
+                
+                if (action) {
+                    handlePlayerNumberInput(2, action);
+                } else if (number) {
+                    handlePlayerNumberInput(2, number);
+                }
+            });
+        });
+        
+        // 玩家提交答案按钮
+        player1SubmitBtn.addEventListener('click', () => checkPlayerAnswer(1));
+        player2SubmitBtn.addEventListener('click', () => checkPlayerAnswer(2));
+        
+        // 玩家答案输入框回车提交
+        player1Input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkPlayerAnswer(1);
+            }
+        });
+        
+        player2Input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkPlayerAnswer(2);
+            }
+        });
 
         // --- 拖动事件监听 (鼠标) ---
         document.addEventListener('dragstart', (e) => {
@@ -399,8 +1912,64 @@
             }
         });
         
+        // --- 音频控制函数 ---
+        
+        /**
+         * 切换静音状态
+         */
+        function toggleMute() {
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                // 静音所有音频
+                bgmAudio.volume = 0;
+                correctAnswerAudio.volume = 0;
+                celebrationAudio.volume = 0;
+                muteBtn.textContent = '🔇';
+                muteBtn.classList.add('muted');
+            } else {
+                // 恢复音量
+                const volume = currentVolume;
+                bgmAudio.volume = volume;
+                correctAnswerAudio.volume = volume;
+                celebrationAudio.volume = volume;
+                muteBtn.textContent = '🔊';
+                muteBtn.classList.remove('muted');
+            }
+        }
+        
+        /**
+         * 更新音量
+         */
+        function updateVolume() {
+            currentVolume = volumeSlider.value / 100;
+            
+            if (!isMuted) {
+                bgmAudio.volume = currentVolume;
+                correctAnswerAudio.volume = currentVolume;
+                celebrationAudio.volume = currentVolume;
+            }
+        }
+        
+        /**
+         * 初始化音频设置
+         */
+        function initializeAudio() {
+            // 设置初始音量
+            bgmAudio.volume = currentVolume;
+            correctAnswerAudio.volume = currentVolume;
+            celebrationAudio.volume = currentVolume;
+            
+            // 设置音量滑块初始值
+            volumeSlider.value = currentVolume * 100;
+        }
+        
         // --- 初始状态 ---
         updateDecimalDisplay();
+        initializeAudio();
+        
+        // 默认启动学习模式
+        switchMode('learning');
     </script>
 </body>
 </html>
