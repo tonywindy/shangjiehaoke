@@ -132,25 +132,37 @@
 
         .player-answer-section {
             margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .player-input-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .player-input {
-            width: 100%;
-            max-width: 200px;
+            width: 200px;
             padding: 0.75rem;
             font-size: 1.25rem;
             text-align: center;
             border: 2px solid #d1d5db;
             border-radius: 0.5rem;
             background: white;
+            flex-shrink: 0;
         }
 
         .player-number-pad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 0.5rem;
-            max-width: 200px;
-            margin: 1rem auto;
+            width: 200px;
+            flex-shrink: 0;
         }
 
         .player-number-btn {
@@ -170,8 +182,7 @@
         }
 
         .player-submit-btn {
-            width: 100%;
-            max-width: 200px;
+            width: 200px;
             padding: 0.75rem;
             font-size: 1rem;
             font-weight: bold;
@@ -870,21 +881,23 @@
                         </div>
 
                         <div class="player-answer-section">
-                            <input type="text" class="player-input" id="player1-input" placeholder="0.00" readonly>
-                            
-                            <div class="player-number-pad">
-                                <button class="player-number-btn" data-player="1" data-number="7">7</button>
-                                <button class="player-number-btn" data-player="1" data-number="8">8</button>
-                                <button class="player-number-btn" data-player="1" data-number="9">9</button>
-                                <button class="player-number-btn" data-player="1" data-number="4">4</button>
-                                <button class="player-number-btn" data-player="1" data-number="5">5</button>
-                                <button class="player-number-btn" data-player="1" data-number="6">6</button>
-                                <button class="player-number-btn" data-player="1" data-number="1">1</button>
-                                <button class="player-number-btn" data-player="1" data-number="2">2</button>
-                                <button class="player-number-btn" data-player="1" data-number="3">3</button>
-                                <button class="player-number-btn" data-player="1" data-number=".">.</button>
-                                <button class="player-number-btn" data-player="1" data-number="0">0</button>
-                                <button class="player-number-btn" data-player="1" data-action="delete">⌫</button>
+                            <div class="player-input-row">
+                                <input type="text" class="player-input" id="player1-input" placeholder="0.00" readonly>
+                                
+                                <div class="player-number-pad">
+                                    <button class="player-number-btn" data-player="1" data-number="7">7</button>
+                                    <button class="player-number-btn" data-player="1" data-number="8">8</button>
+                                    <button class="player-number-btn" data-player="1" data-number="9">9</button>
+                                    <button class="player-number-btn" data-player="1" data-number="4">4</button>
+                                    <button class="player-number-btn" data-player="1" data-number="5">5</button>
+                                    <button class="player-number-btn" data-player="1" data-number="6">6</button>
+                                    <button class="player-number-btn" data-player="1" data-number="1">1</button>
+                                    <button class="player-number-btn" data-player="1" data-number="2">2</button>
+                                    <button class="player-number-btn" data-player="1" data-number="3">3</button>
+                                    <button class="player-number-btn" data-player="1" data-number=".">.</button>
+                                    <button class="player-number-btn" data-player="1" data-number="0">0</button>
+                                    <button class="player-number-btn" data-player="1" data-action="delete">⌫</button>
+                                </div>
                             </div>
 
                             <button class="player-submit-btn" id="player1-submit-btn" data-player="1">提交答案</button>
@@ -910,21 +923,23 @@
                         </div>
 
                         <div class="player-answer-section">
-                            <input type="text" class="player-input" id="player2-input" placeholder="0.00" readonly>
-                            
-                            <div class="player-number-pad">
-                                <button class="player-number-btn" data-player="2" data-number="7">7</button>
-                                <button class="player-number-btn" data-player="2" data-number="8">8</button>
-                                <button class="player-number-btn" data-player="2" data-number="9">9</button>
-                                <button class="player-number-btn" data-player="2" data-number="4">4</button>
-                                <button class="player-number-btn" data-player="2" data-number="5">5</button>
-                                <button class="player-number-btn" data-player="2" data-number="6">6</button>
-                                <button class="player-number-btn" data-player="2" data-number="1">1</button>
-                                <button class="player-number-btn" data-player="2" data-number="2">2</button>
-                                <button class="player-number-btn" data-player="2" data-number="3">3</button>
-                                <button class="player-number-btn" data-player="2" data-number=".">.</button>
-                                <button class="player-number-btn" data-player="2" data-number="0">0</button>
-                                <button class="player-number-btn" data-player="2" data-action="delete">⌫</button>
+                            <div class="player-input-row">
+                                <input type="text" class="player-input" id="player2-input" placeholder="0.00" readonly>
+                                
+                                <div class="player-number-pad">
+                                    <button class="player-number-btn" data-player="2" data-number="7">7</button>
+                                    <button class="player-number-btn" data-player="2" data-number="8">8</button>
+                                    <button class="player-number-btn" data-player="2" data-number="9">9</button>
+                                    <button class="player-number-btn" data-player="2" data-number="4">4</button>
+                                    <button class="player-number-btn" data-player="2" data-number="5">5</button>
+                                    <button class="player-number-btn" data-player="2" data-number="6">6</button>
+                                    <button class="player-number-btn" data-player="2" data-number="1">1</button>
+                                    <button class="player-number-btn" data-player="2" data-number="2">2</button>
+                                    <button class="player-number-btn" data-player="2" data-number="3">3</button>
+                                    <button class="player-number-btn" data-player="2" data-number=".">.</button>
+                                    <button class="player-number-btn" data-player="2" data-number="0">0</button>
+                                    <button class="player-number-btn" data-player="2" data-action="delete">⌫</button>
+                                </div>
                             </div>
 
                             <button class="player-submit-btn" id="player2-submit-btn" data-player="2">提交答案</button>
@@ -1534,7 +1549,7 @@
             // 为每种选中的钱币类型生成数量
             selectedTypes.forEach(coinType => {
                 let maxCount;
-                // 根据钱币面值设置合理的数量范围，限制5元和5角的数量
+                // 根据钱币面值设置合理的数量范围，限制各种钱币的数量
                 if (coinType.type === 'yuan5') {
                     maxCount = Math.floor(Math.random() * 3) + 1; // 5元最多3个
                 } else if (coinType.type === 'jiao5') {
@@ -1542,9 +1557,9 @@
                 } else if (coinType.value >= 1.00) {
                     maxCount = Math.floor(Math.random() * 5) + 1; // 其他大面值1-5个
                 } else if (coinType.value >= 0.10) {
-                    maxCount = Math.floor(Math.random() * 8) + 1; // 1角1-8个
+                    maxCount = Math.floor(Math.random() * 6) + 1; // 1角1-6个（角钱币总数不超过6个）
                 } else {
-                    maxCount = Math.floor(Math.random() * 10) + 1; // 1分1-10个
+                    maxCount = Math.floor(Math.random() * 9) + 1; // 1分1-9个（分钱币总数不超过9个）
                 }
                 
                 coins.push({ ...coinType, count: maxCount });
@@ -1553,7 +1568,7 @@
             
             // 确保总金额不超过20元
             if (totalValue > 20) {
-                // 如果超过20元，按比例缩减每种钱币的数量，但保持5元和5角的限制
+                // 如果超过20元，按比例缩减每种钱币的数量，但保持各种钱币的数量限制
                 const scale = 19 / totalValue;
                 totalValue = 0;
                 coins.forEach(coin => {
@@ -1561,6 +1576,12 @@
                         coin.count = Math.min(3, Math.max(1, Math.floor(coin.count * scale)));
                     } else if (coin.type === 'jiao5') {
                         coin.count = 1; // 5角保持1个
+                    } else if (coin.value >= 0.10) {
+                        // 1角钱币不超过6个
+                        coin.count = Math.min(6, Math.max(1, Math.floor(coin.count * scale)));
+                    } else if (coin.value < 0.10) {
+                        // 1分钱币不超过9个
+                        coin.count = Math.min(9, Math.max(1, Math.floor(coin.count * scale)));
                     } else {
                         coin.count = Math.max(1, Math.floor(coin.count * scale));
                     }
