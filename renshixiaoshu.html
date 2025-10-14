@@ -31,6 +31,21 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
         }
+        
+        /* 学习模式钱币大小 - 放大1.5倍 */
+        .learning-mode .coin {
+            width: 96px;
+            height: 96px;
+            font-size: 1.875rem;
+        }
+        
+        /* 收银员模式（双人对战）钱币大小 - 放大2倍 */
+        .battle-mode .dropped-coin {
+            width: 96px;
+            height: 96px;
+            font-size: 2rem;
+            margin: 6px;
+        }
         .coin:active {
             cursor: grabbing;
             transform: scale(1.1);
@@ -299,6 +314,33 @@
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
         }
 
+        /* "有请下一位顾客"按钮样式 */
+        .next-customer-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            margin-top: 1rem;
+            display: inline-block;
+        }
+
+        .next-customer-btn:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+        }
+
+        .next-customer-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+
         .audio-control-btn.muted {
             background: linear-gradient(135deg, #ef4444, #dc2626);
             box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
@@ -394,79 +436,75 @@
             }
         }
 
-        /* 金牌收银员庆祝动画 - 华丽版 */
+        /* 金牌收银员庆祝动画 - 超强视觉冲击版 */
         @keyframes goldCelebration {
             0% {
-                transform: scale(1) rotate(0deg) translateY(0px);
-                opacity: 1;
+                transform: scale(0.3) rotate(0deg) translateY(0px);
+                opacity: 0;
                 text-shadow: 2px 2px 4px rgba(255, 215, 0, 0.5);
                 filter: brightness(1) hue-rotate(0deg) drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
             }
-            8% {
-                transform: scale(1.2) rotate(-5deg) translateY(-5px);
-                text-shadow: 3px 3px 6px rgba(255, 215, 0, 0.7), 0 0 15px rgba(255, 215, 0, 0.5);
-                filter: brightness(1.2) hue-rotate(30deg) drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+            10% {
+                transform: scale(1.5) rotate(-10deg) translateY(-20px);
+                opacity: 1;
+                text-shadow: 5px 5px 10px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 215, 0, 0.8), 0 0 50px rgba(255, 165, 0, 0.6);
+                filter: brightness(2) hue-rotate(60deg) drop-shadow(0 0 25px rgba(255, 215, 0, 1));
             }
-            15% {
-                transform: scale(1.4) rotate(-12deg) translateY(-12px);
-                text-shadow: 4px 4px 8px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 165, 0, 0.4);
-                filter: brightness(1.4) hue-rotate(60deg) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
-            }
-            22% {
-                transform: scale(1.6) rotate(8deg) translateY(-18px);
-                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 165, 0, 0.5);
-                filter: brightness(1.6) hue-rotate(90deg) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+            20% {
+                transform: scale(0.8) rotate(5deg) translateY(-10px);
+                text-shadow: 3px 3px 6px rgba(255, 215, 0, 0.9), 0 0 20px rgba(255, 215, 0, 0.7);
+                filter: brightness(1.5) hue-rotate(120deg) drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
             }
             30% {
-                transform: scale(1.8) rotate(15deg) translateY(-25px);
-                text-shadow: 6px 6px 12px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 165, 0, 0.6), 0 0 50px rgba(255, 140, 0, 0.4);
-                filter: brightness(1.8) hue-rotate(120deg) drop-shadow(0 0 25px rgba(255, 215, 0, 1));
+                transform: scale(1.8) rotate(-15deg) translateY(-35px);
+                text-shadow: 8px 8px 16px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.9), 0 0 60px rgba(255, 165, 0, 0.7), 0 0 80px rgba(255, 140, 0, 0.5);
+                filter: brightness(2.5) hue-rotate(180deg) drop-shadow(0 0 40px rgba(255, 215, 0, 1));
             }
-            38% {
-                transform: scale(1.5) rotate(-10deg) translateY(-20px);
-                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 165, 0, 0.5);
-                filter: brightness(1.5) hue-rotate(150deg) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+            40% {
+                transform: scale(0.9) rotate(8deg) translateY(-15px);
+                text-shadow: 4px 4px 8px rgba(255, 215, 0, 0.8), 0 0 25px rgba(255, 215, 0, 0.6);
+                filter: brightness(1.8) hue-rotate(240deg) drop-shadow(0 0 20px rgba(255, 215, 0, 0.9));
             }
-            45% {
-                transform: scale(1.7) rotate(-18deg) translateY(-22px);
-                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7);
-                filter: brightness(1.7) hue-rotate(180deg) drop-shadow(0 0 22px rgba(255, 215, 0, 0.9));
-            }
-            52% {
-                transform: scale(1.9) rotate(20deg) translateY(-28px);
-                text-shadow: 7px 7px 14px rgba(255, 215, 0, 1), 0 0 35px rgba(255, 215, 0, 0.9), 0 0 45px rgba(255, 165, 0, 0.7), 0 0 55px rgba(255, 140, 0, 0.5);
-                filter: brightness(1.9) hue-rotate(210deg) drop-shadow(0 0 30px rgba(255, 215, 0, 1));
+            50% {
+                transform: scale(2.2) rotate(-20deg) translateY(-50px);
+                text-shadow: 10px 10px 20px rgba(255, 215, 0, 1), 0 0 50px rgba(255, 215, 0, 1), 0 0 80px rgba(255, 165, 0, 0.8), 0 0 100px rgba(255, 140, 0, 0.6);
+                filter: brightness(3) hue-rotate(300deg) drop-shadow(0 0 50px rgba(255, 215, 0, 1)) saturate(2);
             }
             60% {
-                transform: scale(2.0) rotate(25deg) translateY(-30px);
-                text-shadow: 8px 8px 16px rgba(255, 215, 0, 1), 0 0 35px rgba(255, 215, 0, 0.9), 0 0 50px rgba(255, 165, 0, 0.7), 0 0 60px rgba(255, 140, 0, 0.5), 0 0 70px rgba(255, 255, 0, 0.3);
-                filter: brightness(2.0) hue-rotate(240deg) drop-shadow(0 0 35px rgba(255, 215, 0, 1));
+                transform: scale(1.0) rotate(12deg) translateY(-20px);
+                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.7);
+                filter: brightness(2) hue-rotate(360deg) drop-shadow(0 0 25px rgba(255, 215, 0, 0.8));
             }
-            68% {
-                transform: scale(1.6) rotate(-15deg) translateY(-18px);
-                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7), 0 0 35px rgba(255, 165, 0, 0.5);
-                filter: brightness(1.6) hue-rotate(270deg) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+            70% {
+                transform: scale(1.6) rotate(-8deg) translateY(-30px);
+                text-shadow: 6px 6px 12px rgba(255, 215, 0, 1), 0 0 35px rgba(255, 215, 0, 0.8), 0 0 55px rgba(255, 165, 0, 0.6);
+                filter: brightness(2.2) hue-rotate(60deg) drop-shadow(0 0 30px rgba(255, 215, 0, 0.9));
             }
-            75% {
-                transform: scale(1.4) rotate(-8deg) translateY(-15px);
+            80% {
+                transform: scale(1.2) rotate(5deg) translateY(-15px);
                 text-shadow: 4px 4px 8px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6);
-                filter: brightness(1.4) hue-rotate(300deg) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
-            }
-            82% {
-                transform: scale(1.3) rotate(6deg) translateY(-12px);
-                text-shadow: 4px 4px 8px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6);
-                filter: brightness(1.3) hue-rotate(330deg) drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
+                filter: brightness(1.6) hue-rotate(120deg) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
             }
             90% {
-                transform: scale(1.2) rotate(4deg) translateY(-8px);
-                text-shadow: 3px 3px 6px rgba(255, 215, 0, 0.7), 0 0 15px rgba(255, 215, 0, 0.5);
-                filter: brightness(1.2) hue-rotate(350deg) drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+                transform: scale(1.4) rotate(-3deg) translateY(-10px);
+                text-shadow: 5px 5px 10px rgba(255, 215, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.7);
+                filter: brightness(1.8) hue-rotate(180deg) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
             }
             100% {
-                transform: scale(1.1) rotate(0deg) translateY(0px);
+                transform: scale(1.3) rotate(0deg) translateY(0px);
                 opacity: 1;
-                text-shadow: 2px 2px 4px rgba(255, 215, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.3);
-                filter: brightness(1.1) hue-rotate(360deg) drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
+                text-shadow: 4px 4px 8px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 165, 0, 0.4);
+                filter: brightness(1.5) hue-rotate(240deg) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
+            }
+        }
+        
+        /* 添加脉冲闪烁效果 */
+        @keyframes goldPulse {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2);
+            }
+            50% { 
+                box-shadow: 0 0 60px rgba(255, 215, 0, 1), inset 0 0 40px rgba(255, 215, 0, 0.5);
             }
         }
 
@@ -739,6 +777,14 @@
             font-size: 1rem;
             margin: 4px;
         }
+        
+        /* 收银员模式（双人对战）钱币大小覆盖 - 放大2倍 */
+        .battle-mode .dropped-coin {
+            width: 96px !important;
+            height: 96px !important;
+            font-size: 2rem !important;
+            margin: 6px !important;
+        }
         .money-container {
             min-height: 100px;
         }
@@ -780,9 +826,90 @@
             }
         }
 
+        /* 小小收银员主题样式 */
+        .cashier-theme {
+            background-image: url('./public/xiaoshubeijing.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        /* 收银员主题下的玩家区域样式 */
+        .cashier-theme .player-area {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 功能区元素重新排序 */
+        .cashier-theme .player-header {
+            order: 1;
+        }
+
+        .cashier-theme .player-progress {
+            order: 2;
+        }
+
+        .cashier-theme .player-coin-area {
+            order: 3;
+        }
+
+        .cashier-theme .player-answer-section {
+            order: 4;
+        }
+
+        /* 电子显示屏效果的输入组件 */
+        .cashier-theme .player-input {
+            background: linear-gradient(145deg, #e6f3ff, #cce7ff);
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-family: 'Courier New', monospace;
+            color: #2c3e50;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            background-image: linear-gradient(90deg, rgba(255,255,255,0.1) 50%, transparent 50%);
+            background-size: 20px 20px;
+        }
+
+        /* 调整输入行布局 - 九宫格在左，小数显示在右 */
+        .cashier-theme .player-input-row {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 状态提示绝对定位 */
+        .cashier-theme .player-status {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        /* 确保玩家区域有相对定位以支持绝对定位的状态提示 */
+        .cashier-theme .player-area {
+            position: relative;
+        }
+
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-1 md:p-2">
+<body class="cashier-theme min-h-screen flex items-center justify-center p-1 md:p-2">
 
     <!-- 音频元素 -->
     <audio id="bgm-audio" loop preload="auto">
@@ -813,7 +940,7 @@
                     学习模式
                 </button>
                 <button id="battle-mode-btn" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full cute-font transition-all transform hover:scale-105 shadow-md">
-                    双人对战
+                    小小收银员
                 </button>
             </div>
         </header>
@@ -855,7 +982,7 @@
             <div id="battle-mode" class="battle-mode md:col-span-3">
                 <!-- 游戏开始控制 -->
                 <div class="battle-controls">
-                    <button class="start-battle-btn" id="start-battle-btn">开始对战</button>
+                    <button class="start-battle-btn" id="start-battle-btn">开始工作</button>
                     <div class="audio-controls">
                         <button class="audio-control-btn" id="mute-btn" title="静音/取消静音">🔊</button>
                         <input type="range" id="volume-slider" min="0" max="100" value="50" title="音量调节">
@@ -866,7 +993,7 @@
                 <div class="battle-container" id="battle-container" style="display: none;">
                     <!-- 玩家1区域 -->
                     <div class="player-area player1" id="player1-area">
-                        <div class="player-header">玩家1</div>
+                        <div class="player-header">1号收银员</div>
                         
                         <div class="player-progress" id="player1-progress">
                             <div class="progress-dot current"></div>
@@ -900,7 +1027,7 @@
                                 </div>
                             </div>
 
-                            <button class="player-submit-btn" id="player1-submit-btn" data-player="1">提交答案</button>
+                            <button class="player-submit-btn" id="player1-submit-btn" data-player="1">确认收银</button>
                         </div>
 
                         <div class="player-status" id="player1-status"></div>
@@ -908,7 +1035,7 @@
 
                     <!-- 玩家2区域 -->
                     <div class="player-area player2" id="player2-area">
-                        <div class="player-header">玩家2</div>
+                        <div class="player-header">2号收银员</div>
                         
                         <div class="player-progress" id="player2-progress">
                             <div class="progress-dot current"></div>
@@ -942,7 +1069,7 @@
                                 </div>
                             </div>
 
-                            <button class="player-submit-btn" id="player2-submit-btn" data-player="2">提交答案</button>
+                            <button class="player-submit-btn" id="player2-submit-btn" data-player="2">确认收银</button>
                         </div>
 
                         <div class="player-status" id="player2-status"></div>
@@ -1059,16 +1186,28 @@
         // --- 双人对战模式相关函数 ---
         
         /**
-         * 生成5道相同题目但顺序不同的题目集合
+         * 生成5道相同题目但顺序不同的题目集合，按指定钱币类型分布
          * @returns {Object} 包含原始题目和两个玩家题目顺序的对象
          */
         function generateBattleQuestions() {
             const questions = [];
             
-            // 生成5道不同的题目
-            for (let i = 0; i < 5; i++) {
-                questions.push(generateRandomCoins());
-            }
+            // 按要求生成5道题目：2道三种钱币、1道元角、1道角分、1道元分
+            const questionTypes = [
+                'yuan-jiao-fen', // 元角分
+                'yuan-jiao-fen', // 元角分
+                'yuan-jiao',     // 元角
+                'jiao-fen',      // 角分
+                'yuan-fen'       // 元分
+            ];
+            
+            // 打乱题目类型顺序
+            shuffleArray(questionTypes);
+            
+            // 根据类型生成对应的题目
+            questionTypes.forEach(type => {
+                questions.push(generateSpecificCoins(type));
+            });
             
             // 为两个玩家创建不同的题目顺序
             const player1Order = [...questions];
@@ -1278,7 +1417,7 @@
             if (Math.abs(userAnswer - correctAnswer) < 0.001) {
                 // 答对了
                 statusElement.className = 'player-status correct';
-                statusElement.textContent = '🎉 答对了！';
+                statusElement.innerHTML = `🎉 答对了！<br>正确答案：${correctAnswer.toFixed(2)}元<br><button class="next-customer-btn" onclick="proceedToNextQuestion(${playerNum})">有请下一位顾客</button>`;
                 
                 // 播放答对音效
                 try {
@@ -1291,41 +1430,16 @@
                 // 增加分数
                 if (playerNum === 1) {
                     player1Score++;
-                    player1CurrentIndex++;
-                    player1Answer = '';
                 } else {
                     player2Score++;
-                    player2CurrentIndex++;
-                    player2Answer = '';
                 }
                 
                 // 清空输入
                 inputElement.value = '';
                 
-                // 更新进度
-                updatePlayerProgress(playerNum);
-                
-                // 检查是否完成所有题目
-                if ((playerNum === 1 ? player1CurrentIndex : player2CurrentIndex) >= 5) {
-                    // 检查是否是第一个完成的
-                    const otherPlayerIndex = playerNum === 1 ? player2CurrentIndex : player1CurrentIndex;
-                    if (otherPlayerIndex >= 5) {
-                        // 另一个玩家也完成了，显示银牌收银员称号并结束游戏
-                        showSilverCashierTitle(playerNum);
-                        setTimeout(() => {
-                            endBattleGame();
-                        }, 2000);
-                    } else {
-                        // 第一个完成，显示金牌收银员称号
-                        checkGameEnd();
-                    }
-                } else {
-                    // 显示下一题
-                    setTimeout(() => {
-                        showPlayerQuestion(playerNum);
-                        statusElement.textContent = '';
-                    }, 1000);
-                }
+                // 禁用提交按钮，防止重复提交
+                const submitBtn = playerNum === 1 ? player1SubmitBtn : player2SubmitBtn;
+                submitBtn.disabled = true;
             } else {
                 // 答错了
                 statusElement.className = 'player-status incorrect';
@@ -1368,21 +1482,45 @@
          * 显示金牌收银员称号和庆祝动画
          */
         function showGoldCashierTitle(playerNum) {
-            const statusElement = playerNum === 1 ? player1Status : player2Status;
-            statusElement.className = 'player-status gold-cashier';
-            statusElement.innerHTML = '🏆 金牌收银员！';
+            const playerArea = playerNum === 1 ? document.getElementById('player1-area') : document.getElementById('player2-area');
             
-            // 添加华丽庆祝动画
-            statusElement.style.animation = 'goldCelebration 3s ease-in-out';
-            statusElement.style.fontSize = '1.3em';
-            statusElement.style.fontWeight = 'bold';
-            statusElement.style.color = '#FFD700';
-            statusElement.style.textShadow = '2px 2px 4px rgba(255, 215, 0, 0.5)';
-            statusElement.style.position = 'relative';
-            statusElement.style.zIndex = '10';
+            // 创建居中的获胜动画元素
+            const winnerOverlay = document.createElement('div');
+            winnerOverlay.className = 'winner-overlay';
+            winnerOverlay.innerHTML = '🏆 金牌收银员！';
+            
+            // 设置覆盖层样式，使其居中显示在玩家区域
+             winnerOverlay.style.cssText = `
+                 position: absolute;
+                 top: 50%;
+                 left: 50%;
+                 transform: translate(-50%, -50%);
+                 z-index: 1000;
+                 font-size: 3rem;
+                 font-weight: bold;
+                 color: #FFD700;
+                 text-shadow: 3px 3px 6px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6);
+                 background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 248, 220, 0.95) 100%);
+                 padding: 2rem 3rem;
+                 border-radius: 25px;
+                 border: 5px solid #FFD700;
+                 box-shadow: 0 0 30px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2);
+                 animation: goldCelebration 4s ease-in-out, goldPulse 1s infinite alternate;
+                 text-align: center;
+                 min-width: 350px;
+                 backdrop-filter: blur(8px);
+                 user-select: none;
+                 pointer-events: none;
+             `;
+            
+            // 确保玩家区域有相对定位
+            playerArea.style.position = 'relative';
+            
+            // 添加到玩家区域
+            playerArea.appendChild(winnerOverlay);
             
             // 创建闪烁光效
-            createSparkleEffect(statusElement);
+            createSparkleEffect(winnerOverlay);
             
             // 播放庆祝音效
             try {
@@ -1391,10 +1529,57 @@
             } catch (error) {
                 console.log('播放庆祝音效失败:', error);
             }
+            
+            // 获胜动画永久停留在页面，不自动移除
         }
         
         /**
-         * 显示银牌收银员称号
+         * 处理"有请下一位顾客"按钮点击，进入下一题
+         * @param {number} playerNum - 玩家编号 (1 或 2)
+         */
+        function proceedToNextQuestion(playerNum) {
+            // 更新玩家进度
+            if (playerNum === 1) {
+                player1CurrentIndex++;
+                player1Answer = '';
+            } else {
+                player2CurrentIndex++;
+                player2Answer = '';
+            }
+            
+            // 重新启用提交按钮
+            const submitBtn = playerNum === 1 ? player1SubmitBtn : player2SubmitBtn;
+            submitBtn.disabled = false;
+            
+            // 清空状态显示
+            const statusElement = playerNum === 1 ? player1Status : player2Status;
+            statusElement.textContent = '';
+            
+            // 更新进度
+            updatePlayerProgress(playerNum);
+            
+            // 检查是否完成所有题目
+            if ((playerNum === 1 ? player1CurrentIndex : player2CurrentIndex) >= 5) {
+                // 检查是否是第一个完成的
+                const otherPlayerIndex = playerNum === 1 ? player2CurrentIndex : player1CurrentIndex;
+                if (otherPlayerIndex >= 5) {
+                    // 另一个玩家也完成了，显示银牌收银员称号并结束游戏
+                    showSilverCashierTitle(playerNum);
+                    setTimeout(() => {
+                        endBattleGame();
+                    }, 2000);
+                } else {
+                    // 第一个完成，显示金牌收银员称号
+                    checkGameEnd();
+                }
+            } else {
+                // 显示下一题
+                showPlayerQuestion(playerNum);
+            }
+        }
+
+        /**
+         * 显示金牌收银员称号
          */
         function showSilverCashierTitle(playerNum) {
             const statusElement = playerNum === 1 ? player1Status : player2Status;
@@ -1517,7 +1702,7 @@
         // --- 收银员模式相关函数 ---
         
         /**
-         * 生成随机钱币组合，总金额不超过20元，结果为两位小数，不涉及进位
+         * 生成随机钱币组合，总金额不超过20元，总钱币数量不超过7枚，结果为两位小数，不涉及进位
          * @returns {Object} 包含钱币数量和正确答案的对象
          */
         function generateRandomCoins() {
@@ -1532,6 +1717,7 @@
             
             let coins = [];
             let totalValue = 0;
+            let totalCoins = 0;
             
             // 随机选择2-4种不同类型的钱币，避免复杂的进位计算
             const numTypes = Math.floor(Math.random() * 3) + 2; // 2-4种类型
@@ -1546,46 +1732,227 @@
                 }
             }
             
-            // 为每种选中的钱币类型生成数量
+            // 为每种选中的钱币类型生成数量，确保总数不超过7枚
             selectedTypes.forEach(coinType => {
                 let maxCount;
-                // 根据钱币面值设置合理的数量范围，限制各种钱币的数量
+                const remainingCoins = 7 - totalCoins;
+                
+                // 根据钱币面值设置合理的数量范围，同时限制总钱币数量
                 if (coinType.type === 'yuan5') {
-                    maxCount = Math.floor(Math.random() * 3) + 1; // 5元最多3个
+                    maxCount = Math.min(remainingCoins, Math.floor(Math.random() * 2) + 1); // 5元最多2个
                 } else if (coinType.type === 'jiao5') {
-                    maxCount = 1; // 5角最多1个
+                    maxCount = Math.min(remainingCoins, 1); // 5角最多1个
                 } else if (coinType.value >= 1.00) {
-                    maxCount = Math.floor(Math.random() * 5) + 1; // 其他大面值1-5个
+                    maxCount = Math.min(remainingCoins, Math.floor(Math.random() * 3) + 1); // 其他大面值1-3个
                 } else if (coinType.value >= 0.10) {
-                    maxCount = Math.floor(Math.random() * 6) + 1; // 1角1-6个（角钱币总数不超过6个）
+                    maxCount = Math.min(remainingCoins, Math.floor(Math.random() * 3) + 1); // 1角1-3个
                 } else {
-                    maxCount = Math.floor(Math.random() * 9) + 1; // 1分1-9个（分钱币总数不超过9个）
+                    maxCount = Math.min(remainingCoins, Math.floor(Math.random() * 4) + 1); // 1分1-4个
                 }
                 
-                coins.push({ ...coinType, count: maxCount });
-                totalValue += coinType.value * maxCount;
+                // 确保至少有1个钱币（如果还有剩余空间）
+                if (maxCount > 0) {
+                    coins.push({ ...coinType, count: maxCount });
+                    totalValue += coinType.value * maxCount;
+                    totalCoins += maxCount;
+                }
             });
             
-            // 确保总金额不超过20元
-            if (totalValue > 20) {
-                // 如果超过20元，按比例缩减每种钱币的数量，但保持各种钱币的数量限制
-                const scale = 19 / totalValue;
+            // 确保总金额不超过20元且总钱币数不超过7枚
+            if (totalValue > 20 || totalCoins > 7) {
+                // 如果超过限制，重新调整钱币数量
                 totalValue = 0;
+                totalCoins = 0;
+                
                 coins.forEach(coin => {
+                    let newCount;
                     if (coin.type === 'yuan5') {
-                        coin.count = Math.min(3, Math.max(1, Math.floor(coin.count * scale)));
+                        newCount = Math.min(2, coin.count); // 5元最多2个
                     } else if (coin.type === 'jiao5') {
-                        coin.count = 1; // 5角保持1个
-                    } else if (coin.value >= 0.10) {
-                        // 1角钱币不超过6个
-                        coin.count = Math.min(6, Math.max(1, Math.floor(coin.count * scale)));
-                    } else if (coin.value < 0.10) {
-                        // 1分钱币不超过9个
-                        coin.count = Math.min(9, Math.max(1, Math.floor(coin.count * scale)));
+                        newCount = 1; // 5角保持1个
                     } else {
-                        coin.count = Math.max(1, Math.floor(coin.count * scale));
+                        // 其他钱币按比例缩减，但确保总数不超过7
+                        const maxAllowed = Math.min(coin.count, 7 - totalCoins);
+                        newCount = Math.max(1, maxAllowed);
                     }
-                    totalValue += coin.value * coin.count;
+                    
+                    coin.count = newCount;
+                    totalValue += coin.value * newCount;
+                    totalCoins += newCount;
+                    
+                    // 如果已经达到7枚钱币的限制，停止添加
+                    if (totalCoins >= 7) return;
+                });
+            }
+            
+            // 重新计算精确的总金额
+            totalValue = coins.reduce((sum, coin) => sum + coin.value * coin.count, 0);
+            
+            return {
+                coins: coins,
+                correctAnswer: totalValue.toFixed(2)
+            };
+        }
+
+        /**
+         * 根据指定类型生成钱币组合
+         * @param {string} type - 钱币类型组合 ('yuan-jiao-fen', 'yuan-jiao', 'jiao-fen', 'yuan-fen')
+         * @returns {Object} 包含钱币数组和正确答案的对象
+         */
+        function generateSpecificCoins(type) {
+            const coinTypes = {
+                'yuan5': { name: '5元', value: 5.00, maxCount: 3 },
+                'yuan': { name: '1元', value: 1.00, maxCount: 5 },
+                'jiao5': { name: '5角', value: 0.50, maxCount: 1 },
+                'jiao': { name: '1角', value: 0.10, maxCount: 6 },
+                'fen': { name: '1分', value: 0.01, maxCount: 9 }
+            };
+            
+            let availableTypes = [];
+            
+            // 根据类型选择可用的钱币
+            switch (type) {
+                case 'yuan-jiao-fen':
+                    availableTypes = ['yuan5', 'yuan', 'jiao5', 'jiao', 'fen'];
+                    break;
+                case 'yuan-jiao':
+                    availableTypes = ['yuan5', 'yuan', 'jiao5', 'jiao'];
+                    break;
+                case 'jiao-fen':
+                    availableTypes = ['jiao5', 'jiao', 'fen'];
+                    break;
+                case 'yuan-fen':
+                    availableTypes = ['yuan5', 'yuan', 'fen'];
+                    break;
+                default:
+                    availableTypes = ['yuan5', 'yuan', 'jiao5', 'jiao', 'fen'];
+            }
+            
+            // 随机选择2-4种钱币类型
+            const numTypes = Math.floor(Math.random() * 3) + 2; // 2-4种
+            const selectedTypes = [];
+            
+            // 随机选择钱币类型
+            while (selectedTypes.length < numTypes && selectedTypes.length < availableTypes.length) {
+                const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+                if (!selectedTypes.includes(randomType)) {
+                    selectedTypes.push(randomType);
+                }
+            }
+            
+            // 确保最少有两种钱币，且不能都是同一单位
+            if (selectedTypes.length < 2) {
+                // 如果少于2种，补充到2种
+                while (selectedTypes.length < 2 && selectedTypes.length < availableTypes.length) {
+                    const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+                    if (!selectedTypes.includes(randomType)) {
+                        selectedTypes.push(randomType);
+                    }
+                }
+            }
+            
+            // 按单位分类钱币类型
+            const yuanTypes = selectedTypes.filter(type => type === 'yuan5' || type === 'yuan');
+            const jiaoTypes = selectedTypes.filter(type => type === 'jiao5' || type === 'jiao');
+            const fenTypes = selectedTypes.filter(type => type === 'fen');
+            
+            // 计算有多少种不同单位
+            const unitCount = (yuanTypes.length > 0 ? 1 : 0) + 
+                             (jiaoTypes.length > 0 ? 1 : 0) + 
+                             (fenTypes.length > 0 ? 1 : 0);
+            
+            // 如果只有一种单位，需要添加其他单位的钱币
+            if (unitCount < 2) {
+                // 找到可用的其他单位类型
+                const availableYuan = availableTypes.filter(type => type === 'yuan5' || type === 'yuan');
+                const availableJiao = availableTypes.filter(type => type === 'jiao5' || type === 'jiao');
+                const availableFen = availableTypes.filter(type => type === 'fen');
+                
+                // 如果当前只有元，添加角或分
+                if (yuanTypes.length > 0 && jiaoTypes.length === 0 && fenTypes.length === 0) {
+                    if (availableJiao.length > 0) {
+                        const randomJiao = availableJiao[Math.floor(Math.random() * availableJiao.length)];
+                        if (!selectedTypes.includes(randomJiao)) {
+                            selectedTypes.push(randomJiao);
+                        }
+                    } else if (availableFen.length > 0) {
+                        const randomFen = availableFen[Math.floor(Math.random() * availableFen.length)];
+                        if (!selectedTypes.includes(randomFen)) {
+                            selectedTypes.push(randomFen);
+                        }
+                    }
+                }
+                // 如果当前只有角，添加元或分
+                else if (jiaoTypes.length > 0 && yuanTypes.length === 0 && fenTypes.length === 0) {
+                    if (availableYuan.length > 0) {
+                        const randomYuan = availableYuan[Math.floor(Math.random() * availableYuan.length)];
+                        if (!selectedTypes.includes(randomYuan)) {
+                            selectedTypes.push(randomYuan);
+                        }
+                    } else if (availableFen.length > 0) {
+                        const randomFen = availableFen[Math.floor(Math.random() * availableFen.length)];
+                        if (!selectedTypes.includes(randomFen)) {
+                            selectedTypes.push(randomFen);
+                        }
+                    }
+                }
+                // 如果当前只有分，添加元或角
+                else if (fenTypes.length > 0 && yuanTypes.length === 0 && jiaoTypes.length === 0) {
+                    if (availableYuan.length > 0) {
+                        const randomYuan = availableYuan[Math.floor(Math.random() * availableYuan.length)];
+                        if (!selectedTypes.includes(randomYuan)) {
+                            selectedTypes.push(randomYuan);
+                        }
+                    } else if (availableJiao.length > 0) {
+                        const randomJiao = availableJiao[Math.floor(Math.random() * availableJiao.length)];
+                        if (!selectedTypes.includes(randomJiao)) {
+                            selectedTypes.push(randomJiao);
+                        }
+                    }
+                }
+            }
+            
+            const coins = [];
+            let totalValue = 0;
+            let totalCoins = 0;
+            
+            // 为每种选中的钱币类型生成数量
+            selectedTypes.forEach(coinType => {
+                const coinInfo = coinTypes[coinType];
+                const maxCount = Math.min(coinInfo.maxCount, 7 - totalCoins); // 确保总数不超过7
+                
+                if (maxCount > 0) {
+                    const count = Math.floor(Math.random() * maxCount) + 1;
+                    const actualCount = Math.min(count, 7 - totalCoins);
+                    
+                    if (actualCount > 0) {
+                        coins.push({
+                            type: coinType,
+                            name: coinInfo.name,
+                            value: coinInfo.value,
+                            count: actualCount
+                        });
+                        
+                        totalValue += coinInfo.value * actualCount;
+                        totalCoins += actualCount;
+                    }
+                }
+            });
+            
+            // 如果总金额超过20元，按比例缩减
+            if (totalValue > 20) {
+                const scale = 20 / totalValue;
+                totalValue = 0;
+                totalCoins = 0;
+                
+                coins.forEach(coin => {
+                    const newCount = Math.max(1, Math.floor(coin.count * scale));
+                    coin.count = newCount;
+                    totalValue += coin.value * newCount;
+                    totalCoins += newCount;
+                    
+                    // 如果已经达到7枚钱币的限制，停止添加
+                    if (totalCoins >= 7) return;
                 });
             }
             
