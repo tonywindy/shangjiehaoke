@@ -907,6 +907,58 @@
             position: relative;
         }
 
+        /* 正确答案放大居中显示样式 */
+        .cashier-theme .player-status.correct-answer-large {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 2rem 3rem;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 3px solid #15803d;
+            min-width: 300px;
+            animation: correctAnswerPop 0.5s ease-out;
+        }
+
+        @keyframes correctAnswerPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .cashier-theme .player-status.correct-answer-large .next-customer-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .cashier-theme .player-status.correct-answer-large .next-customer-btn:hover {
+            background: #d97706;
+            transform: scale(1.05);
+        }
+
     </style>
 </head>
 <body class="cashier-theme min-h-screen flex items-center justify-center p-1 md:p-2">
@@ -1416,7 +1468,7 @@
             
             if (Math.abs(userAnswer - correctAnswer) < 0.001) {
                 // 答对了
-                statusElement.className = 'player-status correct';
+                statusElement.className = 'player-status correct correct-answer-large';
                 statusElement.innerHTML = `🎉 答对了！<br>正确答案：${correctAnswer.toFixed(2)}元<br><button class="next-customer-btn" onclick="proceedToNextQuestion(${playerNum})">有请下一位顾客</button>`;
                 
                 // 播放答对音效
@@ -1554,6 +1606,7 @@
             // 清空状态显示
             const statusElement = playerNum === 1 ? player1Status : player2Status;
             statusElement.textContent = '';
+            statusElement.className = 'player-status'; // 重置样式类，移除correct-answer-large类
             
             // 更新进度
             updatePlayerProgress(playerNum);
