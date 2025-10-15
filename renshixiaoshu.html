@@ -927,6 +927,17 @@
             animation: correctAnswerPop 0.5s ease-out;
         }
 
+        /* 正确答案数值专用样式 - 放大两倍字体 */
+        .cashier-theme .player-status.correct-answer-large .answer-value {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #fef3c7;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            display: block;
+            margin: 0.5rem 0;
+            line-height: 1.2;
+        }
+
         @keyframes correctAnswerPop {
             0% {
                 transform: translate(-50%, -50%) scale(0.5);
@@ -1469,7 +1480,7 @@
             if (Math.abs(userAnswer - correctAnswer) < 0.001) {
                 // 答对了
                 statusElement.className = 'player-status correct correct-answer-large';
-                statusElement.innerHTML = `🎉 答对了！<br>正确答案：${correctAnswer.toFixed(2)}元<br><button class="next-customer-btn" onclick="proceedToNextQuestion(${playerNum})">有请下一位顾客</button>`;
+                statusElement.innerHTML = `🎉 答对了！<br>正确答案：<span class="answer-value">${correctAnswer.toFixed(2)}元</span><button class="next-customer-btn" onclick="proceedToNextQuestion(${playerNum})">有请下一位顾客</button>`;
                 
                 // 播放答对音效
                 try {
