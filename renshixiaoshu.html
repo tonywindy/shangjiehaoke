@@ -970,6 +970,62 @@
             transform: scale(1.05);
         }
 
+        /* 游戏暂停界面样式 */
+        .game-pause-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            border: 3px solid #dc2626;
+        }
+
+        .pause-content {
+            background: transparent;
+            padding: 1.5rem 1rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: none;
+            max-width: none;
+            width: 100%;
+        }
+
+        .pause-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 0.8rem;
+        }
+
+        .pause-message {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1.2rem;
+            line-height: 1.4;
+        }
+
+        .continue-game-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .continue-game-btn:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
     </style>
 </head>
 <body class="cashier-theme min-h-screen flex items-center justify-center p-1 md:p-2">
@@ -1053,7 +1109,15 @@
                 </div>
 
                 <!-- 双人对战容器 -->
-                <div class="battle-container" id="battle-container" style="display: none;">
+                <div class="battle-container" id="battle-container" style="display: none; position: relative;">
+                    <!-- 游戏暂停界面 -->
+                    <div class="game-pause-overlay" id="game-pause-overlay" style="display: none;">
+                        <div class="pause-content">
+                            <div class="pause-title">游戏暂停，请思考</div>
+                            <div class="pause-message">有玩家连续答错3次，请仔细思考后再继续游戏</div>
+                            <button class="continue-game-btn" id="continue-game-btn">继续游戏</button>
+                        </div>
+                    </div>
                     <!-- 玩家1区域 -->
                     <div class="player-area player1" id="player1-area">
                         <div class="player-header">1号收银员</div>
@@ -1245,6 +1309,9 @@
         let player1Score = 0; // 玩家1得分
         let player2Score = 0; // 玩家2得分
         let battleGameActive = false; // 对战游戏是否进行中
+        let player1ConsecutiveErrors = 0; // 玩家1连续错误次数
+        let player2ConsecutiveErrors = 0; // 玩家2连续错误次数
+        let gameIsPaused = false; // 游戏是否暂停
 
         // --- 双人对战模式相关函数 ---
         
@@ -1255,12 +1322,12 @@
         function generateBattleQuestions() {
             const questions = [];
             
-            // 按要求生成5道题目：2道三种钱币、1道元角、1道角分、1道元分
+            // 按要求生成5道题目：1道三种钱币、1道元角、1道角分、2道元分
             const questionTypes = [
-                'yuan-jiao-fen', // 元角分
                 'yuan-jiao-fen', // 元角分
                 'yuan-jiao',     // 元角
                 'jiao-fen',      // 角分
+                'yuan-fen',      // 元分
                 'yuan-fen'       // 元分
             ];
             
@@ -1452,6 +1519,9 @@
         function checkPlayerAnswer(playerNum) {
             if (!battleGameActive) return;
             
+            // 如果游戏暂停，不处理答案
+            if (gameIsPaused) return;
+            
             const questions = playerNum === 1 ? player1Questions : player2Questions;
             const currentIndex = playerNum === 1 ? player1CurrentIndex : player2CurrentIndex;
             const currentAnswer = playerNum === 1 ? player1Answer : player2Answer;
@@ -1493,8 +1563,10 @@
                 // 增加分数
                 if (playerNum === 1) {
                     player1Score++;
+                    player1ConsecutiveErrors = 0; // 答对后重置连续错误次数
                 } else {
                     player2Score++;
+                    player2ConsecutiveErrors = 0; // 答对后重置连续错误次数
                 }
                 
                 // 清空输入
@@ -1507,6 +1579,19 @@
                 // 答错了
                 statusElement.className = 'player-status incorrect';
                 statusElement.textContent = `❌ 答错了！`;
+                
+                // 增加连续错误次数
+                if (playerNum === 1) {
+                    player1ConsecutiveErrors++;
+                } else {
+                    player2ConsecutiveErrors++;
+                }
+                
+                // 检查是否需要暂停游戏
+                if (player1ConsecutiveErrors >= 3 || player2ConsecutiveErrors >= 3) {
+                    pauseGame();
+                    return;
+                }
                 
                 // 清空输入框
                 inputElement.value = '';
@@ -1539,6 +1624,76 @@
                 // 玩家2先完成，获得金牌收银员称号
                 showGoldCashierTitle(2);
             }
+        }
+        
+        /**
+         * 暂停游戏
+         */
+        function pauseGame() {
+            gameIsPaused = true;
+            
+            // 显示暂停界面
+            const pauseOverlay = document.getElementById('game-pause-overlay');
+            pauseOverlay.style.display = 'block';
+            
+            // 禁用所有输入
+            disableAllInputs();
+        }
+        
+        /**
+         * 恢复游戏
+         */
+        function resumeGame() {
+            gameIsPaused = false;
+            
+            // 隐藏暂停界面
+            const pauseOverlay = document.getElementById('game-pause-overlay');
+            pauseOverlay.style.display = 'none';
+            
+            // 重置连续错误次数
+            player1ConsecutiveErrors = 0;
+            player2ConsecutiveErrors = 0;
+            
+            // 启用所有输入
+            enableAllInputs();
+            
+            // 清空状态提示
+            document.getElementById('player1-status').textContent = '';
+            document.getElementById('player2-status').textContent = '';
+        }
+        
+        /**
+         * 禁用所有输入
+         */
+        function disableAllInputs() {
+            // 禁用数字键盘
+            const numberBtns = document.querySelectorAll('.player-number-btn');
+            numberBtns.forEach(btn => btn.disabled = true);
+            
+            // 禁用提交按钮
+            document.getElementById('player1-submit-btn').disabled = true;
+            document.getElementById('player2-submit-btn').disabled = true;
+            
+            // 禁用输入框
+            document.getElementById('player1-input').disabled = true;
+            document.getElementById('player2-input').disabled = true;
+        }
+        
+        /**
+         * 启用所有输入
+         */
+        function enableAllInputs() {
+            // 启用数字键盘
+            const numberBtns = document.querySelectorAll('.player-number-btn');
+            numberBtns.forEach(btn => btn.disabled = false);
+            
+            // 启用提交按钮
+            document.getElementById('player1-submit-btn').disabled = false;
+            document.getElementById('player2-submit-btn').disabled = false;
+            
+            // 启用输入框
+            document.getElementById('player1-input').disabled = false;
+            document.getElementById('player2-input').disabled = false;
         }
         
         /**
@@ -2096,6 +2251,10 @@
         // 双人对战模式按钮
         startBattleBtn.addEventListener('click', startBattleGame);
         playAgainBtn.addEventListener('click', restartBattleGame);
+        
+        // 继续游戏按钮
+        const continueGameBtn = document.getElementById('continue-game-btn');
+        continueGameBtn.addEventListener('click', resumeGame);
         
         // 玩家1数字键盘
         player1NumberBtns.forEach(btn => {
