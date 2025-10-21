@@ -983,6 +983,17 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             border: 3px solid #dc2626;
+            cursor: move;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            touch-action: none;
+        }
+
+        .game-pause-overlay:active {
+            cursor: grabbing;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .pause-content {
@@ -2575,9 +2586,112 @@
             volumeSlider.value = currentVolume * 100;
         }
         
+        // --- 拖动功能实现 ---
+        function initializeDragFunctionality() {
+            const pauseOverlay = document.getElementById('game-pause-overlay');
+            if (!pauseOverlay) return;
+            
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let initialX = 0;
+            let initialY = 0;
+            
+            // 获取元素的当前位置
+            function getCurrentPosition() {
+                const rect = pauseOverlay.getBoundingClientRect();
+                const parentRect = pauseOverlay.offsetParent.getBoundingClientRect();
+                return {
+                    x: rect.left - parentRect.left,
+                    y: rect.top - parentRect.top
+                };
+            }
+            
+            // 设置元素位置
+            function setPosition(x, y) {
+                pauseOverlay.style.left = x + 'px';
+                pauseOverlay.style.top = y + 'px';
+                pauseOverlay.style.transform = 'none';
+            }
+            
+            // 鼠标事件处理
+            function handleMouseDown(e) {
+                isDragging = true;
+                const pos = getCurrentPosition();
+                initialX = pos.x;
+                initialY = pos.y;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                e.preventDefault();
+            }
+            
+            function handleMouseMove(e) {
+                if (!isDragging) return;
+                
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                const newX = initialX + deltaX;
+                const newY = initialY + deltaY;
+                
+                setPosition(newX, newY);
+            }
+            
+            function handleMouseUp() {
+                isDragging = false;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+            
+            // 触摸事件处理
+            function handleTouchStart(e) {
+                if (e.touches.length !== 1) return;
+                
+                isDragging = true;
+                const touch = e.touches[0];
+                const pos = getCurrentPosition();
+                initialX = pos.x;
+                initialY = pos.y;
+                startX = touch.clientX;
+                startY = touch.clientY;
+                
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd);
+                e.preventDefault();
+            }
+            
+            function handleTouchMove(e) {
+                if (!isDragging || e.touches.length !== 1) return;
+                
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                
+                const newX = initialX + deltaX;
+                const newY = initialY + deltaY;
+                
+                setPosition(newX, newY);
+                e.preventDefault();
+            }
+            
+            function handleTouchEnd() {
+                isDragging = false;
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+            }
+            
+            // 绑定事件监听器
+            pauseOverlay.addEventListener('mousedown', handleMouseDown);
+            pauseOverlay.addEventListener('touchstart', handleTouchStart, { passive: false });
+        }
+        
         // --- 初始状态 ---
         updateDecimalDisplay();
         initializeAudio();
+        initializeDragFunctionality();
         
         // 默认启动学习模式
         switchMode('learning');
