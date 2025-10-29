@@ -136,6 +136,28 @@ const WorksPage = () => {
                 <div className="work-card">
                   <div className="work-image">
                     <img 
+                      src="/shudui.png" 
+                      alt="数对四子棋游戏" 
+                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    />
+                  </div>
+                  <h3>数对四子棋游戏</h3>
+                  <p>一款结合围棋元素的策略对战游戏。在9×9的棋盘上，两名玩家轮流下棋，目标是率先连成四子。游戏采用围棋风格的黑白棋子设计，支持触控操作，界面简洁优雅，适合培养学生的逻辑思维和策略规划能力。</p>
+                  <div className="work-tags">
+                    <span className="tag">JavaScript</span>
+                    <span className="tag">HTML5</span>
+                    <span className="tag">CSS3</span>
+                    <span className="tag">策略游戏</span>
+                    <span className="tag">逻辑思维</span>
+                    <span className="tag">触控支持</span>
+                    <span className="tag">双人对战</span>
+                  </div>
+                  <a href="/shudui.html" className="work-link">开始对战 →</a>
+                </div>
+
+                <div className="work-card">
+                  <div className="work-image">
+                    <img 
                       src="/recite/images/background1.jpg" 
                       alt="背诵冒险记游戏" 
                       style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
@@ -189,7 +211,7 @@ const WorksPage = () => {
                 <h3 className="sidebar-title">项目统计</h3>
                 <div className="stats-grid">
                   <div className="stat-item">
-                    <span className="stat-number">3</span>
+                    <span className="stat-number">6</span>
                     <span className="stat-label">完成项目</span>
                   </div>
                   <div className="stat-item">
@@ -197,7 +219,7 @@ const WorksPage = () => {
                     <span className="stat-label">技术栈</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-number">3</span>
+                    <span className="stat-number">4</span>
                     <span className="stat-label">获奖项目</span>
                   </div>
                   <div className="stat-item">

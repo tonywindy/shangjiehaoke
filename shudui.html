@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数对四子棋</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            color: #333;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            background: #DEB887;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            max-height: 675px; /* 16:9比例 */
+            overflow: hidden;
+            border: 10px solid #8B4513;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #8B4513, #A0522D);
+            color: #FFD700;
+            padding: 10px 20px;
+            text-align: center;
+            border-bottom: 5px solid #654321;
+            flex-shrink: 0;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .game-area {
+            display: flex;
+            flex: 1;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .input-section {
+            flex: 1;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+            max-width: 220px;
+        }
+        
+        .input-display {
+            background: #F5F5DC;
+            border: 3px solid #8B4513;
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            letter-spacing: 2px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+        
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .key {
+            padding: 12px 0; /* 从10px增加到12px，提高触控舒适度 */
+            background: #8B4513;
+            color: #FFD700;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #654321;
+            /* 添加触控友好的样式 */
+            touch-action: manipulation; /* 优化触控响应 */
+            min-height: 44px; /* 确保最小触控区域44px */
+        }
+        
+        .key:hover {
+            background: #A0522D;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #654321;
+        }
+        
+        /* 添加触控反馈样式 */
+        .intersection:active {
+            background: rgba(139, 69, 19, 0.2);
+            border-radius: 50%;
+        }
+        
+        .key:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #654321;
+            background: #A0522D; /* 触控时的颜色反馈 */
+        }
+        
+        .action-buttons button:active {
+            transform: translateY(2px);
+            background: #A0522D; /* 触控时的颜色反馈 */
+        }
+        
+        /* 为触控设备优化的媒体查询 */
+        @media (hover: none) and (pointer: coarse) {
+            .intersection {
+                width: 24px; /* 在触控设备上进一步增大 */
+                height: 24px;
+            }
+            
+            .key {
+                min-height: 48px; /* 在触控设备上增加到48px */
+                padding: 14px 0;
+            }
+            
+            .action-buttons button {
+                min-height: 48px; /* 在触控设备上增加到48px */
+                padding: 12px 8px;
+            }
+        }
+        
+        .key.comma {
+            background: #CD853F;
+        }
+        
+        .key.comma:hover {
+            background: #D2691E;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            margin-top: 5px;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+            padding: 10px 8px; /* 从8px增加到10px，提高触控舒适度 */
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            /* 添加触控友好的样式 */
+            touch-action: manipulation; /* 优化触控响应 */
+            min-height: 44px; /* 确保最小触控区域44px */
+        }
+        
+        .action-buttons button:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+        
+        .action-buttons button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(0,0,0,0.2);
+        }
+        
+        .action-buttons .confirm {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .action-buttons .confirm:hover {
+            background: #219653;
+        }
+        
+        .action-buttons .clear {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .action-buttons .clear:hover {
+            background: #c0392b;
+        }
+        
+        .action-buttons .restart {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .action-buttons .restart:hover {
+            background: #d68910;
+        }
+        
+        .board-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            min-width: 380px;
+            max-width: 420px;
+            margin: 20px 20px 0 20px; /* 添加上边距 */
+        }
+        
+        .board-container {
+            background: #DEB887;
+            border: 5px solid #8B4513;
+            border-radius: 5px;
+            padding: 20px 20px 35px 35px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            position: relative;
+            margin-top: 10px; /* 添加额外的上边距 */
+        }
+        
+        #gameBoard {
+            position: relative;
+            background: #DEB887;
+            width: 280px; /* 从300px缩小到280px */
+            height: 280px; /* 从300px缩小到280px */
+        }
+        
+        .grid-line {
+            position: absolute;
+            background: #8B4513;
+        }
+        
+        .horizontal-line {
+            width: 100%;
+            height: 2px;
+            left: 0;
+        }
+        
+        .vertical-line {
+            height: 100%;
+            width: 2px;
+            top: 0;
+        }
+        
+        .intersection {
+            position: absolute;
+            width: 20px; /* 从14px增加到20px，提高触控精度 */
+            height: 20px; /* 从14px增加到20px，提高触控精度 */
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
+            /* 添加触控友好的样式 */
+            touch-action: manipulation; /* 优化触控响应 */
+        }
+        
+        .intersection:hover::after {
+            content: '';
+            position: absolute;
+            width: 24px; /* 从20px增加到24px */
+            height: 24px; /* 从20px增加到24px */
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .piece {
+            position: absolute;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            transition: all 0.3s;
+        }
+        
+        .piece.ghost {
+            width: 20px;
+            height: 20px;
+            border: 3px dashed #2c3e50;
+            background: transparent;
+        }
+        
+        .piece.player1 {
+            width: 26px;
+            height: 26px;
+            background: #2c3e50;
+            border: 3px solid #2c3e50;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .piece.player2 {
+            width: 26px;
+            height: 26px;
+            background: white;
+            border: 3px solid #2c3e50;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .piece.win {
+            animation: pulse 1s infinite;
+            box-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700;
+        }
+        
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .coordinate-label {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: #8B4513;
+            text-shadow: 1px 1px 0 white;
+            z-index: 2;
+        }
+        
+        .col-label {
+            bottom: -20px;
+            left: 0;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 14px;
+        }
+        
+        .row-label {
+            left: -20px;
+            top: 0;
+            transform: translateY(-50%);
+            text-align: center;
+            height: 14px;
+            line-height: 14px;
+        }
+        
+        .game-info {
+            background: #F5F5DC;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 3px solid #8B4513;
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+        }
+        
+        .current-player {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #8B4513;
+        }
+        
+        .teams {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 8px;
+        }
+        
+        .team {
+            text-align: center;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            flex: 1;
+            margin: 0 8px;
+            border: 2px solid transparent;
+            font-size: 14px;
+        }
+        
+        .team.active {
+            border: 2px solid #8B4513;
+            background: rgba(139, 69, 19, 0.1);
+        }
+        
+        .team.boys {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .team.girls {
+            background: white;
+            color: #2c3e50;
+            border: 2px solid #2c3e50;
+        }
+        
+        .win-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            border-radius: 15px;
+        }
+        
+        .win-message {
+            color: #FFD700;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+        
+        .win-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .win-buttons button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+        }
+        
+        .win-buttons button:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+        }
+        
+        .win-buttons button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(0,0,0,0.3);
+        }
+        
+        .play-again {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .new-game {
+            background: #3498db;
+            color: white;
+        }
+        
+        .message {
+            padding: 6px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 6px;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 1000px) {
+            .game-container {
+                max-width: 95%;
+                margin: 0 auto;
+            }
+            
+            .game-area {
+                flex-wrap: wrap;
+            }
+            
+            .input-section {
+                min-width: 160px;
+            }
+            
+            .board-section {
+                order: -1;
+                min-width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>⚫ 数对四子棋 ⚪</h1>
+        </div>
+        
+        <div class="game-area">
+            <!-- 左侧输入区域 -->
+            <div class="input-section">
+                <div class="input-display" id="inputDisplay">
+                    请输入数对
+                </div>
+                
+                <div class="keypad">
+                    <button class="key" onclick="pressKey('1')">1</button>
+                    <button class="key" onclick="pressKey('2')">2</button>
+                    <button class="key" onclick="pressKey('3')">3</button>
+                    <button class="key" onclick="pressKey('4')">4</button>
+                    <button class="key" onclick="pressKey('5')">5</button>
+                    <button class="key" onclick="pressKey('6')">6</button>
+                    <button class="key" onclick="pressKey('7')">7</button>
+                    <button class="key" onclick="pressKey('8')">8</button>
+                    <button class="key" onclick="pressKey('9')">9</button>
+                    <button class="key" onclick="pressKey('0')">0</button>
+                    <button class="key comma" onclick="pressKey(',')">,</button>
+                    <button class="key" onclick="pressKey('←')">←</button>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="confirm" onclick="placePiece()">确定落子</button>
+                    <button class="clear" onclick="clearInput()">清空</button>
+                    <button class="restart" onclick="restartGame()">重新开始</button>
+                </div>
+            </div>
+            
+            <!-- 中间棋盘区域 -->
+            <div class="board-section">
+                <div class="board-container">
+                    <div id="gameBoard">
+                        <!-- 棋盘将在这里动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="game-info">
+                    <div class="teams">
+                        <div class="team boys active" id="teamBoys">
+                            <div>男生队</div>
+                            <div>黑色棋子</div>
+                        </div>
+                        <div class="team girls" id="teamGirls">
+                            <div>女生队</div>
+                            <div>白色棋子</div>
+                        </div>
+                    </div>
+                    <div class="current-player" id="currentPlayer">
+                        当前: 男生队落子
+                    </div>
+                    <div class="message" id="message"></div>
+                </div>
+            </div>
+            
+            <!-- 右侧输入区域 -->
+            <div class="input-section">
+                <div class="input-display" id="inputDisplayRight">
+                    请输入数对
+                </div>
+                
+                <div class="keypad">
+                    <button class="key" onclick="pressKey('1', true)">1</button>
+                    <button class="key" onclick="pressKey('2', true)">2</button>
+                    <button class="key" onclick="pressKey('3', true)">3</button>
+                    <button class="key" onclick="pressKey('4', true)">4</button>
+                    <button class="key" onclick="pressKey('5', true)">5</button>
+                    <button class="key" onclick="pressKey('6', true)">6</button>
+                    <button class="key" onclick="pressKey('7', true)">7</button>
+                    <button class="key" onclick="pressKey('8', true)">8</button>
+                    <button class="key" onclick="pressKey('9', true)">9</button>
+                    <button class="key" onclick="pressKey('0', true)">0</button>
+                    <button class="key comma" onclick="pressKey(',', true)">,</button>
+                    <button class="key" onclick="pressKey('←', true)">←</button>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="confirm" onclick="placePiece(true)">确定落子</button>
+                    <button class="clear" onclick="clearInput(true)">清空</button>
+                    <button class="restart" onclick="restartGame()">重新开始</button>
+                </div>
+            </div>
+            
+            <!-- 获胜页面 -->
+            <div class="win-overlay" id="winOverlay" style="display: none;">
+                <div class="win-message" id="winMessage"></div>
+                <div class="win-buttons">
+                    <button class="play-again" onclick="playAgain()">再玩一次</button>
+                    <button class="new-game" onclick="newGame()">新游戏</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 音效元素 -->
+    <audio id="placeSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+    </audio>
+    <audio id="errorSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+    </audio>
+    <audio id="winSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+    </audio>
+    <audio id="clickSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+    </audio>
+
+    <script>
+        // 游戏状态变量
+        let currentPlayer = 1; // 1: 男生队(黑), 2: 女生队(白)
+        let gameBoard = [];
+        const totalLines = 8; // 9条横线和9条竖线，形成9x9=81个交点
+        let gameActive = true;
+        let currentInput = '';
+        let selectedIntersection = null;
+        const boardSize = 280; // 棋盘大小从300px缩小到280px
+        const cellSize = boardSize / totalLines; // 每个格子的大小
+        let winningPieces = []; // 存储获胜的棋子位置
+
+        // 音效函数
+        function playSound(soundId) {
+            const sound = document.getElementById(soundId);
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("音效播放失败:", e));
+            }
+        }
+
+        // 生成简单音效
+        function generateSounds() {
+            // 落子音效 - 短促的点击声
+            const placeSound = document.getElementById('placeSound');
+            placeSound.src = generateTone(800, 0.1);
+            
+            // 错误音效 - 低沉的错误提示声
+            const errorSound = document.getElementById('errorSound');
+            errorSound.src = generateTone(400, 0.3);
+            
+            // 获胜音效 - 欢快的胜利音效
+            const winSound = document.getElementById('winSound');
+            winSound.src = generateTone(1200, 0.5);
+            
+            // 点击音效 - 轻微的点击声
+            const clickSound = document.getElementById('clickSound');
+            clickSound.src = generateTone(600, 0.05);
+        }
+
+        // 生成简单音调
+        function generateTone(frequency, duration) {
+            const sampleRate = 44100;
+            const channels = 1;
+            const samples = Math.floor(sampleRate * duration);
+            
+            // 创建音频上下文
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const buffer = audioContext.createBuffer(channels, samples, sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            // 生成音调
+            for (let i = 0; i < samples; i++) {
+                const t = i / sampleRate;
+                // 使用正弦波生成音调，并添加衰减效果
+                data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 2);
+            }
+            
+            // 将音频缓冲区转换为WAV格式
+            return bufferToWav(buffer);
+        }
+
+        // 将音频缓冲区转换为WAV格式
+        function bufferToWav(buffer) {
+            const sampleRate = buffer.sampleRate;
+            const channels = buffer.numberOfChannels;
+            const samples = buffer.length;
+            
+            // 创建WAV文件头
+            const frameCount = samples * channels;
+            const bufferLength = frameCount * 2 + 44;
+            const arrayBuffer = new ArrayBuffer(bufferLength);
+            const dataView = new DataView(arrayBuffer);
+            
+            // WAV文件头
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    dataView.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+            
+            writeString(0, 'RIFF');
+            dataView.setUint32(4, bufferLength - 8, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            dataView.setUint32(16, 16, true);
+            dataView.setUint16(20, 1, true);
+            dataView.setUint16(22, channels, true);
+            dataView.setUint32(24, sampleRate, true);
+            dataView.setUint32(28, sampleRate * channels * 2, true);
+            dataView.setUint16(32, channels * 2, true);
+            dataView.setUint16(34, 16, true);
+            writeString(36, 'data');
+            dataView.setUint32(40, frameCount * 2, true);
+            
+            // 写入音频数据
+            let offset = 44;
+            for (let i = 0; i < samples; i++) {
+                for (let channel = 0; channel < channels; channel++) {
+                    const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
+                    dataView.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+                    offset += 2;
+                }
+            }
+            
+            // 转换为base64
+            const blob = new Blob([arrayBuffer], {type: 'audio/wav'});
+            return URL.createObjectURL(blob);
+        }
+
+        // 初始化游戏
+        function initGame() {
+            gameBoard = [];
+            for (let i = 0; i <= totalLines; i++) {
+                gameBoard[i] = [];
+                for (let j = 0; j <= totalLines; j++) {
+                    gameBoard[i][j] = 0;
+                }
+            }
+            
+            renderBoard();
+            updateCurrentPlayer();
+            gameActive = true;
+            currentInput = '';
+            updateInputDisplay();
+            updateInputDisplay(true);
+            clearSelection();
+            hideWinOverlay();
+            showMessage('');
+        }
+
+        // 渲染棋盘
+        function renderBoard() {
+            const container = document.getElementById('gameBoard');
+            container.innerHTML = '';
+            
+            // 绘制横线 - 9条横线
+            for (let i = 0; i <= totalLines; i++) {
+                const line = document.createElement('div');
+                line.className = 'grid-line horizontal-line';
+                line.style.top = `${i * cellSize}px`;
+                container.appendChild(line);
+            }
+            
+            // 绘制竖线 - 9条竖线
+            for (let j = 0; j <= totalLines; j++) {
+                const line = document.createElement('div');
+                line.className = 'grid-line vertical-line';
+                line.style.left = `${j * cellSize}px`;
+                container.appendChild(line);
+            }
+            
+            // 添加列坐标标签 - 从左往右，从0开始
+            for (let j = 0; j <= totalLines; j++) {
+                const label = document.createElement('div');
+                label.className = 'coordinate-label col-label';
+                label.textContent = j; // 从左往右，从0开始
+                label.style.left = `${j * cellSize}px`;
+                label.style.bottom = `-20px`;
+                container.appendChild(label);
+            }
+            
+            // 添加行坐标标签 - 从下往上，从0开始
+            for (let i = 0; i <= totalLines; i++) {
+                const label = document.createElement('div');
+                label.className = 'coordinate-label row-label';
+                label.textContent = totalLines - i; // 从下往上，从0开始
+                label.style.top = `${i * cellSize}px`;
+                label.style.left = `-20px`;
+                container.appendChild(label);
+            }
+            
+            // 创建交点 - 9x9=81个交点
+            for (let i = 0; i <= totalLines; i++) {
+                for (let j = 0; j <= totalLines; j++) {
+                    const intersection = document.createElement('div');
+                    intersection.className = 'intersection';
+                    intersection.dataset.row = i;
+                    intersection.dataset.col = j;
+                    intersection.style.left = `${j * cellSize}px`;
+                    intersection.style.top = `${i * cellSize}px`;
+                    
+                    intersection.addEventListener('click', () => {
+                        playSound('clickSound');
+                        handleIntersectionClick(i, j);
+                    });
+                    
+                    // 添加触控事件支持
+                    intersection.addEventListener('touchstart', (e) => {
+                        e.preventDefault(); // 防止触发click事件
+                        playSound('clickSound');
+                        handleIntersectionClick(i, j);
+                    }, { passive: false });
+                    
+                    container.appendChild(intersection);
+                }
+            }
+            
+            // 绘制已落子的棋子
+            for (let i = 0; i <= totalLines; i++) {
+                for (let j = 0; j <= totalLines; j++) {
+                    if (gameBoard[i][j] !== 0) {
+                        const piece = document.createElement('div');
+                        piece.className = `piece player${gameBoard[i][j]}`;
+                        
+                        // 如果是获胜的棋子，添加高亮效果
+                        if (isWinningPiece(i, j)) {
+                            piece.classList.add('win');
+                        }
+                        
+                        piece.style.left = `${j * cellSize}px`;
+                        piece.style.top = `${i * cellSize}px`;
+                        container.appendChild(piece);
+                    }
+                }
+            }
+        }
+
+        // 检查是否为获胜棋子
+        function isWinningPiece(row, col) {
+            return winningPieces.some(piece => piece.row === row && piece.col === col);
+        }
+
+        // 处理交点点击
+        function handleIntersectionClick(row, col) {
+            if (!gameActive) return;
+            
+            // 如果该位置已有棋子，不能选择
+            if (gameBoard[row][col] !== 0) {
+                showMessage('该位置已有棋子！', 'error');
+                playSound('errorSound');
+                return;
+            }
+            
+            // 清除之前的选择
+            clearSelection();
+            
+            // 设置当前选择
+            selectedIntersection = { row, col };
+            
+            // 在棋盘上显示虚拟棋子
+            const container = document.getElementById('gameBoard');
+            const ghostPiece = document.createElement('div');
+            ghostPiece.className = `piece ghost player${currentPlayer}`;
+            ghostPiece.id = 'ghostPiece';
+            ghostPiece.style.left = `${col * cellSize}px`;
+            ghostPiece.style.top = `${row * cellSize}px`;
+            container.appendChild(ghostPiece);
+            
+            showMessage('');
+        }
+
+        // 清除选择
+        function clearSelection() {
+            const ghostPiece = document.getElementById('ghostPiece');
+            if (ghostPiece) {
+                ghostPiece.remove();
+            }
+            selectedIntersection = null;
+        }
+
+        // 按键处理
+        function pressKey(key, isRightPanel = false) {
+            if (!gameActive) return;
+            
+            playSound('clickSound');
+            
+            if (key === '←') {
+                // 退格键
+                currentInput = currentInput.slice(0, -1);
+            } else if (key === ',') {
+                // 逗号键，只能输入一次
+                if (!currentInput.includes(',')) {
+                    currentInput += key;
+                }
+            } else {
+                // 数字键
+                currentInput += key;
+            }
+            
+            updateInputDisplay(isRightPanel);
+        }
+
+        // 更新输入显示
+        function updateInputDisplay(isRightPanel = false) {
+            const displayId = isRightPanel ? 'inputDisplayRight' : 'inputDisplay';
+            const display = document.getElementById(displayId);
+            if (currentInput === '') {
+                display.textContent = '请输入数对';
+            } else {
+                display.textContent = currentInput;
+            }
+        }
+
+        // 清空输入
+        function clearInput(isRightPanel = false) {
+            playSound('clickSound');
+            currentInput = '';
+            updateInputDisplay(isRightPanel);
+            showMessage('');
+        }
+
+        // 落子
+        function placePiece(isRightPanel = false) {
+            if (!gameActive) return;
+            
+            playSound('clickSound');
+            
+            // 如果没有选择交点
+            if (!selectedIntersection) {
+                showMessage('请先点击棋盘选择一个交点！', 'error');
+                playSound('errorSound');
+                return;
+            }
+            
+            // 如果没有输入数对
+            if (!currentInput.includes(',')) {
+                showMessage('请输入完整的数对，格式：列,行', 'error');
+                playSound('errorSound');
+                return;
+            }
+            
+            const coords = currentInput.split(',');
+            if (coords.length !== 2) {
+                showMessage('请输入正确的数对格式，如：3,4', 'error');
+                playSound('errorSound');
+                return;
+            }
+            
+            const colInput = parseInt(coords[0]);
+            const rowInput = parseInt(coords[1]);
+            
+            if (isNaN(rowInput) || isNaN(colInput)) {
+                showMessage('坐标必须是数字！', 'error');
+                playSound('errorSound');
+                return;
+            }
+            
+            // 检查输入范围
+            if (colInput < 0 || colInput > 8 || rowInput < 0 || rowInput > 8) {
+                showMessage('坐标范围是0到8！', 'error');
+                playSound('errorSound');
+                return;
+            }
+            
+            // 将用户输入的数对转换为内部坐标
+            // 列：从左往右，从0开始
+            // 行：从下往上，从0开始
+            const col = colInput;
+            const row = totalLines - rowInput;
+            
+            // 检查数对是否与选择的交点一致
+            if (col !== selectedIntersection.col || row !== selectedIntersection.row) {
+                showMessage(`数对与棋子位置不一致！您输入的是(${colInput},${rowInput})，但棋子位置是(${selectedIntersection.col},${totalLines - selectedIntersection.row})`, 'error');
+                playSound('errorSound');
+                return;
+            }
+            
+            // 检查位置是否可用
+            if (gameBoard[row][col] !== 0) {
+                showMessage('该位置已有棋子！', 'error');
+                playSound('errorSound');
+                return;
+            }
+            
+            // 落子
+            gameBoard[row][col] = currentPlayer;
+            playSound('placeSound');
+            
+            // 检查是否获胜
+            const winResult = checkWin(row, col);
+            if (winResult.win) {
+                winningPieces = winResult.pieces;
+                renderBoard();
+                showWinMessage(currentPlayer === 1 ? '男生队' : '女生队');
+                playSound('winSound');
+                gameActive = false;
+                return;
+            }
+            
+            if (checkDraw()) {
+                renderBoard();
+                showWinMessage('平局！');
+                gameActive = false;
+                return;
+            }
+            
+            // 切换玩家
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            updateCurrentPlayer();
+            
+            // 重置输入和选择
+            currentInput = '';
+            updateInputDisplay();
+            updateInputDisplay(true); // 同时更新右侧显示
+            selectedIntersection = null;
+            
+            renderBoard();
+            showMessage('');
+        }
+
+        // 检查获胜
+        function checkWin(row, col) {
+            const player = gameBoard[row][col];
+            const directions = [
+                [0, 1],   // 水平
+                [1, 0],   // 垂直
+                [1, 1],   // 右下对角线
+                [1, -1]   // 左下对角线
+            ];
+            
+            for (const [dx, dy] of directions) {
+                const pieces = [{row, col}];
+                
+                // 正向检查
+                for (let i = 1; i <= 3; i++) {
+                    const newRow = row + dx * i;
+                    const newCol = col + dy * i;
+                    if (newRow >= 0 && newRow <= totalLines && newCol >= 0 && newCol <= totalLines && 
+                        gameBoard[newRow][newCol] === player) {
+                        pieces.push({row: newRow, col: newCol});
+                    } else {
+                        break;
+                    }
+                }
+                
+                // 反向检查
+                for (let i = 1; i <= 3; i++) {
+                    const newRow = row - dx * i;
+                    const newCol = col - dy * i;
+                    if (newRow >= 0 && newRow <= totalLines && newCol >= 0 && newCol <= totalLines && 
+                        gameBoard[newRow][newCol] === player) {
+                        pieces.push({row: newRow, col: newCol});
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (pieces.length >= 4) {
+                    return {win: true, pieces: pieces};
+                }
+            }
+            
+            return {win: false, pieces: []};
+        }
+
+        // 检查平局
+        function checkDraw() {
+            for (let i = 0; i <= totalLines; i++) {
+                for (let j = 0; j <= totalLines; j++) {
+                    if (gameBoard[i][j] === 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // 更新当前玩家显示
+        function updateCurrentPlayer() {
+            const playerElement = document.getElementById('currentPlayer');
+            const teamBoys = document.getElementById('teamBoys');
+            const teamGirls = document.getElementById('teamGirls');
+            
+            if (currentPlayer === 1) {
+                playerElement.innerHTML = '当前: 男生队落子';
+                teamBoys.classList.add('active');
+                teamGirls.classList.remove('active');
+            } else {
+                playerElement.innerHTML = '当前: 女生队落子';
+                teamGirls.classList.add('active');
+                teamBoys.classList.remove('active');
+            }
+        }
+
+        // 显示消息
+        function showMessage(text, type) {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = text;
+            if (type === 'error') {
+                messageElement.className = 'message error';
+            } else {
+                messageElement.className = 'message';
+                messageElement.style.background = 'transparent';
+                messageElement.style.border = 'none';
+            }
+        }
+
+        // 显示获胜消息
+        function showWinMessage(winner) {
+            const winOverlay = document.getElementById('winOverlay');
+            const winMessage = document.getElementById('winMessage');
+            
+            winMessage.textContent = winner === '平局！' ? '平局！' : `🎉 ${winner} 获胜！ 🎉`;
+            winOverlay.style.display = 'flex';
+        }
+
+        // 隐藏获胜页面
+        function hideWinOverlay() {
+            const winOverlay = document.getElementById('winOverlay');
+            winOverlay.style.display = 'none';
+            winningPieces = [];
+        }
+
+        // 再玩一次
+        function playAgain() {
+            playSound('clickSound');
+            hideWinOverlay();
+            restartGame();
+        }
+
+        // 新游戏
+        function newGame() {
+            playSound('clickSound');
+            hideWinOverlay();
+            restartGame();
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            playSound('clickSound');
+            currentPlayer = 1;
+            initGame();
+        }
+
+        // 添加触控事件支持函数
+        function addTouchSupport() {
+            // 为所有按钮添加触控事件
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                // 获取原有的onclick函数
+                const onclickHandler = button.getAttribute('onclick');
+                if (onclickHandler) {
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault(); // 防止触发click事件
+                        // 执行原有的onclick函数
+                        eval(onclickHandler);
+                    }, { passive: false });
+                }
+            });
+        }
+
+        // 初始化游戏和音效
+        window.onload = function() {
+            generateSounds();
+            initGame();
+            addTouchSupport(); // 添加触控支持
+        };
+    </script>
+</body>
+</html>
