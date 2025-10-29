@@ -18,6 +18,7 @@ export default defineConfig({
         danweihuansuan: resolve(__dirname, 'danweihuansuan.html'),
         renshixiaoshu: resolve(__dirname, 'renshixiaoshu.html'),
         shudui: resolve(__dirname, 'shudui.html'),
+        recite: resolve(__dirname, 'recite/index.html'),
       },
     },
   },
