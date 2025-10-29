@@ -158,7 +158,7 @@ const WorksPage = () => {
                 <div className="work-card">
                   <div className="work-image">
                     <img 
-                      src="/recite/images/background1.jpg" 
+                      src="/beisong-background.jpg" 
                       alt="背诵冒险记游戏" 
                       style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
                     />
