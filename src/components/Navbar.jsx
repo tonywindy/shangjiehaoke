@@ -18,7 +18,7 @@ const Navbar = ({ currentPage }) => {
           <div className="feedback-container">
             <a href="#" className="nav-link">意见之箱</a>
             <div className="qr-popup">
-              <img src="./public/erweima.png" alt="公众号二维码" className="qr-code" />
+              <img src="/erweima.png" alt="公众号二维码" className="qr-code" />
               <p className="qr-text">扫码分享您的想法<br />让我们一起成长</p>
             </div>
           </div>
