@@ -53,6 +53,27 @@ const WorksPage = () => {
                 <div className="work-card">
                   <div className="work-image">
                     <img 
+                      src="/santtg.png" 
+                      alt="三题通关精准计算训练营" 
+                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    />
+                  </div>
+                  <h3>三题通关精准计算训练营</h3>
+                  <p>通过"小批量、高要求"的训练方式帮助学生克服粗心问题。每次完成3道题可获得积分，累积积分可让小树苗成长。支持简单、困难、大师三种模式，包含三位数加减法和表内乘法四则运算，配有即时反馈和纠错机制。</p>
+                  <div className="work-tags">
+                    <span className="tag">JavaScript</span>
+                    <span className="tag">HTML5</span>
+                    <span className="tag">CSS3</span>
+                    <span className="tag">数学训练</span>
+                    <span className="tag">精准计算</span>
+                    <span className="tag">游戏化学习</span>
+                  </div>
+                  <a href="/santitg.html" className="work-link">开始训练 →</a>
+                </div>
+
+                <div className="work-card">
+                  <div className="work-image">
+                    <img 
                       src="/dengshan.jpeg" 
                       alt="两位数乘法登山挑战游戏" 
                       style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
@@ -211,7 +232,7 @@ const WorksPage = () => {
                 <h3 className="sidebar-title">项目统计</h3>
                 <div className="stats-grid">
                   <div className="stat-item">
-                    <span className="stat-number">6</span>
+                    <span className="stat-number">7</span>
                     <span className="stat-label">完成项目</span>
                   </div>
                   <div className="stat-item">
