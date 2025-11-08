@@ -1,5 +1,10 @@
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     background-color: #f0f8ff; /* 爱丽丝蓝 */
     color: #333;
     margin: 0;
@@ -8,6 +13,15 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px 0;
+    }
 }
 
 #game-container {
@@ -22,9 +36,24 @@ body {
     margin-top: 0;
 }
 
+@media (max-width: 768px) {
+    #game-container {
+        width: 95%;
+        padding: 20px 15px;
+        border-radius: 15px;
+    }
+}
+
 h1 {
     color: #ff6347; /* 番茄色 */
     font-size: 2.5em;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8em;
+        margin: 10px 0 20px 0;
+    }
 }
 
 /* 返回按钮容器样式 */
@@ -34,6 +63,17 @@ h1 {
     left: 20px;
     display: flex;
     gap: 10px;
+    z-index: 100;
+}
+
+@media (max-width: 768px) {
+    .back-buttons {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        gap: 5px;
+        flex-direction: column;
+    }
 }
 
 /* 返回按钮样式 */
@@ -46,10 +86,20 @@ h1 {
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s ease;
+    min-height: 44px; /* iOS推荐最小触摸尺寸 */
+    white-space: nowrap;
 }
 
 .back-btn:hover {
     background-color: #5a6268;
+}
+
+@media (max-width: 768px) {
+    .back-btn {
+        padding: 12px 16px;
+        font-size: 13px;
+        border-radius: 6px;
+    }
 }
 
 /* 故事阶段样式 */
@@ -109,6 +159,14 @@ h1 {
     max-width: 400px;
 }
 
+@media (max-width: 768px) {
+    .choice-options {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        max-width: 100%;
+    }
+}
+
 .choice-btn {
     padding: 15px 20px;
     font-size: 16px;
@@ -120,6 +178,16 @@ h1 {
     transition: all 0.3s ease;
     text-align: left;
     min-height: 60px;
+    touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+    .choice-btn {
+        padding: 16px 18px;
+        font-size: 15px;
+        min-height: 56px;
+        text-align: center;
+    }
 }
 
 .choice-btn:hover {
@@ -248,17 +316,19 @@ h1 {
 /* 移动端优化 */
 @media (max-width: 768px) {
     .num-btn {
-        width: 55px;
-        height: 55px;
-        font-size: 18px;
+        min-width: 60px;
+        min-height: 60px;
+        font-size: 20px;
+        padding: 16px;
     }
     
     .number-keyboard {
-        padding: 12px;
+        padding: 15px 12px;
+        gap: 10px;
     }
     
     .keyboard-row {
-        gap: 6px;
+        gap: 10px;
     }
 }
 
@@ -291,16 +361,36 @@ h1 {
     padding: 0 1rem;
 }
 
+@media (max-width: 768px) {
+    .selection-container {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 0 0.5rem;
+    }
+}
+
 /* 知识点选择区域 - 左侧 */
 .knowledge-selection {
     flex: 2;
     min-width: 0;
 }
 
+@media (max-width: 768px) {
+    .knowledge-selection {
+        flex: none;
+    }
+}
+
 /* 情景选择区域 - 右侧 */
 .scenario-selection {
     flex: 1;
     min-width: 300px;
+}
+
+@media (max-width: 768px) {
+    .scenario-selection {
+        min-width: auto;
+    }
 }
 
 .selection-section {
@@ -312,6 +402,13 @@ h1 {
     margin-bottom: 1rem;
     font-size: 1.3rem;
     text-align: center;
+}
+
+@media (max-width: 768px) {
+    .selection-section h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+    }
 }
 
 /* 知识点分类样式 - 紧凑布局 */
@@ -375,6 +472,15 @@ h1 {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    min-height: 48px; /* 确保触摸区域足够大 */
+}
+
+@media (max-width: 768px) {
+    .unit-header {
+        padding: 0.9rem;
+        font-size: 0.95rem;
+        min-height: 50px;
+    }
 }
 
 .unit-header:hover {
@@ -436,6 +542,17 @@ h1 {
     position: relative;
     overflow: hidden;
     box-shadow: 0 3px 10px rgba(116, 185, 255, 0.3);
+    min-height: 50px; /* 确保触摸区域足够大 */
+}
+
+@media (max-width: 768px) {
+    .lesson-item {
+        padding: 1rem 0.7rem;
+        font-size: 0.85rem;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        min-height: 56px;
+    }
 }
 
 .lesson-item:hover {
@@ -574,6 +691,14 @@ h1 {
     gap: 0.8rem;
 }
 
+@media (max-width: 768px) {
+    #scenario-cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
+    }
+}
+
 .scenario-card {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     color: white;
@@ -587,6 +712,18 @@ h1 {
     box-shadow: 0 6px 20px rgba(240, 147, 251, 0.3);
     position: relative;
     overflow: hidden;
+    min-height: 52px; /* 确保触摸区域足够大 */
+}
+
+@media (max-width: 768px) {
+    .scenario-card {
+        padding: 0.9rem 0.7rem;
+        font-size: 0.9rem;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 .scenario-card:hover {
@@ -643,15 +780,32 @@ h1 {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+@media (max-width: 768px) {
+    .selection-summary {
+        padding: 12px;
+        margin: 15px 0;
+        border-radius: 8px;
+    }
+}
+
 .selection-summary p {
     margin: 8px 0;
     font-size: 14px;
     color: #555;
 }
 
+@media (max-width: 768px) {
+    .selection-summary p {
+        font-size: 13px;
+        margin: 6px 0;
+        line-height: 1.6;
+    }
+}
+
 .selection-summary span {
     font-weight: bold;
     color: #333;
+    word-break: break-word;
 }
 
 @keyframes selectedPulse {
@@ -672,6 +826,17 @@ button {
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     position: relative;
     overflow: hidden;
+    min-height: 44px; /* iOS推荐最小触摸尺寸 */
+    touch-action: manipulation; /* 禁用双击缩放 */
+}
+
+@media (max-width: 768px) {
+    button {
+        padding: 14px 24px;
+        font-size: 15px;
+        min-height: 48px;
+        border-radius: 20px;
+    }
 }
 
 button::before {
@@ -822,6 +987,16 @@ button:disabled::before {
     overflow: hidden;
 }
 
+@media (max-width: 768px) {
+    #story-text {
+        font-size: 1.05em;
+        line-height: 1.7;
+        padding: 16px;
+        margin-bottom: 15px;
+        border-left-width: 4px;
+    }
+}
+
 #story-text::before {
     content: '📖';
     position: absolute;
@@ -851,6 +1026,14 @@ button:disabled::before {
     box-shadow: 0 6px 20px rgba(255, 215, 0, 0.2);
     animation: slideInRight 0.5s ease-out;
     position: relative;
+}
+
+@media (max-width: 768px) {
+    #question-area {
+        padding: 18px 15px;
+        margin-top: 15px;
+        border-radius: 12px;
+    }
 }
 
 #question-area::before {
@@ -890,6 +1073,13 @@ button:disabled::before {
     font-size: 1.2em;
 }
 
+@media (max-width: 768px) {
+    #question-text {
+        font-size: 1.05em;
+        line-height: 1.5;
+    }
+}
+
 #answer-input {
     width: calc(100% - 22px); /* 减去padding和border */
     padding: 12px;
@@ -900,6 +1090,14 @@ button:disabled::before {
     transition: all 0.3s ease;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    #answer-input {
+        padding: 14px 12px;
+        font-size: 16px; /* 防止iOS自动缩放 */
+        min-height: 48px;
+    }
 }
 
 #answer-input:focus {
@@ -1064,9 +1262,22 @@ button:disabled::before {
     padding: 40px 20px;
     color: #6c757d;
     font-size: 16px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 12px;
+    min-height: 200px;
 }
 
-.loading-spinner {
+#image-loading p {
+    margin: 10px 0;
+    animation: fadeInOut 1.5s infinite;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.loading-spinner, .image-spinner {
     width: 40px;
     height: 40px;
     border: 4px solid #e9ecef;
@@ -1074,6 +1285,10 @@ button:disabled::before {
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 15px;
+}
+
+.image-spinner {
+    border-top-color: #ff6b6b;
 }
 
 @keyframes spin {
@@ -1134,34 +1349,56 @@ button:disabled::before {
 @media (max-width: 768px) {
     #story-content {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         min-height: auto;
     }
     
     .story-layout {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
     }
     
     .left-content-area {
         flex: none;
+        width: 100%;
     }
     
     .scene-image-area {
         flex: none;
-        min-height: 200px;
+        min-height: 180px;
+        padding: 15px;
     }
     
     .story-question-area {
         flex: none;
+        padding: 18px 15px;
     }
     
     .right-answer-area {
         flex: none;
+        padding: 18px 15px;
     }
     
     #scene-image-container {
         max-width: 100%;
+    }
+    
+    /* 确保答题区域可见 */
+    .answer-section {
+        margin-top: 15px;
+    }
+}
+
+/* 小屏幕进一步优化 */
+@media (max-width: 480px) {
+    .scene-image-area {
+        min-height: 150px;
+        padding: 12px;
+    }
+    
+    .story-question-area,
+    .right-answer-area {
+        padding: 15px 12px;
     }
 }
 
@@ -1386,31 +1623,176 @@ button:disabled::before {
 /* AI伙伴响应式调整 */
 @media (max-width: 768px) {
     #ai-partner-container {
-        right: 10px;
-        bottom: 10px;
-        max-width: 180px;
+        right: 5px;
+        bottom: 5px;
+        max-width: 160px;
+        z-index: 50; /* 降低层级，避免遮挡操作区域 */
     }
     
     #partner-avatar {
-        width: 150px;
-        height: 150px;
+        width: 120px;
+        height: 120px;
+    }
+    
+    .partner-dialogue-bubble {
+        padding: 10px 12px;
+        font-size: 13px;
+        max-width: 200px;
+        border-radius: 16px;
     }
     
     #partner-dialogue-text {
-        font-size: 14px;
-        line-height: 1.4;
+        font-size: 13px;
+        line-height: 1.5;
     }
     
     /* 移动端语音控制调整 */
     .voice-btn {
-        width: 35px;
-        height: 35px;
+        width: 38px;
+        height: 38px;
         font-size: 16px;
+        min-height: 38px;
     }
     
     .voice-status {
         width: 18px;
         height: 18px;
         font-size: 10px;
+    }
+}
+
+/* 小屏幕进一步优化 */
+@media (max-width: 480px) {
+    #ai-partner-container {
+        max-width: 140px;
+    }
+    
+    #partner-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .partner-dialogue-bubble {
+        padding: 8px 10px;
+        font-size: 12px;
+        max-width: 180px;
+    }
+    
+    #partner-dialogue-text {
+        font-size: 12px;
+    }
+}
+
+/* =================================
+   额外的移动端优化
+   ================================= */
+
+/* 平滑滚动 */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 移动端触摸优化 */
+@media (max-width: 768px) {
+    /* 防止选中文本时的闪烁 */
+    * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    /* 允许输入框选中文本 */
+    input,
+    textarea {
+        -webkit-user-select: text;
+        user-select: text;
+    }
+    
+    /* 优化滚动性能 */
+    body,
+    #game-container,
+    .story-layout {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 加载指示器移动端优化 */
+    #loading-indicator {
+        padding: 30px 15px;
+    }
+    
+    .loading-text {
+        font-size: 16px;
+    }
+    
+    /* 反馈区域移动端优化 */
+    #feedback-area {
+        font-size: 1.05em;
+        padding: 12px;
+        border-radius: 8px;
+    }
+    
+    /* 继续冒险按钮移动端优化 */
+    #continue-adventure-btn {
+        padding: 14px 28px;
+        font-size: 15px;
+        min-height: 48px;
+    }
+}
+
+/* 超小屏幕（手机横屏或小屏手机）*/
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5em;
+    }
+    
+    #game-container {
+        padding: 15px 10px;
+    }
+    
+    .selection-section h2 {
+        font-size: 1rem;
+    }
+    
+    .lesson-code {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .lesson-name {
+        font-size: 0.85rem;
+    }
+    
+    .lesson-desc {
+        font-size: 0.8rem;
+    }
+}
+
+/* 横屏优化 */
+@media (max-width: 768px) and (orientation: landscape) {
+    #ai-partner-container {
+        max-width: 120px;
+    }
+    
+    #partner-avatar {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .partner-dialogue-bubble {
+        font-size: 11px;
+        padding: 8px;
+        max-width: 150px;
+    }
+    
+    .back-buttons {
+        flex-direction: row;
+        gap: 5px;
+    }
+}
+
+/* 高分辨率屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    body {
+        -webkit-font-smoothing: subpixel-antialiased;
     }
 }

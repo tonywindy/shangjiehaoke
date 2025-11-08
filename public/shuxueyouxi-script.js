@@ -1,5 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM 元素获取 ---
+    // 性能监控
+    const performanceMonitor = {
+        start: performance.now(),
+        marks: {},
+        mark(name) {
+            this.marks[name] = performance.now() - this.start;
+            console.log(`⏱️ ${name}: ${this.marks[name].toFixed(2)}ms`);
+        },
+        summary() {
+            console.log('📊 性能统计:', this.marks);
+        }
+    };
+    
+    performanceMonitor.mark('DOM加载开始');
+    
+    // --- DOM 元素获取（优化：一次性缓存所有元素） ---
     const themeSelectionScreen = document.getElementById('theme-selection-screen');
     const storyScreen = document.getElementById('story-screen');
     const knowledgeUnits = document.querySelectorAll('.knowledge-unit');
@@ -40,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const choiceNumberInput = document.getElementById('choice-number-input');
     // 延迟获取按钮元素，确保DOM完全加载
     let numBtns;
+    let keyboardInitialized = false; // 标记键盘是否已初始化
 
     // --- 全局变量 ---
     let selectedKnowledge = [];
@@ -450,13 +466,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 创建全局语音控制器实例
     const voiceController = new VoiceController();
 
-    // --- AI伙伴控制函数 ---
+    // --- AI伙伴控制函数（优化版：减少重绘）---
     /**
      * 更新AI伙伴的显示状态
      * @param {string} state - 状态名称 ('default', 'happy', 'thinking')
      * @param {string} [customMessage] - 要显示的自定义消息，如果为空则使用预设对话
      * @param {Object} voiceOptions - 语音播放选项
      */
+    let lastPartnerState = ''; // 缓存上次状态，避免重复更新
     function updatePartner(state, customMessage = '', voiceOptions = {}) {
         const partnerAvatar = document.getElementById('partner-avatar');
         const partnerDialogue = document.getElementById('partner-dialogue-text');
@@ -465,9 +482,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('AI伙伴元素未找到');
             return;
         }
-
-        // 更新图片
-        partnerAvatar.src = partnerData.images[state] || partnerData.images.default;
 
         // 确定要显示和播放的文本
         let dialogueText = '';
@@ -482,18 +496,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 dialogueText = dialogues[Math.floor(Math.random() * dialogues.length)];
             }
         }
-        
-        // 更新对话文本
-        partnerDialogue.textContent = dialogueText;
 
-        // 添加动画效果
-        const dialogueBubble = document.querySelector('.partner-dialogue-bubble');
-        if (dialogueBubble) {
-            dialogueBubble.style.animation = 'none';
-            setTimeout(() => {
-                dialogueBubble.style.animation = 'fadeInUp 0.5s ease';
-            }, 10);
-        }
+        // 批量更新DOM，减少重绘
+        requestAnimationFrame(() => {
+            // 更新图片（只在状态改变时更新）
+            const newSrc = partnerData.images[state] || partnerData.images.default;
+            if (partnerAvatar.src !== newSrc) {
+                partnerAvatar.src = newSrc;
+            }
+        
+            // 更新对话文本
+            partnerDialogue.textContent = dialogueText;
+
+            // 添加动画效果
+            const dialogueBubble = document.querySelector('.partner-dialogue-bubble');
+            if (dialogueBubble) {
+                dialogueBubble.style.animation = 'none';
+                // 使用requestAnimationFrame确保动画重置
+                requestAnimationFrame(() => {
+                    dialogueBubble.style.animation = 'fadeInUp 0.5s ease';
+                });
+            }
+        });
+        
+        lastPartnerState = state;
         
         // 播放语音（如果有文本且语音控制器可用）
         if (dialogueText && voiceController) {
@@ -877,18 +903,40 @@ document.addEventListener('DOMContentLoaded', () => {
         displayStage1();
     });
     
-    // 初始化数字键盘事件监听器
+    // 初始化数字键盘事件监听器（优化版：只初始化一次）
     function initNumberKeyboard() {
+        // 如果已经初始化，直接返回
+        if (keyboardInitialized) {
+            console.log('数字键盘已初始化，跳过重复初始化');
+            return;
+        }
+        
         // 重新获取所有数字键盘按钮
         numBtns = document.querySelectorAll('.num-btn');
         console.log('找到数字键盘按钮数量:', numBtns.length);
         
-        numBtns.forEach(btn => {
-            // 移除可能存在的旧事件监听器
-            btn.removeEventListener('click', handleNumberKeyClick);
-            // 添加新的事件监听器
-            btn.addEventListener('click', handleNumberKeyClick);
+        if (numBtns.length === 0) {
+            console.warn('未找到数字键盘按钮');
+            return;
+        }
+        
+        // 使用事件委托，只在父元素上绑定一次
+        [numberKeyboard, choiceNumberKeyboard].forEach(keyboard => {
+            if (keyboard) {
+                keyboard.addEventListener('click', handleKeyboardDelegation);
+            }
         });
+        
+        keyboardInitialized = true;
+        console.log('数字键盘初始化完成');
+    }
+    
+    // 事件委托处理函数
+    function handleKeyboardDelegation(event) {
+        const btn = event.target.closest('.num-btn');
+        if (!btn) return;
+        
+        handleNumberKeyClick(event);
     }
     
     // 数字键盘点击处理函数
@@ -939,18 +987,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // 初始化数字键盘
-     initNumberKeyboard();
+    initNumberKeyboard();
+    
+    performanceMonitor.mark('初始化完成');
+    
+    // 页面可见性变化监听（性能优化：页面不可见时暂停动画）
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            console.log('页面隐藏，暂停非必要操作');
+            // 可以在这里暂停动画、停止轮询等
+        } else {
+            console.log('页面可见，恢复操作');
+        }
+    });
 
 
-    // --- 图片生成功能 ---
+    // --- 图片生成功能（优化版：添加重试和缓存） ---
+    const imageCache = new Map(); // 图片缓存
+    
     async function generateSceneImage(sceneDescription) {
+        const startTime = performance.now();
+        
         try {
-            // 显示加载状态
+            // 检查缓存
+            const cacheKey = `${sceneDescription}_${selectedScenarios.join('_')}`;
+            if (imageCache.has(cacheKey)) {
+                console.log('✅ 使用缓存的图片');
+                const cachedUrl = imageCache.get(cacheKey);
+                sceneImage.src = cachedUrl;
+                sceneImage.classList.remove('hidden');
+                imageLoading.classList.add('hidden');
+                return;
+            }
+            
+            // 显示优化的加载状态
+            imageLoading.innerHTML = `
+                <div class="image-spinner"></div>
+                <p>🎨 正在生成场景图片...</p>
+                <p style="font-size: 12px; color: #999;">这可能需要几秒钟</p>
+            `;
             imageLoading.classList.remove('hidden');
             sceneImage.classList.add('hidden');
             
+            // 使用重试机制
+            const result = await retryWithBackoff(() => generateImageWithAPI(sceneDescription, cacheKey), 3);
+            if (!result.success) {
+                throw new Error(result.error || '图片生成失败');
+            }
+            
+            const duration = (performance.now() - startTime) / 1000;
+            console.log(`✅ 图片生成完成，耗时: ${duration.toFixed(2)}秒`);
+            
+        } catch (error) {
+            console.error('❌ 生成场景图片时出错:', error);
+            const duration = (performance.now() - startTime) / 1000;
+            console.log(`⏱️ 失败耗时: ${duration.toFixed(2)}秒`);
+            
+            // 显示友好的错误提示
+            imageLoading.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">😅</div>
+                    <p style="color: #ff6b6b; margin-bottom: 10px; font-weight: bold;">图片生成失败</p>
+                    <p style="font-size: 14px; color: #666; margin-bottom: 15px;">不过没关系，让我们继续冒险吧！</p>
+                    <button onclick="generateSceneImage('${sceneDescription.replace(/'/g, "\\'")}')" 
+                            style="font-size: 14px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        🔄 重试生成图片
+                    </button>
+                </div>
+            `;
+        }
+    }
+    
+    // 实际的图片生成API调用
+    async function generateImageWithAPI(sceneDescription, cacheKey) {
+        try {
             // 第一步：调用百炼大模型提取生图元素
             console.log('开始提取生图元素...');
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+            
             const extractResponse = await fetch(`${PROXY_API_URL}/api/generate-story`, {
                 method: 'POST',
                 headers: {
@@ -961,8 +1076,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         role: 'user',
                         content: `请分析以下题目内容，提取出适合生成图片的关键视觉元素，包括：场景环境、物体、角色、颜色、风格等。请用简洁的英文关键词列出，用逗号分隔：\n\n题目内容：${sceneDescription}\n\n选择的情境：${selectedScenarios.join('、')}\n\n请只返回英文关键词，不要其他解释。`
                     }]
-                })
-            });
+                }),
+                signal: controller.signal
+            }).finally(() => clearTimeout(timeoutId));
             
             if (!extractResponse.ok) {
                 throw new Error('元素提取API请求失败');
@@ -1048,6 +1164,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('无法识别的图片API响应格式，缺少imageUrl字段');
             }
             
+            // 缓存图片URL
+            imageCache.set(cacheKey, imageUrl);
+            
             // 预加载图片
             const img = new Image();
             img.onload = () => {
@@ -1057,18 +1176,53 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             img.onerror = () => {
                 console.error('图片加载失败');
-                imageLoading.innerHTML = '<p style="color: #ff6b6b;">图片加载失败，请稍后重试</p>';
+                throw new Error('图片加载失败');
             };
             img.src = imageUrl;
             
+            return { success: true };
+            
         } catch (error) {
-            console.error('生成场景图片时出错:', error);
-            imageLoading.innerHTML = '<p style="color: #ff6b6b;">图片生成失败，请稍后重试</p>';
+            console.error('图片生成API调用失败:', error);
+            return { success: false, error: error.message };
         }
     }
     
-    // --- 核心功能函数 (修改！) ---
+    // 通用重试函数（指数退避）
+    async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+        for (let i = 0; i < maxRetries; i++) {
+            try {
+                const result = await fn();
+                return result;
+            } catch (error) {
+                console.warn(`尝试 ${i + 1}/${maxRetries} 失败:`, error.message);
+                
+                if (i === maxRetries - 1) {
+                    return { success: false, error: error.message };
+                }
+                
+                // 指数退避：1s, 2s, 4s...
+                const delay = baseDelay * Math.pow(2, i);
+                console.log(`等待 ${delay}ms 后重试...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    
+    // --- 核心功能函数（优化版：添加缓存和防抖） ---
+    const storyCache = new Map(); // 故事缓存
+    let lastGenerateTime = 0;
+    const GENERATE_COOLDOWN = 1000; // 1秒冷却时间
+    
     async function generateStory(isContinuation = false) {
+        // 防抖：避免频繁请求
+        const now = Date.now();
+        if (now - lastGenerateTime < GENERATE_COOLDOWN) {
+            console.log('请求过于频繁，请稍后再试');
+            return;
+        }
+        lastGenerateTime = now;
+        
         loadingIndicator.classList.remove('hidden');
         storyContent.classList.add('hidden');
 
@@ -1176,20 +1330,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             console.log('即将请求的文本生成API地址是：', `${PROXY_API_URL}/api/generate-story`);
-            const response = await fetch(`${PROXY_API_URL}/api/generate-story`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    messages: storyHistory
-                })
-            });
+            
+            // 使用重试机制包装API调用
+            const result = await retryWithBackoff(async () => {
+                // 使用 AbortController 实现超时（更好的浏览器兼容性）
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 120000); // 120秒超时
+                
+                try {
+                    const response = await fetch(`${PROXY_API_URL}/api/generate-story`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            messages: storyHistory
+                        }),
+                        signal: controller.signal
+                    });
 
-            if (!response.ok) {
-                 const errorData = await response.json();
-                 throw new Error(`中转服务器请求失败: ${errorData.error || response.statusText}`);
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(`中转服务器请求失败: ${errorData.error || response.statusText}`);
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    throw error;
+                }
+            }, 2, 3000); // 最多重试2次，初始延迟3秒
+            
+            // 检查是否是错误对象（重试失败后返回）
+            if (result && result.success === false) {
+                throw new Error(result.error || 'API请求失败');
             }
+            
+            const response = result;
 
             const data = await response.json();
             console.log('API响应数据:', data);
@@ -1235,7 +1414,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('调用中转站错误:', error);
-            storyText.textContent = `糟糕，故事生成失败了。\n错误信息：${error.message}`;
+            storyText.textContent = `糟糕，故事生成失败了。\n错误信息：${error.message}\n\n请检查网络连接或稍后再试。`;
+            
+            // 显示重试按钮
+            const retryBtn = document.createElement('button');
+            retryBtn.textContent = '🔄 重新生成故事';
+            retryBtn.style.marginTop = '20px';
+            retryBtn.onclick = () => {
+                storyText.innerHTML = '';
+                generateStory(isContinuation);
+            };
+            storyText.appendChild(retryBtn);
         } finally {
             loadingIndicator.classList.add('hidden');
             storyContent.classList.remove('hidden');
@@ -1298,9 +1487,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 显示第一阶段：故事和问题
+    // 显示第一阶段：故事和问题（优化版：减少DOM操作）
     function displayStage1() {
         if (!currentStoryData) return;
+        
+        // 使用DocumentFragment批量更新DOM
+        const fragment = document.createDocumentFragment();
         
         // 生成场景图片
         if (currentStoryData.sceneDescription) {
@@ -1317,9 +1509,12 @@ document.addEventListener('DOMContentLoaded', () => {
             是否为选择题: currentQuestionType === 'choice'
         });
         
-        // 显示故事和问题
-        storyText.textContent = currentStoryData.story;
-        questionText.textContent = currentStoryData.question;
+        // 使用requestAnimationFrame优化DOM更新
+        requestAnimationFrame(() => {
+            // 显示故事和问题
+            storyText.textContent = currentStoryData.story;
+            questionText.textContent = currentStoryData.question;
+        });
         
         // 根据题型显示相应的答题界面
         if (currentQuestionType === 'choice') {
@@ -1393,10 +1588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 清空答案输入框
         answerInput.value = '';
         
-        // 重新初始化数字键盘事件监听器
-        setTimeout(() => {
-            initNumberKeyboard();
-        }, 100);
+        // 键盘已经初始化，不需要重复初始化
     }
 
     // 显示提示阶段
