@@ -8,6 +8,7 @@ const QuotesPage = () => {
   const [currentQuote, setCurrentQuote] = useState(null);
   const [quotes, setQuotes] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [shownQuoteIds, setShownQuoteIds] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -52,11 +53,37 @@ const QuotesPage = () => {
         // 使用内联数据服务，避免HTTP请求
         const quotesData = await loadQuotesData();
         setQuotes(quotesData);
-        setCurrentQuote(quotesData[0] || backupQuotes[0]);
+        
+        const firstQuote = quotesData[0] || backupQuotes[0];
+        setCurrentQuote(firstQuote);
+        
+        // 从localStorage加载已展示的金句ID
+        const savedShownQuoteIds = localStorage.getItem('shownQuoteIds');
+        const shownIds = savedShownQuoteIds ? JSON.parse(savedShownQuoteIds) : [];
+        
+        // 将首次展示的金句添加到已展示列表
+        if (firstQuote && !shownIds.includes(firstQuote.id)) {
+          setShownQuoteIds([...shownIds, firstQuote.id]);
+        } else {
+          setShownQuoteIds(shownIds);
+        }
       } catch (error) {
         console.error('加载金句失败，使用备用数据:', error);
         setQuotes(backupQuotes);
-        setCurrentQuote(backupQuotes[0]);
+        
+        const firstQuote = backupQuotes[0];
+        setCurrentQuote(firstQuote);
+        
+        // 从localStorage加载已展示的金句ID
+        const savedShownQuoteIds = localStorage.getItem('shownQuoteIds');
+        const shownIds = savedShownQuoteIds ? JSON.parse(savedShownQuoteIds) : [];
+        
+        // 将首次展示的金句添加到已展示列表
+        if (firstQuote && !shownIds.includes(firstQuote.id)) {
+          setShownQuoteIds([...shownIds, firstQuote.id]);
+        } else {
+          setShownQuoteIds(shownIds);
+        }
       }
     };
 
@@ -74,6 +101,11 @@ const QuotesPage = () => {
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
+  // 保存已展示的金句ID到localStorage
+  useEffect(() => {
+    localStorage.setItem('shownQuoteIds', JSON.stringify(shownQuoteIds));
+  }, [shownQuoteIds]);
+
   // 显示新金句的动画效果
   const displayQuote = (quote) => {
     if (!quote) return;
@@ -86,16 +118,36 @@ const QuotesPage = () => {
     }, 300);
   };
 
-  // 获取随机金句
+  // 获取随机金句 - 优先展示未展示过的金句
   const getRandomQuote = () => {
     if (quotes.length === 0) return;
     
     setIsLoading(true);
     
     setTimeout(() => {
-      const availableQuotes = quotes.filter(q => q.id !== currentQuote?.id);
-      const randomIndex = Math.floor(Math.random() * availableQuotes.length);
-      const newQuote = availableQuotes[randomIndex] || quotes[0];
+      // 排除当前正在展示的金句
+      let availableQuotes = quotes.filter(q => q.id !== currentQuote?.id);
+      
+      // 优先从未展示过的金句中选择
+      const unshownQuotes = availableQuotes.filter(q => !shownQuoteIds.includes(q.id));
+      
+      let newQuote;
+      if (unshownQuotes.length > 0) {
+        // 有未展示的金句，从中随机选择
+        const randomIndex = Math.floor(Math.random() * unshownQuotes.length);
+        newQuote = unshownQuotes[randomIndex];
+      } else {
+        // 所有金句都已展示过，重置记录并从所有可用金句中选择
+        console.log('所有金句已展示完毕，重新开始循环');
+        setShownQuoteIds([]);
+        const randomIndex = Math.floor(Math.random() * availableQuotes.length);
+        newQuote = availableQuotes[randomIndex] || quotes[0];
+      }
+      
+      // 将新选择的金句ID添加到已展示列表
+      if (newQuote && !shownQuoteIds.includes(newQuote.id)) {
+        setShownQuoteIds(prev => [...prev, newQuote.id]);
+      }
       
       displayQuote(newQuote);
       setIsLoading(false);
