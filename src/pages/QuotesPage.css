@@ -4,6 +4,28 @@
   min-height: 100vh;
 }
 
+/* 导航栏在金句页的样式覆盖 - 黑色文字 */
+.quotes-page .nav-link {
+  color: #1a202c;
+}
+
+.quotes-page .nav-link:hover {
+  color: #2c5aa0;
+}
+
+.quotes-page .nav-link.active {
+  color: #2c5aa0;
+}
+
+/* 二维码弹窗样式 - 白色背景和黑色文字 */
+.quotes-page .qr-popup {
+  background: white;
+}
+
+.quotes-page .qr-text {
+  color: #1a202c;
+}
+
 /* QuotesPage 样式 */
 :root {
   /* 字体系统 - 统一使用Inter字体 */

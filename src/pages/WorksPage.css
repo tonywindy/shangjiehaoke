@@ -15,6 +15,28 @@
   min-height: 100vh;
 }
 
+/* 导航栏在作品页的样式覆盖 - 黑色文字 */
+.works-page .nav-link {
+  color: #1a202c;
+}
+
+.works-page .nav-link:hover {
+  color: #2c5aa0;
+}
+
+.works-page .nav-link.active {
+  color: #2c5aa0;
+}
+
+/* 二维码弹窗样式 - 白色背景和黑色文字 */
+.works-page .qr-popup {
+  background: white;
+}
+
+.works-page .qr-text {
+  color: #1a202c;
+}
+
 /* 原有样式保持不变 - 统一使用Inter字体 */
 body {
   font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
