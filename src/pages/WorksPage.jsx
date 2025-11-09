@@ -68,7 +68,7 @@ const WorksPage = () => {
                     <span className="tag">精准计算</span>
                     <span className="tag">游戏化学习</span>
                   </div>
-                  <a href="/santitg.html" className="work-link">开始训练 →</a>
+                  <a href="/santitg.html" className="work-link" onClick={(e) => { e.preventDefault(); window.location.href = '/santitg.html'; }}>开始训练 →</a>
                 </div>
 
                 <div className="work-card">

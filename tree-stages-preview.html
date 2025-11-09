@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成长树阶段预览 - 三题通关</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            font-size: 20px;
+            margin-bottom: 50px;
+        }
+
+        .stages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .stage-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        .stage-card:nth-child(1) { animation-delay: 0.1s; }
+        .stage-card:nth-child(2) { animation-delay: 0.2s; }
+        .stage-card:nth-child(3) { animation-delay: 0.3s; }
+        .stage-card:nth-child(4) { animation-delay: 0.4s; }
+        .stage-card:nth-child(5) { animation-delay: 0.5s; }
+        .stage-card:nth-child(6) { animation-delay: 0.6s; }
+        .stage-card:nth-child(7) { animation-delay: 0.7s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stage-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .stage-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .tree-emoji {
+            font-size: 120px;
+            margin: 20px 0;
+            display: block;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .stage-name {
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+            margin: 20px 0 15px 0;
+        }
+
+        .stage-points {
+            font-size: 18px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .stage-description {
+            font-size: 16px;
+            color: #888;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+
+        .back-btn {
+            display: block;
+            width: 200px;
+            margin: 0 auto;
+            padding: 15px 30px;
+            background: white;
+            color: #667eea;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            .stages-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .stage-card {
+                padding: 30px 20px;
+            }
+
+            .tree-emoji {
+                font-size: 100px;
+            }
+
+            .stage-name {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 成长树阶段预览 🌳</h1>
+        <p class="subtitle">坚持练习，见证你的小树苗成长为参天大树！</p>
+        
+        <div class="stages-grid">
+            <!-- 阶段1 -->
+            <div class="stage-card">
+                <div class="stage-number">1</div>
+                <span class="tree-emoji">🌱</span>
+                <div class="stage-name">种子阶段</div>
+                <div class="stage-points">0-1 积分</div>
+                <p class="stage-description">刚刚开始的种子，蕴含着无限的可能性。完成第一次训练就能破土而出！</p>
+            </div>
+
+            <!-- 阶段2 -->
+            <div class="stage-card">
+                <div class="stage-number">2</div>
+                <span class="tree-emoji">🌿</span>
+                <div class="stage-name">破土而出的小树苗</div>
+                <div class="stage-points">2-5 积分</div>
+                <p class="stage-description">恭喜！种子已经发芽，嫩绿的小苗正在努力生长。继续加油！</p>
+            </div>
+
+            <!-- 阶段3 -->
+            <div class="stage-card">
+                <div class="stage-number">3</div>
+                <span class="tree-emoji">🌳</span>
+                <div class="stage-name">茁壮的小树苗</div>
+                <div class="stage-points">6-15 积分</div>
+                <p class="stage-description">树苗长得更高了！叶子也更多了，继续坚持每天练习吧。</p>
+            </div>
+
+            <!-- 阶段4 -->
+            <div class="stage-card">
+                <div class="stage-number">4</div>
+                <span class="tree-emoji">🌲</span>
+                <div class="stage-name">有茂密树叶的小树</div>
+                <div class="stage-points">16-30 积分</div>
+                <p class="stage-description">哇！你的小树已经长得很茂盛了，树叶密密麻麻的。真棒！</p>
+            </div>
+
+            <!-- 阶段5 -->
+            <div class="stage-card">
+                <div class="stage-number">5</div>
+                <span class="tree-emoji">🎄</span>
+                <div class="stage-name">健壮的大树</div>
+                <div class="stage-points">31-50 积分</div>
+                <p class="stage-description">太厉害了！你的树已经长成大树啦！挺拔、健壮、充满生机。</p>
+            </div>
+
+            <!-- 阶段6 -->
+            <div class="stage-card">
+                <div class="stage-number">6</div>
+                <span class="tree-emoji">🌸</span>
+                <div class="stage-name">开花的大树</div>
+                <div class="stage-points">51-100 积分</div>
+                <p class="stage-description">不可思议！大树开花了！美丽的花朵是你努力付出的最好证明。</p>
+            </div>
+
+            <!-- 阶段7 -->
+            <div class="stage-card">
+                <div class="stage-number">7</div>
+                <span class="tree-emoji">🍎</span>
+                <div class="stage-name">结满果实的大树</div>
+                <div class="stage-points">101+ 积分</div>
+                <p class="stage-description">🎉 恭喜！你已经达到最高阶段！红彤彤的果实代表着你收获满满的成果！</p>
+            </div>
+        </div>
+
+        <a href="santitg.html" class="back-btn">返回游戏 →</a>
+    </div>
+</body>
+</html>
+
