@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级座位表管理系统</title>
+    <!-- 引入 SheetJS 库用于处理 Excel 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+            /* Prevent body scroll */
+        }
+
+        .container {
+            max-width: 100%;
+            height: calc(100vh - 20px);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .top-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        /* 左侧座位区 */
+        .seating-area {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .classroom {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            flex: 1;
+            justify-content: center;
+            /* Center vertically */
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .seat {
+            width: 100px;
+            height: 55px;
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            position: relative;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+
+        /* 拖拽进行中时，座位内的学生卡片不阻止拖放 */
+        body.dragging-active .seat .student-card:not(.dragging) {
+            pointer-events: none;
+        }
+
+        .seat:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .seat.drag-over {
+            border-color: #764ba2;
+            background: #e8d5ff;
+            border-style: solid;
+        }
+
+        .seat.occupied {
+            border-style: solid;
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .student-card {
+            background: white;
+            color: #333;
+            padding: 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: move;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            flex-shrink: 0;
+            user-select: none;
+            -webkit-user-drag: element;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 座位中的学生名牌 - 充满整个座位 */
+        .seat .student-card {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 学生池中的学生名牌 - 固定小尺寸 */
+        .student-pool .student-card {
+            width: 90px;
+            height: 36px;
+            padding: 6px 10px;
+        }
+
+        .student-card:hover {
+            transform: scale(1.05);
+        }
+
+        .student-card.dragging {
+            opacity: 0.5;
+        }
+
+        /* 讲台 */
+        .podium {
+            margin-top: 10px;
+            padding: 10px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        /* 右侧名单区 */
+        .student-list-area {
+            flex: 1;
+            border-left: 2px solid #e0e0e0;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .student-pool {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+        }
+
+        .stats {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #333;
+            flex-shrink: 0;
+        }
+
+        .stats div {
+            margin-bottom: 5px;
+        }
+
+        .stats span {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* 导入对话框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-content textarea {
+            min-height: 200px;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 班级座位表管理系统</h1>
+            <div class="top-controls">
+                <button class="btn btn-primary" onclick="openImportModal()">📥 导入名单</button>
+                <button class="btn btn-primary" onclick="triggerExcelUpload()">📊 导入Excel</button>
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;"
+                    onchange="handleExcelUpload(event)">
+                <button class="btn btn-primary" onclick="loadTestData()" style="background: #28a745;">🧪 测试数据</button>
+                <button class="btn btn-secondary" onclick="exportSeating()">💾 导出HTML</button>
+                <button class="btn btn-secondary" onclick="exportToExcel()">📊 导出Excel</button>
+                <button class="btn btn-danger" onclick="clearAll()">🗑️ 清空</button>
+                <div style="width: 1px; height: 20px; background: #ddd; margin: 0 5px;"></div>
+                <button class="btn btn-primary" onclick="rotateGroups('left')">⬅️ 小组左移</button>
+                <button class="btn btn-primary" onclick="rotateGroups('right')">小组右移 ➡️</button>
+                <button class="btn btn-primary" onclick="rotateRows('backward')">⬇️ 向后轮换</button>
+                <button class="btn btn-primary" onclick="rotateRows('forward')">⬆️ 向前轮换</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- 左侧座位区 -->
+            <div class="seating-area">
+                <div class="classroom" id="classroom">
+                    <!-- 座位将由JavaScript生成 -->
+                </div>
+                <div class="podium">🎯 讲 台 🎯</div>
+            </div>
+
+            <!-- 右侧学生名单区 -->
+            <div class="student-list-area">
+                <h3 style="margin-bottom: 10px; color: #333; font-size: 16px;">未安排学生</h3>
+                <div class="student-pool" id="studentPool">
+                    <div style="color: #999; width: 100%; text-align: center; padding: 40px 0;">
+                        请先导入学生名单
+                    </div>
+                </div>
+
+                <div class="stats" id="stats">
+                    <div>总座位数: <span id="totalSeats">56</span></div>
+                    <div>已安排: <span id="assignedSeats">0</span></div>
+                    <div>未安排学生: <span id="unassignedStudents">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入名单对话框 -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <h2>📝 导入学生名单</h2>
+            <p style="color: #666; margin-bottom: 15px;">请输入学生姓名，每行一个：</p>
+            <textarea id="studentInput" placeholder="例如：&#10;张三&#10;李四&#10;王五&#10;..."></textarea>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeImportModal()">取消</button>
+                <button class="btn btn-primary" onclick="importStudents()">确认导入</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let students = [];
+        let seatingData = {};
+        const TOTAL_SEATS = 56;
+        const COLS_PER_ROW = 8;
+        const ROWS = 7;
+
+        // 初始化座位表
+        function initSeating() {
+            const classroom = document.getElementById('classroom');
+            classroom.innerHTML = '';
+
+            let seatNumber = 1;
+
+            for (let row = 0; row < ROWS; row++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+
+                // 第一组 (1-2号座位)
+                const group1 = document.createElement('div');
+                group1.className = 'group';
+                for (let i = 0; i < 2; i++) {
+                    group1.appendChild(createSeat(seatNumber++));
+                }
+                rowDiv.appendChild(group1);
+
+                // 第二组 (3-4号座位)
+                const group2 = document.createElement('div');
+                group2.className = 'group';
+                for (let i = 0; i < 2; i++) {
+                    group2.appendChild(createSeat(seatNumber++));
+                }
+                rowDiv.appendChild(group2);
+
+                // 第三组 (5-6号座位)
+                const group3 = document.createElement('div');
+                group3.className = 'group';
+                for (let i = 0; i < 2; i++) {
+                    group3.appendChild(createSeat(seatNumber++));
+                }
+                rowDiv.appendChild(group3);
+
+                // 第四组 (7-8号座位)
+                const group4 = document.createElement('div');
+                group4.className = 'group';
+                for (let i = 0; i < 2; i++) {
+                    group4.appendChild(createSeat(seatNumber++));
+                }
+                rowDiv.appendChild(group4);
+
+                classroom.appendChild(rowDiv);
+            }
+
+            updateStats();
+        }
+
+        // 创建单个座位
+        function createSeat(number) {
+            const seat = document.createElement('div');
+            seat.className = 'seat';
+            seat.dataset.seatNumber = number;
+
+            // 拖放事件 - 使用捕获模式确保事件被正确处理
+            seat.addEventListener('dragover', handleDragOver, false);
+            seat.addEventListener('drop', handleDrop, false);
+            seat.addEventListener('dragleave', handleDragLeave, false);
+            seat.addEventListener('dragenter', handleDragEnter, false);
+
+            return seat;
+        }
+
+        // 拖拽进入座位
+        function handleDragEnter(e) {
+            e.preventDefault();
+            console.log('拖拽进入座位:', e.currentTarget.dataset.seatNumber);
+        }
+
+        // 打开导入对话框
+        function openImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        // 关闭导入对话框
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        // 导入学生
+        function importStudents() {
+            const input = document.getElementById('studentInput').value;
+            const names = input.split('\n').filter(name => name.trim() !== '');
+
+            if (names.length === 0) {
+                alert('请输入学生姓名！');
+                return;
+            }
+
+            students = [...new Set(names.map(name => name.trim()))]; // 去重
+            renderStudentPool();
+            closeImportModal();
+            document.getElementById('studentInput').value = '';
+            updateStats();
+        }
+
+        // 触发Excel文件上传
+        function triggerExcelUpload() {
+            document.getElementById('excelFileInput').click();
+        }
+
+        // 处理Excel文件上传
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // 读取第一个工作表
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    // 提取学生姓名（过滤空行和空值）
+                    const names = [];
+                    jsonData.forEach(row => {
+                        if (row && row.length > 0) {
+                            // 尝试从第一列或任何列获取姓名
+                            const name = String(row[0]).trim();
+                            if (name && name !== '' && name !== 'undefined') {
+                                names.push(name);
+                            }
+                        }
+                    });
+
+                    if (names.length === 0) {
+                        alert('Excel文件中没有找到有效的学生姓名！');
+                        return;
+                    }
+
+                    // 去重并更新学生列表
+                    students = [...new Set(names)];
+                    renderStudentPool();
+                    updateStats();
+                    alert(`成功导入 ${students.length} 名学生！`);
+
+                } catch (error) {
+                    console.error('Excel解析错误:', error);
+                    alert('Excel文件解析失败，请确保文件格式正确！\n错误信息: ' + error.message);
+                }
+            };
+
+            reader.onerror = function () {
+                alert('文件读取失败，请重试！');
+            };
+
+            reader.readAsArrayBuffer(file);
+
+            // 清空input，允许重复上传同一文件
+            event.target.value = '';
+        }
+
+        // 渲染学生名单池
+        function renderStudentPool() {
+            const pool = document.getElementById('studentPool');
+            pool.innerHTML = '';
+
+            const unassignedStudents = students.filter(student => {
+                return !Object.values(seatingData).flat().includes(student);
+            });
+
+            if (unassignedStudents.length === 0) {
+                pool.innerHTML = '<div style="color: #999; width: 100%; text-align: center; padding: 40px 0;">所有学生已安排</div>';
+                return;
+            }
+
+            unassignedStudents.forEach(student => {
+                const card = createStudentCard(student);
+                pool.appendChild(card);
+            });
+        }
+
+        // 创建学生名牌
+        function createStudentCard(name) {
+            const card = document.createElement('div');
+            card.className = 'student-card';
+            card.textContent = name;
+            card.draggable = true;
+            card.dataset.studentName = name;
+
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+
+            return card;
+        }
+
+        // 拖拽开始
+        function handleDragStart(e) {
+            console.log('拖拽开始:', e.target.dataset.studentName);
+            e.target.classList.add('dragging');
+            document.body.classList.add('dragging-active');
+            e.dataTransfer.effectAllowed = 'move';
+            const studentName = e.target.dataset.studentName;
+            e.dataTransfer.setData('text/plain', studentName);
+            e.dataTransfer.setData('text', studentName);
+        }
+
+        // 拖拽结束
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.body.classList.remove('dragging-active');
+            // 清除所有座位的 drag-over 状态
+            document.querySelectorAll('.seat.drag-over').forEach(seat => {
+                seat.classList.remove('drag-over');
+            });
+        }
+
+        // 拖拽经过座位
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+
+            // 确保是座位元素
+            const seat = e.currentTarget;
+            if (seat && seat.classList.contains('seat')) {
+                seat.classList.add('drag-over');
+            }
+
+            return false;
+        }
+
+        // 拖拽离开座位
+        function handleDragLeave(e) {
+            const seat = e.currentTarget;
+            if (seat && seat.classList.contains('seat')) {
+                seat.classList.remove('drag-over');
+            }
+        }
+
+        // 放置到座位
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // 查找最近的座位元素
+            let seat = e.currentTarget;
+            if (!seat.classList.contains('seat')) {
+                seat = seat.closest('.seat');
+            }
+
+            if (seat && seat.classList.contains('seat')) {
+                seat.classList.remove('drag-over');
+            }
+
+            const studentName = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
+            const targetSeatNumber = seat ? seat.dataset.seatNumber : null;
+
+            console.log('=== Drop事件触发 ===');
+            console.log('放置学生:', studentName, '到座位:', targetSeatNumber);
+
+            if (!studentName) {
+                console.error('未获取到学生姓名');
+                return;
+            }
+
+            if (!targetSeatNumber) {
+                console.error('未找到座位号');
+                return;
+            }
+
+            // 查找该学生当前所在的座位
+            let sourceSeatNumber = null;
+            Object.keys(seatingData).forEach(seatNum => {
+                if (seatingData[seatNum] && seatingData[seatNum].includes(studentName)) {
+                    sourceSeatNumber = seatNum;
+                }
+            });
+
+            // 如果拖到同一个座位，不做任何操作
+            if (sourceSeatNumber === targetSeatNumber) {
+                console.log('拖到同一个座位，不做处理');
+                return;
+            }
+
+            // 初始化目标座位数组（如果不存在）
+            if (!seatingData[targetSeatNumber]) {
+                seatingData[targetSeatNumber] = [];
+            }
+
+            // 检查目标座位是否有学生
+            const targetStudent = seatingData[targetSeatNumber][0]; // 目标座位的学生
+
+            if (targetStudent) {
+                // 目标座位有学生 - 执行交换
+                console.log('🔄 交换座位:', studentName, '↔️', targetStudent);
+
+                // 如果源学生来自座位（不是学生池）
+                if (sourceSeatNumber) {
+                    // 交换两个学生的位置
+                    seatingData[targetSeatNumber] = [studentName];
+                    seatingData[sourceSeatNumber] = [targetStudent];
+
+                    // 更新两个座位的显示
+                    const sourceSeat = document.querySelector(`.seat[data-seat-number="${sourceSeatNumber}"]`);
+                    if (sourceSeat) {
+                        updateSeatDisplay(sourceSeat, sourceSeatNumber);
+                    }
+                } else {
+                    // 源学生来自学生池，目标座位有人，不允许操作
+                    alert('该座位已有学生！请先移除或选择空座位。');
+                    return;
+                }
+            } else {
+                // 目标座位为空 - 直接移动
+                console.log('➡️ 移动学生到空座位');
+
+                // 从原座位移除
+                if (sourceSeatNumber) {
+                    seatingData[sourceSeatNumber] = seatingData[sourceSeatNumber].filter(name => name !== studentName);
+                    if (seatingData[sourceSeatNumber].length === 0) {
+                        delete seatingData[sourceSeatNumber];
+                    }
+
+                    // 更新原座位显示
+                    const sourceSeat = document.querySelector(`.seat[data-seat-number="${sourceSeatNumber}"]`);
+                    if (sourceSeat) {
+                        updateSeatDisplay(sourceSeat, sourceSeatNumber);
+                    }
+                }
+
+                // 添加到目标座位
+                seatingData[targetSeatNumber] = [studentName];
+            }
+
+            console.log('当前座位数据:', seatingData);
+            console.log('✅ 操作成功！');
+
+            // 更新目标座位显示
+            updateSeatDisplay(seat, targetSeatNumber);
+            renderStudentPool();
+            updateStats();
+        }
+
+        // 从座位中移除学生
+        function removeStudentFromSeats(studentName) {
+            Object.keys(seatingData).forEach(seatNum => {
+                seatingData[seatNum] = seatingData[seatNum].filter(name => name !== studentName);
+                if (seatingData[seatNum].length === 0) {
+                    delete seatingData[seatNum];
+                }
+            });
+        }
+
+        // 更新座位显示
+        function updateSeatDisplay(seatElement, seatNumber) {
+            // 清除座位内容
+            seatElement.innerHTML = '';
+
+            const studentsInSeat = seatingData[seatNumber] || [];
+
+            if (studentsInSeat.length > 0) {
+                seatElement.classList.add('occupied');
+                studentsInSeat.forEach(student => {
+                    const card = createStudentCard(student);
+                    seatElement.appendChild(card);
+                });
+            } else {
+                seatElement.classList.remove('occupied');
+            }
+        }
+
+        // 更新所有座位显示
+        function updateAllSeats() {
+            document.querySelectorAll('.seat').forEach(seat => {
+                const seatNumber = seat.dataset.seatNumber;
+                updateSeatDisplay(seat, seatNumber);
+            });
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const assignedCount = Object.keys(seatingData).reduce((sum, key) => {
+                return sum + seatingData[key].length;
+            }, 0);
+
+            const unassignedCount = students.length - assignedCount;
+
+            document.getElementById('totalSeats').textContent = TOTAL_SEATS;
+            document.getElementById('assignedSeats').textContent = assignedCount;
+            document.getElementById('unassignedStudents').textContent = unassignedCount;
+        }
+
+        // 导出座位表（A4打印格式）
+        function exportSeating() {
+            // 生成HTML内容
+            let html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级座位表</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 10mm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            padding: 10px;
+            background: white;
+            max-width: 190mm;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        
+        h1 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .classroom {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .group {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .seat {
+            width: 85px;
+            height: 48px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            background: white;
+            color: #333;
+        }
+        
+        .seat.empty {
+            border-style: dashed;
+            border-color: #999;
+            color: #999;
+            font-size: 11px;
+        }
+        
+        .podium {
+            margin-top: 15px;
+            padding: 12px;
+            border: 3px solid #333;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            background: #f5f5f5;
+            page-break-inside: avoid;
+        }
+        
+        .stats {
+            margin-top: 15px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+            page-break-inside: avoid;
+        }
+        
+        .stats-item {
+            display: inline-block;
+            margin-right: 25px;
+            font-size: 13px;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                max-width: 100%;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎓 班级座位表</h1>
+        <div class="info">导出时间：${new Date().toLocaleString('zh-CN')}</div>
+    </div>
+    
+    <div class="classroom">`;
+
+            // 生成座位表
+            let seatNumber = 1;
+            for (let row = 0; row < ROWS; row++) {
+                html += `\n        <div class="row">`;
+
+                // 4个组，每组2个座位
+                for (let group = 0; group < 4; group++) {
+                    html += `\n            <div class="group">`;
+
+                    for (let col = 0; col < 2; col++) {
+                        const students = seatingData[seatNumber] || [];
+                        const studentName = students[0] || '';
+                        const isEmpty = !studentName;
+
+                        html += `\n                <div class="seat${isEmpty ? ' empty' : ''}">`;
+                        html += isEmpty ? '空' : studentName;
+                        html += `</div>`;
+
+                        seatNumber++;
+                    }
+
+                    html += `\n            </div>`;
+                }
+
+                html += `\n        </div>`;
+            }
+
+            html += `\n    </div>
+    
+    <div class="podium">🎯 讲 台 🎯</div>
+    
+    <div class="stats">
+        <div class="stats-item">总座位数：${TOTAL_SEATS}</div>
+        <div class="stats-item">已安排：${Object.keys(seatingData).reduce((sum, key) => sum + seatingData[key].length, 0)}</div>
+        <div class="stats-item">未安排：${students.length - Object.keys(seatingData).reduce((sum, key) => sum + seatingData[key].length, 0)}</div>
+    </div>
+    
+    <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" style="padding: 10px 30px; font-size: 16px; cursor: pointer; background: #667eea; color: white; border: none; border-radius: 5px;">🖨️ 打印座位表</button>
+    </div>
+</body>
+</html>`;
+
+            // 创建下载
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '班级座位表.html';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('座位表已导出！\n\n打开下载的HTML文件后：\n1. 点击"打印座位表"按钮\n2. 或直接按 Ctrl+P (Windows) / Cmd+P (Mac)\n3. 选择打印机或保存为PDF');
+        }
+
+        // 导出为Excel
+        function exportToExcel() {
+            // 创建工作簿
+            const wb = XLSX.utils.book_new();
+
+            // 创建座位表数据数组
+            const wsData = [];
+
+            // 添加标题
+            wsData.push(['班级座位表']);
+            wsData.push([`导出时间：${new Date().toLocaleString('zh-CN')}`]);
+            wsData.push([]); // 空行
+
+            // 生成座位表数据
+            let seatNumber = 1;
+            for (let row = 0; row < ROWS; row++) {
+                const rowData = [];
+
+                // 4个组，每组2个座位
+                for (let group = 0; group < 4; group++) {
+                    for (let col = 0; col < 2; col++) {
+                        const students = seatingData[seatNumber] || [];
+                        const studentName = students[0] || '';
+                        rowData.push(studentName || '空');
+                        seatNumber++;
+                    }
+
+                    // 在组之间添加空列
+                    if (group < 3) {
+                        rowData.push('');
+                    }
+                }
+
+                wsData.push(rowData);
+            }
+
+            // 添加讲台
+            wsData.push([]);
+            wsData.push(['', '', '', '🎯 讲 台 🎯']);
+
+            // 添加统计信息
+            wsData.push([]);
+            const assignedCount = Object.keys(seatingData).reduce((sum, key) => sum + seatingData[key].length, 0);
+            wsData.push([`总座位数：${TOTAL_SEATS}`, `已安排：${assignedCount}`, `未安排：${students.length - assignedCount}`]);
+
+            // 创建工作表
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // 设置列宽
+            const colWidths = [];
+            for (let i = 0; i < 11; i++) {
+                colWidths.push({ wch: i % 3 === 2 ? 3 : 12 }); // 组间隔列窄一些
+            }
+            ws['!cols'] = colWidths;
+
+            // 合并标题单元格
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }, // 标题行
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 10 } }  // 时间行
+            ];
+
+            // 添加工作表到工作簿
+            XLSX.utils.book_append_sheet(wb, ws, '座位表');
+
+            // 导出文件
+            XLSX.writeFile(wb, '班级座位表.xlsx');
+
+            alert('Excel文件已导出成功！');
+        }
+
+        // 清空所有座位
+        function clearAll() {
+            if (!confirm('确定要清空所有座位安排吗？')) {
+                return;
+            }
+
+            seatingData = {};
+            updateAllSeats();
+            renderStudentPool();
+            updateStats();
+        }
+
+        // 加载测试数据
+        function loadTestData() {
+            students = [
+                '张三', '李四', '王五', '赵六', '钱七', '孙八',
+                '周九', '吴十', '郑十一', '王十二', '冯十三', '陈十四',
+                '褚十五', '卫十六', '蒋十七', '沈十八', '韩十九', '杨二十'
+            ];
+            renderStudentPool();
+            updateStats();
+            alert('已加载18名测试学生！请尝试拖拽名牌到座位上。');
+        }
+
+        // 小组轮换
+        function rotateGroups(direction) {
+            const newSeatingData = {};
+            let hasChanges = false;
+
+            // 遍历所有可能的座位
+            for (let seatNum = 1; seatNum <= TOTAL_SEATS; seatNum++) {
+                const seatKey = String(seatNum);
+                const students = seatingData[seatKey];
+                if (!students || students.length === 0) continue;
+
+                hasChanges = true;
+
+                // 计算当前位置 (0-indexed)
+                const s = seatNum - 1;
+                const r = Math.floor(s / 8);
+                const c = s % 8;
+                const g = Math.floor(c / 2);
+                const p = c % 2;
+
+                // 计算新位置
+                let newG;
+                if (direction === 'right') {
+                    newG = (g + 1) % 4;
+                } else {
+                    newG = (g - 1 + 4) % 4;
+                }
+
+                const newC = newG * 2 + p;
+                const newS = r * 8 + newC + 1;
+
+                newSeatingData[String(newS)] = students;
+            }
+
+            if (hasChanges) {
+                seatingData = newSeatingData;
+                updateAllSeats();
+                updateStats();
+            }
+        }
+
+        // 排轮换
+        function rotateRows(direction) {
+            const newSeatingData = {};
+            let hasChanges = false;
+
+            for (let seatNum = 1; seatNum <= TOTAL_SEATS; seatNum++) {
+                const seatKey = String(seatNum);
+                const students = seatingData[seatKey];
+                if (!students || students.length === 0) continue;
+
+                hasChanges = true;
+
+                const s = seatNum - 1;
+                const r = Math.floor(s / 8);
+                const c = s % 8;
+
+                let newR;
+                // backward: 1->2 (向后移)
+                // forward: 2->1 (向前移)
+                if (direction === 'backward') {
+                    newR = (r + 1) % ROWS;
+                } else {
+                    newR = (r - 1 + ROWS) % ROWS;
+                }
+
+                const newS = newR * 8 + c + 1;
+                newSeatingData[String(newS)] = students;
+            }
+
+            if (hasChanges) {
+                seatingData = newSeatingData;
+                updateAllSeats();
+                updateStats();
+            }
+        }
+
+        // 初始化学生池拖放
+        function initStudentPool() {
+            const pool = document.getElementById('studentPool');
+
+            pool.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                pool.style.background = '#e0f7fa';
+            });
+
+            pool.addEventListener('dragleave', (e) => {
+                pool.style.background = '#f8f9fa';
+            });
+
+            pool.addEventListener('drop', (e) => {
+                e.preventDefault();
+                pool.style.background = '#f8f9fa';
+
+                const studentName = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
+                console.log('学生返回学生池:', studentName);
+
+                if (studentName) {
+                    // 从座位移除
+                    removeStudentFromSeats(studentName);
+                    updateAllSeats();
+                    renderStudentPool();
+                    updateStats();
+                }
+            });
+        }
+
+        // 页面加载时初始化
+        window.onload = function () {
+            initSeating();
+            initStudentPool();
+        };
+    </script>
+</body>
+
+</html>

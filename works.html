@@ -1,702 +1,737 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>作品展示 - 上节好课</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-      /* CSS变量定义 */
-      :root {
-        /* 动画时长 */
-        --transition-fast: 0.3s;
-      }
-      
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
 
-      body {
-        font-family: "Noto Serif SC", "Source Han Serif SC", "LXGW WenKai", serif;
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 50%, #e8ebff 100%);
-        min-height: 100vh;
-        color: #2d3748;
-        line-height: 1.6;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>作品展示 - 上节好课</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* CSS变量定义 */
+    :root {
+      /* 动画时长 */
+      --transition-fast: 0.3s;
+    }
 
-      .container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      .main-content {
-        padding-top: 120px;
-        padding-bottom: 80px;
-      }
+    body {
+      font-family: "Noto Serif SC", "Source Han Serif SC", "LXGW WenKai", serif;
+      background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 50%, #e8ebff 100%);
+      min-height: 100vh;
+      color: #2d3748;
+      line-height: 1.6;
+    }
 
-      .hero-section {
-        text-align: center;
-        margin-bottom: 80px;
-        padding: 60px 0;
-      }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
 
-      .hero-title {
-        font-size: 4rem;
-        font-weight: 800;
-        color: #1a202c;
-        margin-bottom: 16px;
-        letter-spacing: -0.02em;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
+    .main-content {
+      padding-top: 120px;
+      padding-bottom: 80px;
+    }
 
-      .hero-subtitle {
-        font-size: 1.25rem;
-        color: #718096;
-        font-weight: 400;
-        max-width: 600px;
-        margin: 0 auto;
-      }
+    .hero-section {
+      text-align: center;
+      margin-bottom: 80px;
+      padding: 60px 0;
+    }
 
-      .navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        padding: 16px 0;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        z-index: 100;
-        transition: all var(--transition-fast) ease;
-      }
+    .hero-title {
+      font-size: 4rem;
+      font-weight: 800;
+      color: #1a202c;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-      .nav-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: #718096;
+      font-weight: 400;
+      max-width: 600px;
+      margin: 0 auto;
+    }
 
-      .nav-brand {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 16px 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      z-index: 100;
+      transition: all var(--transition-fast) ease;
+    }
 
-      .brand-text {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #2c5aa0;
-        text-decoration: none;
-      }
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-      .nav-menu {
-        display: flex;
-        gap: 32px;
-        align-items: center;
-      }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-      .nav-link {
-        color: #718096;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all var(--transition-fast) ease;
-        position: relative;
-        padding: 8px 0;
-      }
+    .brand-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2c5aa0;
+      text-decoration: none;
+    }
 
-      .nav-link::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: #2c5aa0;
-        transition: width var(--transition-fast) ease;
-      }
+    .nav-menu {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
 
-      .nav-link:hover {
-        color: #2c5aa0;
-      }
+    .nav-link {
+      color: #718096;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all var(--transition-fast) ease;
+      position: relative;
+      padding: 8px 0;
+    }
 
-      .nav-link:hover::after {
-        width: 100%;
-      }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #2c5aa0;
+      transition: width var(--transition-fast) ease;
+    }
 
+    .nav-link:hover {
+      color: #2c5aa0;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .works-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .main-works {
+      display: grid;
+      gap: 32px;
+    }
+
+    .featured-work {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: all var(--transition-fast) ease;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .featured-work:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .featured-image {
+      width: 100%;
+      height: 280px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .featured-content {
+      padding: 32px;
+    }
+
+    .featured-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .featured-description {
+      color: #718096;
+      font-size: 1rem;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .work-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .tag {
+      background: #edf2f7;
+      color: #4a5568;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .work-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all var(--transition-fast) ease;
+    }
+
+    .work-link:hover {
+      background: #5a67d8;
+      transform: translateY(-1px);
+    }
+
+    .regular-works {
+      display: grid;
+      gap: 24px;
+    }
+
+    .work-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      transition: all var(--transition-fast) ease;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .work-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .work-card h3 {
+      color: #1a202c;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .work-card p {
+      color: #718096;
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .work-card .work-tags {
+      margin-bottom: 16px;
+    }
+
+    .work-card .tag {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+    }
+
+    .work-card .work-link {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 120px;
+    }
+
+    .sidebar-section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 16px;
+    }
+
+    .featured-list {
+      list-style: none;
+    }
+
+    .featured-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .featured-item:last-child {
+      border-bottom: none;
+    }
+
+    .featured-link {
+      color: #4a5568;
+      text-decoration: none;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      transition: color 0.3s ease;
+    }
+
+    .featured-link:hover {
+      color: #667eea;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 16px;
+      background: #f7fafc;
+      border-radius: 8px;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #667eea;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: #718096;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 1024px) {
       .works-layout {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 40px;
-        align-items: start;
-      }
-
-      .main-works {
-        display: grid;
+        grid-template-columns: 1fr;
         gap: 32px;
-      }
-
-      .featured-work {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all var(--transition-fast) ease;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-
-      .featured-work:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
-      }
-
-      .featured-image {
-        width: 100%;
-        height: 280px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-        font-weight: 600;
-      }
-
-      .featured-content {
-        padding: 32px;
-      }
-
-      .featured-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #1a202c;
-        margin-bottom: 12px;
-        line-height: 1.3;
-      }
-
-      .featured-description {
-        color: #718096;
-        font-size: 1rem;
-        margin-bottom: 24px;
-        line-height: 1.6;
-      }
-
-      .work-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 24px;
-      }
-
-      .tag {
-        background: #edf2f7;
-        color: #4a5568;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-
-      .work-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        background: #667eea;
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all var(--transition-fast) ease;
-      }
-
-      .work-link:hover {
-        background: #5a67d8;
-        transform: translateY(-1px);
-      }
-
-      .regular-works {
-        display: grid;
-        gap: 24px;
-      }
-
-      .work-card {
-        background: white;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        transition: all var(--transition-fast) ease;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-
-      .work-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      }
-
-      .work-card h3 {
-        color: #1a202c;
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 12px;
-        line-height: 1.4;
-      }
-
-      .work-card p {
-        color: #718096;
-        font-size: 0.95rem;
-        margin-bottom: 16px;
-        line-height: 1.6;
-      }
-
-      .work-card .work-tags {
-        margin-bottom: 16px;
-      }
-
-      .work-card .tag {
-        font-size: 0.8rem;
-        padding: 4px 10px;
-      }
-
-      .work-card .work-link {
-        padding: 8px 16px;
-        font-size: 0.9rem;
       }
 
       .sidebar {
-        position: sticky;
-        top: 120px;
+        position: static;
+        order: -1;
       }
 
       .sidebar-section {
-        background: white;
-        border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-
-      .sidebar-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #1a202c;
         margin-bottom: 16px;
       }
+    }
 
-      .featured-list {
-        list-style: none;
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 16px;
       }
 
-      .featured-item {
-        padding: 12px 0;
-        border-bottom: 1px solid #e2e8f0;
+      .main-content {
+        padding-top: 100px;
+        padding-bottom: 60px;
       }
 
-      .featured-item:last-child {
-        border-bottom: none;
+      .hero-title {
+        font-size: 2.5rem;
       }
 
-      .featured-link {
-        color: #4a5568;
-        text-decoration: none;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        transition: color 0.3s ease;
+      .hero-subtitle {
+        font-size: 1.125rem;
       }
 
-      .featured-link:hover {
-        color: #667eea;
+      .nav-menu {
+        gap: 20px;
+      }
+
+      .featured-content {
+        padding: 24px;
+      }
+
+      .featured-title {
+        font-size: 1.5rem;
       }
 
       .stats-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-title {
+        font-size: 2rem;
+      }
+
+      .nav-menu {
         gap: 16px;
       }
 
-      .stat-item {
-        text-align: center;
-        padding: 16px;
-        background: #f7fafc;
-        border-radius: 8px;
-      }
-
-      .stat-number {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #667eea;
-        display: block;
-      }
-
-      .stat-label {
-        font-size: 0.875rem;
-        color: #718096;
-        margin-top: 4px;
-      }
-      @media (max-width: 1024px) {
-        .works-layout {
-          grid-template-columns: 1fr;
-          gap: 32px;
-        }
-        
-        .sidebar {
-          position: static;
-          order: -1;
-        }
-        
-        .sidebar-section {
-          margin-bottom: 16px;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .container {
-          padding: 0 16px;
-        }
-        
-        .main-content {
-          padding-top: 100px;
-          padding-bottom: 60px;
-        }
-        
-        .hero-title {
-          font-size: 2.5rem;
-        }
-        
-        .hero-subtitle {
-          font-size: 1.125rem;
-        }
-        
-        .nav-menu {
-          gap: 20px;
-        }
-        
-        .featured-content {
-          padding: 24px;
-        }
-        
-        .featured-title {
-          font-size: 1.5rem;
-        }
-        
-        .stats-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .hero-title {
-          font-size: 2rem;
-        }
-        
-        .nav-menu {
-          gap: 16px;
-        }
-        
-        .nav-link {
-          font-size: 0.9rem;
-        }
-      }
-
-      /* 意见之箱样式 */
-      .feedback-container {
-        position: relative;
-        display: inline-block;
-      }
-
-      .qr-popup {
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: white;
-        border-radius: 12px;
-        padding: 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-        z-index: 1000;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        min-width: 200px;
-      }
-
-      .feedback-container:hover .qr-popup {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-      }
-
-      .qr-popup::before {
-        content: '';
-        position: absolute;
-        top: -8px;
-        right: 20px;
-        width: 0;
-        height: 0;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        border-bottom: 8px solid white;
-      }
-
-      .qr-code {
-        width: 150px;
-        height: 150px;
-        margin: 0 auto 12px;
-        display: block;
-        border-radius: 8px;
-      }
-
-      .qr-text {
-        text-align: center;
-        color: #4a5568;
+      .nav-link {
         font-size: 0.9rem;
-        line-height: 1.4;
       }
-    </style>
-  </head>
-  <body>
-    <nav class="navbar">
-      <div class="nav-container">
-        <div class="nav-brand">
-          <a href="./index.html" class="brand-text">上节好课</a>
-        </div>
-        <div class="nav-menu">
-          <a href="./index.html" class="nav-link">初见之页</a>
-          <a href="./works.html" class="nav-link">些许尝试</a>
-          <a href="./contact.html" class="nav-link">一点想法</a>
-          <div class="feedback-container">
-            <span class="nav-link" style="cursor: pointer;">意见之箱</span>
-            <div class="qr-popup">
-              <img src="./erweima.png" alt="公众号二维码" class="qr-code">
-              <div class="qr-text">
-                扫码关注公众号<br>
-                分享您的宝贵意见
-              </div>
-            </div>
-          </div>
-        </div>
+    }
+
+    /* 意见之箱样式 */
+    .feedback-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .qr-popup {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      min-width: 200px;
+    }
+
+    .feedback-container:hover .qr-popup {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .qr-popup::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      right: 20px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid white;
+    }
+
+    .qr-code {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 12px;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .qr-text {
+      text-align: center;
+      color: #4a5568;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <a href="./index.html" class="brand-text">上节好课</a>
       </div>
-    </nav>
-
-    <div class="container">
-      <div class="main-content">
-        <div class="hero-section">
-          <h1 class="hero-title">些许尝试</h1>
-          <p class="hero-subtitle">不保证成功，不追求完美</p>
-        </div>
-
-        <div class="works-layout">
-          <div class="main-works">
-            <!-- 主要推荐作品 -->
-            <article class="featured-work">
-              <div class="featured-image">
-                <img src="./public/shijie.jpeg" alt="一人一世界数学情境答题游戏" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-              </div>
-              <div class="featured-content">
-                <h2 class="featured-title">一人一世界数学情境答题游戏</h2>
-                <p class="featured-description">AI数学冒险故事游戏，通过沉浸式的故事情境让学生在冒险中学习数学。支持多个主题和知识点，每个问题都有独特的故事背景，让数学学习变成一场精彩的冒险之旅。</p>
-                <div class="work-tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">HTML5</span>
-                  <span class="tag">CSS3</span>
-                  <span class="tag">AI教育</span>
-                  <span class="tag">情境学习</span>
-                  <span class="tag">数学冒险</span>
-                </div>
-                <a href="./shuxueyouxi.html" class="work-link">
-                  开始冒险 →
-                </a>
-              </div>
-            </article>
-
-            <!-- 常规作品列表 -->
-            <div class="regular-works">
-              <div class="work-card">
-                <div class="work-image">
-                  <img src="./public/santtg.png" alt="三题通关精准计算训练营" style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
-                </div>
-                <h3>三题通关精准计算训练营</h3>
-                <p>通过"小批量、高要求"的训练方式帮助学生克服粗心问题。每次完成3道题可获得积分，累积积分可让小树苗成长。支持简单、困难、大师三种模式，包含三位数加减法和表内乘法四则运算，配有即时反馈和纠错机制。</p>
-                <div class="work-tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">HTML5</span>
-                  <span class="tag">CSS3</span>
-                  <span class="tag">数学训练</span>
-                  <span class="tag">精准计算</span>
-                  <span class="tag">游戏化学习</span>
-                </div>
-                <a href="./santitg.html" class="work-link">开始训练 →</a>
-              </div>
-
-              <div class="work-card">
-                <div class="work-image">
-                  <img src="./public/dengshan.jpeg" alt="两位数乘法登山挑战游戏" style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
-                </div>
-                <h3>两位数乘法登山挑战游戏</h3>
-                <p>一个有趣的数学学习游戏，通过登山挑战的形式让学生练习两位数乘法运算。支持单人挑战和双人对战模式，配有可爱的动物角色和生动的动画效果，让数学学习变得更加有趣。</p>
-                <div class="work-tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">HTML5</span>
-                  <span class="tag">CSS3</span>
-                  <span class="tag">教育游戏</span>
-                  <span class="tag">数学学习</span>
-                </div>
-                <a href="./climb.html" class="work-link">开始游戏 →</a>
-              </div>
-
-              <div class="work-card">
-                <div class="work-image">
-                  <img src="./public/zhouchang.jpeg" alt="周长的探索之旅" style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
-                </div>
-                <h3>周长的探索之旅</h3>
-                <p>一个互动式的数学学习应用，通过三个精心设计的模块帮助学生直观理解周长概念。包含小蚂蚁演示、绳子变魔术和长方形公式推导，让抽象的数学概念变得生动有趣。</p>
-                <div class="work-tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">Canvas API</span>
-                  <span class="tag">CSS3</span>
-                  <span class="tag">数学教育</span>
-                  <span class="tag">交互设计</span>
-                </div>
-                <a href="./zhouchang.html" class="work-link">开始探索 →</a>
-              </div>
-
-              <div class="work-card">
-                <div class="work-image">
-                  <img src="/danweihuansuan.png" alt="长度单位换算交互式学习工具" style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
-                </div>
-                <h3>长度单位换算交互式学习工具</h3>
-                <p>通过拖拽直观理解千米、米、分米、厘米和毫米之间的换算关系。采用楼梯式设计和可拖动数值卡片，让学生在互动中掌握单位换算的规律，支持触控设备，界面美观现代。</p>
-                <div class="work-tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">HTML5</span>
-                  <span class="tag">CSS3</span>
-                  <span class="tag">拖拽交互</span>
-                  <span class="tag">数学教育</span>
-                  <span class="tag">单位换算</span>
-                </div>
-                <a href="./danweihuansuan.html" class="work-link">开始学习 →</a>
-              </div>
-
-              <div class="work-card">
-                <div class="work-image">
-                  <img src="./public/renshixiaoshu.png" alt="认识小数：元角分大探险" style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
-                </div>
-                <h3>认识小数：元角分大探险</h3>
-                <p>通过拖拽硬币学习小数概念的互动教学工具。学生可以拖拽元、角、分硬币到相应区域，直观理解小数的组成和进位关系，支持语音朗读功能，界面友好，适合触控设备。</p>
-                <div class="work-tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">HTML5</span>
-                  <span class="tag">CSS3</span>
-                  <span class="tag">拖拽交互</span>
-                  <span class="tag">数学教育</span>
-                  <span class="tag">小数认知</span>
-                  <span class="tag">语音朗读</span>
-                </div>
-                <a href="./renshixiaoshu.html" class="work-link">开始探险 →</a>
-              </div>
-
-              <div class="work-card">
-                <div class="work-image">
-                  <img src="./recite/images/background1.jpg" alt="背诵冒险记游戏" style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
-                </div>
-                <h3>背诵冒险记</h3>
-                <p>一款趣味性的背诵任务管理游戏。学生完成背诵后可从"修炼野外"进入"知识宫殿",前5名获金牌、前15名获银牌、前30名获铜牌。支持批量导入学生名单、多任务管理、易容术更换头像、数据导出等功能,让背诵变成冒险闯关。</p>
-                <div class="work-tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">HTML5</span>
-                  <span class="tag">CSS3</span>
-                  <span class="tag">拖拽交互</span>
-                  <span class="tag">游戏化学习</span>
-                  <span class="tag">任务管理</span>
-                  <span class="tag">奖牌系统</span>
-                </div>
-                <a href="./recite/index.html" class="work-link">开始冒险 →</a>
-              </div>
-
-              <div class="work-card">
-                <div class="work-image">
-                  <img src="./public/shudui.png" alt="数对四子棋游戏" style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
-                </div>
-                <h3>数对四子棋游戏</h3>
-                <p>一款结合数学坐标概念的策略对战游戏。玩家通过输入坐标数对来下棋，在游戏中自然学习坐标系统。支持双人对战、触控操作，具有优美的界面设计和流畅的游戏体验，让数学学习变得更加有趣。</p>
-                <div class="work-tags">
-                  <span class="tag">JavaScript</span>
-                  <span class="tag">HTML5</span>
-                  <span class="tag">CSS3</span>
-                  <span class="tag">策略游戏</span>
-                  <span class="tag">逻辑思维</span>
-                  <span class="tag">触控支持</span>
-                  <span class="tag">双人对战</span>
-                </div>
-                <a href="./shudui.html" class="work-link">开始游戏 →</a>
-              </div>
-
+      <div class="nav-menu">
+        <a href="./index.html" class="nav-link">初见之页</a>
+        <a href="./works.html" class="nav-link">些许尝试</a>
+        <a href="./contact.html" class="nav-link">一点想法</a>
+        <div class="feedback-container">
+          <span class="nav-link" style="cursor: pointer;">意见之箱</span>
+          <div class="qr-popup">
+            <img src="./erweima.png" alt="公众号二维码" class="qr-code">
+            <div class="qr-text">
+              扫码关注公众号<br>
+              分享您的宝贵意见
             </div>
           </div>
-
-          <!-- 侧边栏 -->
-          <aside class="sidebar">
-            <div class="sidebar-section">
-              <h3 class="sidebar-title">精选文章</h3>
-              <ul class="featured-list">
-                <li class="featured-item">
-                  <a href="./ai-teaching-tools.html" class="featured-link">AI 助教来了：盘点那些能让教师效率倍增的 AI 工具</a>
-                </li>
-                <li class="featured-item">
-                  <a href="#" class="featured-link">如何用AI技术改变传统教育</a>
-                </li>
-                <li class="featured-item">
-                  <a href="#" class="featured-link">前端开发的最佳实践指南</a>
-                </li>
-                <li class="featured-item">
-                  <a href="#" class="featured-link">构建现代化学习平台的思考</a>
-                </li>
-                <li class="featured-item">
-                  <a href="#" class="featured-link">用户体验设计在教育产品中的应用</a>
-                </li>
-                <li class="featured-item">
-                  <a href="#" class="featured-link">技术驱动的个性化学习</a>
-                </li>
-              </ul>
-            </div>
-
-            <div class="sidebar-section">
-              <h3 class="sidebar-title">项目统计</h3>
-              <div class="stats-grid">
-                <div class="stat-item">
-                  <span class="stat-number">7</span>
-                  <span class="stat-label">完成项目</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-number">8</span>
-                  <span class="stat-label">技术栈</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-number">4</span>
-                  <span class="stat-label">获奖项目</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-number">2k+</span>
-                  <span class="stat-label">代码提交</span>
-                </div>
-              </div>
-            </div>
-          </aside>
         </div>
       </div>
     </div>
-  </body>
+  </nav>
+
+  <div class="container">
+    <div class="main-content">
+      <div class="hero-section">
+        <h1 class="hero-title">些许尝试</h1>
+        <p class="hero-subtitle">不保证成功，不追求完美</p>
+      </div>
+
+      <div class="works-layout">
+        <div class="main-works">
+          <!-- 主要推荐作品 -->
+          <article class="featured-work">
+            <div class="featured-image">
+              <img src="./public/shijie.jpeg" alt="一人一世界数学情境答题游戏"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+            </div>
+            <div class="featured-content">
+              <h2 class="featured-title">一人一世界数学情境答题游戏</h2>
+              <p class="featured-description">
+                AI数学冒险故事游戏，通过沉浸式的故事情境让学生在冒险中学习数学。支持多个主题和知识点，每个问题都有独特的故事背景，让数学学习变成一场精彩的冒险之旅。</p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML5</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">AI教育</span>
+                <span class="tag">情境学习</span>
+                <span class="tag">数学冒险</span>
+              </div>
+              <a href="./shuxueyouxi.html" class="work-link">
+                开始冒险 →
+              </a>
+            </div>
+          </article>
+
+          <!-- 常规作品列表 -->
+          <div class="regular-works">
+            <div class="work-card">
+              <div class="work-image">
+                <img src="./public/santtg.png" alt="三题通关精准计算训练营"
+                  style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+              </div>
+              <h3>三题通关精准计算训练营</h3>
+              <p>通过"小批量、高要求"的训练方式帮助学生克服粗心问题。每次完成3道题可获得积分，累积积分可让小树苗成长。支持简单、困难、大师三种模式，包含三位数加减法和表内乘法四则运算，配有即时反馈和纠错机制。</p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML5</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">数学训练</span>
+                <span class="tag">精准计算</span>
+                <span class="tag">游戏化学习</span>
+              </div>
+              <a href="./santitg.html" class="work-link">开始训练 →</a>
+            </div>
+
+            <div class="work-card">
+              <div class="work-image">
+                <img src="./public/dengshan.jpeg" alt="两位数乘法登山挑战游戏"
+                  style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+              </div>
+              <h3>两位数乘法登山挑战游戏</h3>
+              <p>一个有趣的数学学习游戏，通过登山挑战的形式让学生练习两位数乘法运算。支持单人挑战和双人对战模式，配有可爱的动物角色和生动的动画效果，让数学学习变得更加有趣。</p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML5</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">教育游戏</span>
+                <span class="tag">数学学习</span>
+              </div>
+              <a href="./climb.html" class="work-link">开始游戏 →</a>
+            </div>
+
+            <div class="work-card">
+              <div class="work-image">
+                <img src="./public/zhouchang.jpeg" alt="周长的探索之旅"
+                  style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+              </div>
+              <h3>周长的探索之旅</h3>
+              <p>一个互动式的数学学习应用，通过三个精心设计的模块帮助学生直观理解周长概念。包含小蚂蚁演示、绳子变魔术和长方形公式推导，让抽象的数学概念变得生动有趣。</p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">Canvas API</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">数学教育</span>
+                <span class="tag">交互设计</span>
+              </div>
+              <a href="./zhouchang.html" class="work-link">开始探索 →</a>
+            </div>
+
+            <div class="work-card">
+              <div class="work-image">
+                <img src="/danweihuansuan.png" alt="长度单位换算交互式学习工具"
+                  style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+              </div>
+              <h3>长度单位换算交互式学习工具</h3>
+              <p>通过拖拽直观理解千米、米、分米、厘米和毫米之间的换算关系。采用楼梯式设计和可拖动数值卡片，让学生在互动中掌握单位换算的规律，支持触控设备，界面美观现代。</p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML5</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">拖拽交互</span>
+                <span class="tag">数学教育</span>
+                <span class="tag">单位换算</span>
+              </div>
+              <a href="./danweihuansuan.html" class="work-link">开始学习 →</a>
+            </div>
+
+            <div class="work-card">
+              <div class="work-image">
+                <img src="./public/renshixiaoshu.png" alt="认识小数：元角分大探险"
+                  style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+              </div>
+              <h3>认识小数：元角分大探险</h3>
+              <p>通过拖拽硬币学习小数概念的互动教学工具。学生可以拖拽元、角、分硬币到相应区域，直观理解小数的组成和进位关系，支持语音朗读功能，界面友好，适合触控设备。</p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML5</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">拖拽交互</span>
+                <span class="tag">数学教育</span>
+                <span class="tag">小数认知</span>
+                <span class="tag">语音朗读</span>
+              </div>
+              <a href="./renshixiaoshu.html" class="work-link">开始探险 →</a>
+            </div>
+
+            <div class="work-card">
+              <div class="work-image">
+                <img src="./recite/images/background1.jpg" alt="背诵冒险记游戏"
+                  style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+              </div>
+              <h3>背诵冒险记</h3>
+              <p>
+                一款趣味性的背诵任务管理游戏。学生完成背诵后可从"修炼野外"进入"知识宫殿",前5名获金牌、前15名获银牌、前30名获铜牌。支持批量导入学生名单、多任务管理、易容术更换头像、数据导出等功能,让背诵变成冒险闯关。
+              </p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML5</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">拖拽交互</span>
+                <span class="tag">游戏化学习</span>
+                <span class="tag">任务管理</span>
+                <span class="tag">奖牌系统</span>
+              </div>
+              <a href="./recite/index.html" class="work-link">开始冒险 →</a>
+            </div>
+
+            <div class="work-card">
+              <div class="work-image">
+                <img src="./public/shudui.png" alt="数对四子棋游戏"
+                  style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+              </div>
+              <h3>数对四子棋游戏</h3>
+              <p>一款结合数学坐标概念的策略对战游戏。玩家通过输入坐标数对来下棋，在游戏中自然学习坐标系统。支持双人对战、触控操作，具有优美的界面设计和流畅的游戏体验，让数学学习变得更加有趣。</p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML5</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">策略游戏</span>
+                <span class="tag">逻辑思维</span>
+                <span class="tag">触控支持</span>
+                <span class="tag">双人对战</span>
+              </div>
+              <a href="./shudui.html" class="work-link">开始游戏 →</a>
+            </div>
+
+            <div class="work-card">
+              <div class="work-image">
+                <img src="./public/zuoweibiao.png" alt="班级座位表管理系统"
+                  style="width: 100%; height: 280px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+              </div>
+              <h3>班级座位表管理系统</h3>
+              <p>一个功能完善的班级座位表管理工具。支持拖拽排座、Excel导入导出、小组轮换、排轮换等功能。界面简洁美观，操作直观便捷，可导出A4打印格式，是班级管理的得力助手。</p>
+              <div class="work-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML5</span>
+                <span class="tag">CSS3</span>
+                <span class="tag">拖拽交互</span>
+                <span class="tag">Excel导入导出</span>
+                <span class="tag">班级管理</span>
+                <span class="tag">SheetJS</span>
+              </div>
+              <a href="./zuoweibiao.html" class="work-link">开始使用 →</a>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">精选文章</h3>
+            <ul class="featured-list">
+              <li class="featured-item">
+                <a href="./ai-teaching-tools.html" class="featured-link">AI 助教来了：盘点那些能让教师效率倍增的 AI 工具</a>
+              </li>
+              <li class="featured-item">
+                <a href="#" class="featured-link">如何用AI技术改变传统教育</a>
+              </li>
+              <li class="featured-item">
+                <a href="#" class="featured-link">前端开发的最佳实践指南</a>
+              </li>
+              <li class="featured-item">
+                <a href="#" class="featured-link">构建现代化学习平台的思考</a>
+              </li>
+              <li class="featured-item">
+                <a href="#" class="featured-link">用户体验设计在教育产品中的应用</a>
+              </li>
+              <li class="featured-item">
+                <a href="#" class="featured-link">技术驱动的个性化学习</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">项目统计</h3>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-number">8</span>
+                <span class="stat-label">完成项目</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">8</span>
+                <span class="stat-label">技术栈</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">4</span>
+                <span class="stat-label">获奖项目</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">2k+</span>
+                <span class="stat-label">代码提交</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</body>
+
 </html>
