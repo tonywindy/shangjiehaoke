@@ -10,7 +10,7 @@ const WorksPage = () => {
   return (
     <div className="works-page">
       <Navbar currentPage="works" />
-      
+
       <div className="container">
         <div className="main-content">
           <div className="hero-section">
@@ -23,10 +23,10 @@ const WorksPage = () => {
               {/* 主要推荐作品 */}
               <article className="featured-work">
                 <div className="featured-image">
-                  <img 
-                    src="/shijie.jpeg" 
-                    alt="一人一世界数学情境答题游戏" 
-                    style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px'}}
+                  <img
+                    src="/shijie.jpeg"
+                    alt="一人一世界数学情境答题游戏"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
                   />
                 </div>
                 <div className="featured-content">
@@ -52,10 +52,10 @@ const WorksPage = () => {
               <div className="regular-works">
                 <div className="work-card">
                   <div className="work-image">
-                    <img 
-                      src="/santtg.png" 
-                      alt="三题通关精准计算训练营" 
-                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    <img
+                      src="/santtg.png"
+                      alt="三题通关精准计算训练营"
+                      style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }}
                     />
                   </div>
                   <h3>三题通关精准计算训练营</h3>
@@ -73,10 +73,10 @@ const WorksPage = () => {
 
                 <div className="work-card">
                   <div className="work-image">
-                    <img 
-                      src="/dengshan.jpeg" 
-                      alt="两位数乘法登山挑战游戏" 
-                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    <img
+                      src="/dengshan.jpeg"
+                      alt="两位数乘法登山挑战游戏"
+                      style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }}
                     />
                   </div>
                   <h3>两位数乘法登山挑战游戏</h3>
@@ -93,10 +93,10 @@ const WorksPage = () => {
 
                 <div className="work-card">
                   <div className="work-image">
-                    <img 
-                      src="/zhouchang.jpeg" 
-                      alt="周长的探索之旅" 
-                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    <img
+                      src="/zhouchang.jpeg"
+                      alt="周长的探索之旅"
+                      style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }}
                     />
                   </div>
                   <h3>周长的探索之旅</h3>
@@ -113,10 +113,10 @@ const WorksPage = () => {
 
                 <div className="work-card">
                   <div className="work-image">
-                    <img 
-                      src="/danweihuansuan.png" 
-                      alt="长度单位换算交互式学习工具" 
-                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    <img
+                      src="/danweihuansuan.png"
+                      alt="长度单位换算交互式学习工具"
+                      style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }}
                     />
                   </div>
                   <h3>长度单位换算交互式学习工具</h3>
@@ -134,10 +134,10 @@ const WorksPage = () => {
 
                 <div className="work-card">
                   <div className="work-image">
-                    <img 
-                      src="/renshixiaoshu.png" 
-                      alt="认识小数：元角分大探险" 
-                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    <img
+                      src="/renshixiaoshu.png"
+                      alt="认识小数：元角分大探险"
+                      style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }}
                     />
                   </div>
                   <h3>认识小数：元角分大探险</h3>
@@ -156,10 +156,10 @@ const WorksPage = () => {
 
                 <div className="work-card">
                   <div className="work-image">
-                    <img 
-                      src="/shudui.png" 
-                      alt="数对四子棋游戏" 
-                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    <img
+                      src="/shudui.png"
+                      alt="数对四子棋游戏"
+                      style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }}
                     />
                   </div>
                   <h3>数对四子棋游戏</h3>
@@ -178,10 +178,10 @@ const WorksPage = () => {
 
                 <div className="work-card">
                   <div className="work-image">
-                    <img 
-                      src="/beisong-background.jpg" 
-                      alt="背诵冒险记游戏" 
-                      style={{width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px'}}
+                    <img
+                      src="/beisong-background.jpg"
+                      alt="背诵冒险记游戏"
+                      style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }}
                     />
                   </div>
                   <h3>背诵冒险记</h3>
@@ -196,6 +196,27 @@ const WorksPage = () => {
                     <span className="tag">奖牌系统</span>
                   </div>
                   <a href="/recite/index.html" className="work-link">开始冒险 →</a>
+                </div>
+
+                <div className="work-card">
+                  <div className="work-image">
+                    <img
+                      src="/shizhong.png"
+                      alt="时钟夹角学习工具"
+                      style={{ width: '100%', height: '280px', objectFit: 'cover', borderRadius: '8px', marginBottom: '16px' }}
+                    />
+                  </div>
+                  <h3>时钟夹角学习工具</h3>
+                  <p>一个交互式的时钟夹角学习应用。学生可以通过拖动时针和分针或输入具体时间来观察时钟的夹角变化。支持显示/隐藏角度、随机时间生成，帮助学生直观理解时钟角度的计算方法。</p>
+                  <div className="work-tags">
+                    <span className="tag">React</span>
+                    <span className="tag">JavaScript</span>
+                    <span className="tag">CSS3</span>
+                    <span className="tag">拖拽交互</span>
+                    <span className="tag">数学教育</span>
+                    <span className="tag">角度计算</span>
+                  </div>
+                  <a href="/shizhen" className="work-link">开始学习 →</a>
                 </div>
               </div>
             </div>
@@ -232,7 +253,7 @@ const WorksPage = () => {
                 <h3 className="sidebar-title">项目统计</h3>
                 <div className="stats-grid">
                   <div className="stat-item">
-                    <span className="stat-number">7</span>
+                    <span className="stat-number">8</span>
                     <span className="stat-label">完成项目</span>
                   </div>
                   <div className="stat-item">
