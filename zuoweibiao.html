@@ -395,6 +395,58 @@
         const COLS_PER_ROW = 8;
         const ROWS = 7;
 
+        // LocalStorage 键名
+        const STORAGE_KEY_STUDENTS = 'seating_chart_students';
+        const STORAGE_KEY_SEATING = 'seating_chart_data';
+
+        // 保存数据到 localStorage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+                localStorage.setItem(STORAGE_KEY_SEATING, JSON.stringify(seatingData));
+                console.log('数据已自动保存到本地');
+            } catch (e) {
+                console.error('保存数据失败:', e);
+            }
+        }
+
+        // 从 localStorage 加载数据
+        function loadFromLocalStorage() {
+            try {
+                const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
+                const savedSeating = localStorage.getItem(STORAGE_KEY_SEATING);
+
+                if (savedStudents) {
+                    students = JSON.parse(savedStudents);
+                    console.log('已加载学生名单:', students.length, '名学生');
+                }
+
+                if (savedSeating) {
+                    seatingData = JSON.parse(savedSeating);
+                    console.log('已加载座位安排');
+                }
+
+                if (savedStudents || savedSeating) {
+                    // 恢复界面显示
+                    updateAllSeats();
+                    renderStudentPool();
+                    updateStats();
+                    return true;
+                }
+            } catch (e) {
+                console.error('加载数据失败:', e);
+            }
+            return false;
+        }
+
+        // 清除本地存储
+        function clearLocalStorage() {
+            localStorage.removeItem(STORAGE_KEY_STUDENTS);
+            localStorage.removeItem(STORAGE_KEY_SEATING);
+            console.log('本地数据已清除');
+        }
+
+
         // 初始化座位表
         function initSeating() {
             const classroom = document.getElementById('classroom');
@@ -490,6 +542,7 @@
             closeImportModal();
             document.getElementById('studentInput').value = '';
             updateStats();
+            saveToLocalStorage(); // 自动保存
         }
 
         // 触发Excel文件上传
@@ -533,6 +586,7 @@
                     students = [...new Set(names)];
                     renderStudentPool();
                     updateStats();
+                    saveToLocalStorage(); // 自动保存
                     alert(`成功导入 ${students.length} 名学生！`);
 
                 } catch (error) {
@@ -731,6 +785,7 @@
             updateSeatDisplay(seat, targetSeatNumber);
             renderStudentPool();
             updateStats();
+            saveToLocalStorage(); // 自动保存
         }
 
         // 从座位中移除学生
@@ -1050,6 +1105,7 @@
             updateAllSeats();
             renderStudentPool();
             updateStats();
+            clearLocalStorage(); // 清除本地存储
         }
 
         // 加载测试数据
@@ -1061,6 +1117,7 @@
             ];
             renderStudentPool();
             updateStats();
+            saveToLocalStorage(); // 自动保存
             alert('已加载18名测试学生！请尝试拖拽名牌到座位上。');
         }
 
@@ -1102,6 +1159,7 @@
                 seatingData = newSeatingData;
                 updateAllSeats();
                 updateStats();
+                saveToLocalStorage(); // 自动保存
             }
         }
 
@@ -1138,6 +1196,7 @@
                 seatingData = newSeatingData;
                 updateAllSeats();
                 updateStats();
+                saveToLocalStorage(); // 自动保存
             }
         }
 
@@ -1168,6 +1227,7 @@
                     updateAllSeats();
                     renderStudentPool();
                     updateStats();
+                    saveToLocalStorage(); // 自动保存
                 }
             });
         }
@@ -1176,6 +1236,12 @@
         window.onload = function () {
             initSeating();
             initStudentPool();
+
+            // 从本地存储加载数据
+            const hasData = loadFromLocalStorage();
+            if (hasData) {
+                console.log('✅ 已恢复上次保存的座位安排');
+            }
         };
     </script>
 </body>
