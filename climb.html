@@ -402,17 +402,19 @@
         </div>
 
         <!-- 游戏界面 -->
-        <!-- BGM -->
-        <audio id="bgm" loop>
-            <source src="public/climbbgm.MP3" type="audio/mpeg">
-        </audio>
+        <div id="game-screen" class="hidden w-full">
+            <!-- BGM -->
+            <audio id="bgm" loop>
+                <source src="public/climbbgm.MP3" type="audio/mpeg">
+            </audio>
 
-        <button onclick="quitGame()"
-            class="mb-4 bg-gray-500 bg-opacity-50 hover:bg-opacity-80 text-white font-bold py-2 px-4 rounded-full text-sm backdrop-filter backdrop-blur-sm transition-all">
-            ⬅ 返回主菜单
-        </button>
-        <div id="game-area" class="flex flex-col md:flex-row gap-4 w-full">
-            <!-- 玩家模板，JS会复制这个结构 -->
+            <button onclick="quitGame()"
+                class="mb-4 bg-gray-500 bg-opacity-50 hover:bg-opacity-80 text-white font-bold py-2 px-4 rounded-full text-sm backdrop-filter backdrop-blur-sm transition-all">
+                ⬅ 返回主菜单
+            </button>
+            <div id="game-area" class="flex flex-col md:flex-row gap-4 w-full">
+                <!-- 玩家模板，JS会复制这个结构 -->
+            </div>
         </div>
     </div>
 
