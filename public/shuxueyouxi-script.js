@@ -11,9 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('📊 性能统计:', this.marks);
         }
     };
-    
+
     performanceMonitor.mark('DOM加载开始');
-    
+
     // --- DOM 元素获取（优化：一次性缓存所有元素） ---
     const themeSelectionScreen = document.getElementById('theme-selection-screen');
     const storyScreen = document.getElementById('story-screen');
@@ -37,18 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const backToWorksBtn = document.getElementById('back-to-works-btn');
     const hintBtn = document.getElementById('hint-btn');
     const backToQuestionBtn = document.getElementById('back-to-question-btn');
-    
+
     // 图片相关元素
     const sceneImageContainer = document.getElementById('scene-image-container');
     const sceneImage = document.getElementById('scene-image');
     const imageLoading = document.getElementById('image-loading');
-    
+
     // 答题相关元素
     const fillBlankAnswer = document.getElementById('fill-blank-answer');
     const multipleChoiceAnswer = document.getElementById('multiple-choice-answer');
     const choiceBtns = document.querySelectorAll('.choice-btn');
     const submitChoiceBtn = document.getElementById('submit-choice-btn');
-    
+
     // 数字键盘相关元素
     const numberKeyboard = document.getElementById('number-keyboard');
     const choiceNumberKeyboard = document.getElementById('choice-number-keyboard');
@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
         name: '悟空',
         images: {
             default: './wukong_default.png',
-        happy: './wukong_happy.png',
-        thinking: './wukong_thinking.png'
+            happy: './wukong_happy.png',
+            thinking: './wukong_thinking.png'
         },
         dialogues: {
             correct: [
@@ -104,11 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
             this.isSupported = !!this.synthesis;
             this.enabled = true;
             this.speaking = false;
-            
+
             // 语音队列管理
             this.speechQueue = [];
             this.isProcessingQueue = false;
-            
+
             // 语音参数配置
             this.config = {
                 rate: 1.0,     // 语速
@@ -116,10 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 volume: 0.8,   // 音量
                 lang: 'zh-CN'  // 中文
             };
-            
+
             this.init();
         }
-        
+
         /**
          * 初始化语音控制器
          */
@@ -129,38 +129,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.handleUnsupported();
                 return;
             }
-            
+
             // 加载语音列表
             this.loadVoices();
-            
+
             // 监听语音列表变化
             if (this.synthesis.onvoiceschanged !== undefined) {
                 this.synthesis.onvoiceschanged = () => this.loadVoices();
             }
-            
+
             // 从本地存储恢复设置
             this.loadSettings();
-            
+
             // 初始化UI
             this.initUI();
         }
-        
+
         /**
          * 加载可用语音列表
          */
         loadVoices() {
             this.voices = this.synthesis.getVoices();
-            
+
             // 优先选择中文语音
-            const chineseVoice = this.voices.find(voice => 
+            const chineseVoice = this.voices.find(voice =>
                 voice.lang.includes('zh') || voice.lang.includes('CN')
             );
-            
+
             if (chineseVoice) {
                 this.selectedVoice = chineseVoice;
             }
         }
-        
+
         /**
          * 语音合成播放（支持队列）
          * @param {string} text - 要播放的文本
@@ -170,13 +170,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!this.isSupported || !this.enabled || !text.trim()) {
                 return Promise.resolve({ success: false, error: 'Voice not available' });
             }
-            
+
             const speechItem = {
                 text: text.trim(),
                 options: { ...this.config, ...options },
                 timestamp: Date.now()
             };
-            
+
             // 如果设置了立即播放或队列为空，直接播放
             if (options.immediate || this.speechQueue.length === 0) {
                 return this.speakImmediate(speechItem);
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return this.addToQueue(speechItem);
             }
         }
-        
+
         /**
          * 立即播放语音（会中断当前播放）
          * @param {Object} speechItem - 语音项目
@@ -195,35 +195,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 停止当前播放和清空队列
                 this.stop();
                 this.clearQueue();
-                
+
                 // 创建语音合成实例
                 const utterance = new SpeechSynthesisUtterance(speechItem.text);
-                
+
                 // 设置语音参数
                 Object.assign(utterance, speechItem.options);
-                
+
                 if (this.selectedVoice) {
                     utterance.voice = this.selectedVoice;
                 }
-                
+
                 // 设置事件监听
                 utterance.onstart = () => {
                     this.speaking = true;
                     this.updateSpeakingStatus(true);
                     this.triggerSpeechAnimation('start');
                 };
-                
+
                 utterance.onend = () => {
                     this.speaking = false;
                     this.currentUtterance = null;
                     this.updateSpeakingStatus(false);
                     this.triggerSpeechAnimation('end');
                     resolve({ success: true });
-                    
+
                     // 处理队列中的下一个项目
                     this.processQueue();
                 };
-                
+
                 utterance.onerror = (event) => {
                     this.speaking = false;
                     this.currentUtterance = null;
@@ -231,17 +231,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.triggerSpeechAnimation('error');
                     console.warn('语音播放失败:', event.error);
                     resolve({ success: false, error: event.error });
-                    
+
                     // 处理队列中的下一个项目
                     this.processQueue();
                 };
-                
+
                 // 开始播放
                 this.currentUtterance = utterance;
                 this.synthesis.speak(utterance);
             });
         }
-        
+
         /**
          * 添加到语音队列
          * @param {Object} speechItem - 语音项目
@@ -250,14 +250,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return new Promise((resolve) => {
                 speechItem.resolve = resolve;
                 this.speechQueue.push(speechItem);
-                
+
                 // 如果当前没有播放，开始处理队列
                 if (!this.speaking && !this.isProcessingQueue) {
                     this.processQueue();
                 }
             });
         }
-        
+
         /**
          * 处理语音队列
          */
@@ -265,12 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (this.isProcessingQueue || this.speechQueue.length === 0 || this.speaking) {
                 return;
             }
-            
+
             this.isProcessingQueue = true;
-            
+
             while (this.speechQueue.length > 0 && this.enabled) {
                 const speechItem = this.speechQueue.shift();
-                
+
                 try {
                     const result = await this.speakImmediate(speechItem);
                     if (speechItem.resolve) {
@@ -281,14 +281,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         speechItem.resolve({ success: false, error });
                     }
                 }
-                
+
                 // 短暂延迟，避免语音重叠
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
-            
+
             this.isProcessingQueue = false;
         }
-        
+
         /**
          * 清空语音队列
          */
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.speechQueue = [];
             this.isProcessingQueue = false;
         }
-        
+
         /**
          * 停止语音播放
          * @param {boolean} clearQueue - 是否清空队列
@@ -315,12 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.updateSpeakingStatus(false);
                 this.triggerSpeechAnimation('end');
             }
-            
+
             if (clearQueue) {
                 this.clearQueue();
             }
         }
-        
+
         /**
          * 设置语音开关状态
          * @param {boolean} enabled - 是否启用语音
@@ -329,12 +329,12 @@ document.addEventListener('DOMContentLoaded', () => {
             this.enabled = enabled;
             this.saveSettings();
             this.updateUI();
-            
+
             if (!enabled) {
                 this.stop();
             }
         }
-        
+
         /**
          * 更新播放状态UI
          * @param {boolean} speaking - 是否正在播放
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const voiceStatus = document.getElementById('voice-status');
             if (voiceStatus) {
                 voiceStatus.style.display = speaking ? 'flex' : 'none';
-                
+
                 // 更新队列状态显示
                 const queueCount = this.speechQueue.length;
                 if (queueCount > 0) {
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        
+
         /**
          * 触发语音播放动画效果
          * @param {string} type - 动画类型：'start', 'end', 'error'
@@ -361,22 +361,22 @@ document.addEventListener('DOMContentLoaded', () => {
         triggerSpeechAnimation(type) {
             const partnerAvatar = document.getElementById('partner-avatar');
             const dialogueBubble = document.querySelector('.partner-dialogue-bubble');
-            
+
             if (!partnerAvatar || !dialogueBubble) return;
-            
+
             switch (type) {
                 case 'start':
                     // 开始播放时的动画
                     partnerAvatar.classList.add('speaking');
                     dialogueBubble.classList.add('speaking');
                     break;
-                    
+
                 case 'end':
                     // 播放结束时的动画
                     partnerAvatar.classList.remove('speaking');
                     dialogueBubble.classList.remove('speaking');
                     break;
-                    
+
                 case 'error':
                     // 播放出错时的动画
                     partnerAvatar.classList.remove('speaking');
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
         }
-        
+
         /**
          * 初始化UI控件
          */
@@ -394,21 +394,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (voiceToggle) {
                 // 设置初始状态
                 this.updateUI();
-                
+
                 // 添加点击事件
                 voiceToggle.addEventListener('click', () => {
                     this.setEnabled(!this.enabled);
                 });
             }
         }
-        
+
         /**
          * 更新UI状态
          */
         updateUI() {
             const voiceToggle = document.getElementById('voice-toggle');
             const voiceIcon = document.querySelector('.voice-icon');
-            
+
             if (voiceToggle && voiceIcon) {
                 if (!this.isSupported) {
                     voiceToggle.classList.add('disabled');
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        
+
         /**
          * 处理不支持语音的情况
          */
@@ -436,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 voiceControl.style.display = 'none';
             }
         }
-        
+
         /**
          * 保存设置到本地存储
          */
@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('无法保存语音设置:', e);
             }
         }
-        
+
         /**
          * 从本地存储加载设置
          */
@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     // 创建全局语音控制器实例
     const voiceController = new VoiceController();
 
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updatePartner(state, customMessage = '', voiceOptions = {}) {
         const partnerAvatar = document.getElementById('partner-avatar');
         const partnerDialogue = document.getElementById('partner-dialogue-text');
-        
+
         if (!partnerAvatar || !partnerDialogue) {
             console.warn('AI伙伴元素未找到');
             return;
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (partnerAvatar.src !== newSrc) {
                 partnerAvatar.src = newSrc;
             }
-        
+
             // 更新对话文本
             partnerDialogue.textContent = dialogueText;
 
@@ -518,9 +518,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-        
+
         lastPartnerState = state;
-        
+
         // 播放语音（如果有文本且语音控制器可用）
         if (dialogueText && voiceController) {
             // 根据状态调整语音参数
@@ -529,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 pitch: state === 'happy' ? 1.3 : 1.2, // 开心时音调更高
                 ...voiceOptions // 允许外部覆盖参数
             };
-            
+
             // 异步播放语音，不阻塞UI
             voiceController.speak(dialogueText, stateVoiceOptions).catch(error => {
                 console.warn('语音播放失败:', error);
@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializePartner() {
         updatePartner('default', '小朋友，你好！我是你的冒险伙伴悟空！快来选择咱们要挑战的数学知识和冒险世界吧！');
     }
-    
+
     /**
      * 悟空语音播放辅助函数
      * @param {string} text - 要播放的文本
@@ -550,18 +550,18 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function speakAsWukong(text, emotion = 'default', options = {}) {
         if (!voiceController || !text) return;
-        
+
         const emotionVoiceMap = {
             happy: { rate: 1.1, pitch: 1.3, volume: 0.9 },
             thinking: { rate: 0.9, pitch: 1.1, volume: 0.8 },
             default: { rate: 1.0, pitch: 1.2, volume: 0.8 }
         };
-        
+
         const voiceConfig = {
             ...emotionVoiceMap[emotion] || emotionVoiceMap.default,
             ...options
         };
-        
+
         return voiceController.speak(text, voiceConfig);
     }
 
@@ -573,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const unit = header.parentElement;
             const lessons = unit.querySelector('.unit-lessons');
             const expandIcon = header.querySelector('.expand-icon');
-            
+
             if (lessons.style.display === 'none' || lessons.style.display === '') {
                 lessons.style.display = 'block';
                 expandIcon.textContent = '▲';
@@ -590,15 +590,15 @@ document.addEventListener('DOMContentLoaded', () => {
     lessonItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.stopPropagation(); // 防止触发单元展开/收起
-            
+
             const knowledge = item.dataset.knowledge;
             const unit = item.dataset.unit;
             const lesson = item.dataset.lesson;
             const lessonName = item.querySelector('.lesson-name').textContent;
-            
+
             // 创建完整的知识点描述
             const fullKnowledge = `${unit} ${lesson} ${lessonName}: ${knowledge}`;
-            
+
             if (item.classList.contains('selected')) {
                 // 取消选择
                 item.classList.remove('selected');
@@ -610,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedKnowledge.push(fullKnowledge);
                 }
             }
-            
+
             updateSelectionDisplay();
             updateStartButtonState();
         });
@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
     scenarioCards.forEach(card => {
         card.addEventListener('click', () => {
             const scenario = card.dataset.scenario;
-            
+
             if (card.classList.contains('selected')) {
                 // 取消选择
                 card.classList.remove('selected');
@@ -632,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedScenarios.push(scenario);
                 }
             }
-            
+
             updateSelectionDisplay();
             updateStartButtonState();
         });
@@ -653,11 +653,11 @@ document.addEventListener('DOMContentLoaded', () => {
             themeSelectionScreen.classList.add('hidden');
             storyScreen.classList.remove('hidden');
             storyHistory = [];
-            
+
             // AI伙伴开始冒险反馈
             const selectedScenarioName = selectedScenarios[0]; // 获取第一个选择的情景
             updatePartner('default', `准备好了吗？我们的${selectedScenarioName}马上就要开始啦！出发！`);
-            
+
             generateStory();
         }
     });
@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 设置当前选项为选中状态
             btn.classList.add('selected');
             selectedChoice = String.fromCharCode(65 + index); // A, B, C, D
-            
+
             // 显示提交按钮
             submitChoiceBtn.classList.remove('hidden');
         });
@@ -680,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 检查数字输入框是否有内容
         const numberAnswer = choiceNumberInput.value.trim();
         let userAnswer;
-        
+
         if (numberAnswer) {
             // 如果数字输入框有内容，使用数字答案
             userAnswer = numberAnswer;
@@ -692,9 +692,9 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackArea.className = 'incorrect';
             return;
         }
-        
+
         const isCorrect = userAnswer === currentStoryData.correctChoice;
-        
+
         // 显示正确答案
         choiceBtns.forEach((btn, index) => {
             const choice = String.fromCharCode(65 + index);
@@ -705,7 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add('incorrect');
             }
         });
-        
+
         // 如果使用数字输入，显示数字答案的反馈
         if (numberAnswer) {
             if (isCorrect) {
@@ -716,14 +716,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 choiceNumberInput.style.backgroundColor = '#FFEBEE';
             }
         }
-        
+
         if (isCorrect) {
             feedbackArea.textContent = '🎉 太棒了！你答对了！';
             feedbackArea.className = 'correct';
-            
+
             // AI伙伴庆祝反馈
             updatePartner('happy');
-            
+
             // 延迟显示故事结尾和恢复默认状态
             setTimeout(() => {
                 displayEndingStage();
@@ -735,10 +735,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             feedbackArea.textContent = '哦哦，再想一想，你一定可以的！';
             feedbackArea.className = 'incorrect';
-            
+
             // AI伙伴鼓励反馈
             updatePartner('thinking');
-            
+
             // 2-3秒后恢复默认状态
             setTimeout(() => {
                 updatePartner('default');
@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 分数转换函数
     function parseFraction(str) {
         if (typeof str !== 'string') return parseFloat(str);
-        
+
         // 处理分数格式 如 "1/2", "3/4"
         const fractionMatch = str.match(/^(\d+)\/(\d+)$/);
         if (fractionMatch) {
@@ -757,7 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const denominator = parseInt(fractionMatch[2]);
             return numerator / denominator;
         }
-        
+
         // 处理普通数字
         return parseFloat(str);
     }
@@ -765,10 +765,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 填空题提交按钮事件
     submitAnswerBtn.addEventListener('click', () => {
         const userAnswer = answerInput.value.trim();
-        
+
         // 支持多种答案格式的比较
         let isCorrect = false;
-        
+
         // 先尝试直接字符串比较（适用于文字答案）
         if (userAnswer === currentAnswer) {
             isCorrect = true;
@@ -776,19 +776,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // 尝试数值比较（包括分数）
             const numericAnswer = parseFraction(userAnswer);
             const numericCorrect = parseFraction(currentAnswer);
-            
+
             if (!isNaN(numericAnswer) && !isNaN(numericCorrect)) {
                 isCorrect = Math.abs(numericAnswer - numericCorrect) < 0.001;
             }
         }
-        
+
         if (isCorrect) {
             feedbackArea.textContent = '🎉 太棒了！你答对了！';
             feedbackArea.className = 'correct';
-            
+
             // AI伙伴庆祝反馈
             updatePartner('happy');
-            
+
             // 延迟显示故事结尾和恢复默认状态
             setTimeout(() => {
                 displayEndingStage();
@@ -800,10 +800,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             feedbackArea.textContent = '哦哦，再想一想，你一定可以的！';
             feedbackArea.className = 'incorrect';
-            
+
             // AI伙伴鼓励反馈
             updatePartner('thinking');
-            
+
             // 2-3秒后恢复默认状态
             setTimeout(() => {
                 updatePartner('default');
@@ -817,36 +817,36 @@ document.addEventListener('DOMContentLoaded', () => {
             // 移动到下一个章节
             currentChapterIndex++;
             currentStoryData = allChapters[currentChapterIndex];
-            
+
             // 重置填空题状态
             answerInput.value = '';
             answerInput.disabled = false;
             submitAnswerBtn.disabled = false;
-            
+
             // 重置选择题状态
             selectedChoice = null;
             choiceBtns.forEach(btn => {
                 btn.classList.remove('selected', 'correct', 'incorrect');
             });
-            
+
             // 重置数字输入框
             if (choiceNumberInput) {
                 choiceNumberInput.value = '';
                 choiceNumberInput.style.borderColor = '#ddd';
                 choiceNumberInput.style.backgroundColor = '';
             }
-            
+
             submitChoiceBtn.classList.add('hidden');
-            
+
             // 重置通用状态
             feedbackArea.textContent = '';
             continueAdventureBtn.classList.add('hidden');
             questionArea.classList.add('hidden');
-            
+
             // 移除动画类
             feedbackArea.classList.remove('celebrate', 'shake');
             continueAdventureBtn.classList.remove('bounce');
-            
+
             // 显示下一个章节
             displayStage1();
         } else {
@@ -854,7 +854,7 @@ document.addEventListener('DOMContentLoaded', () => {
             storyText.textContent = '🎉 恭喜你！你已经完成了整个冒险故事！所有的数学题都答对了！';
             questionArea.classList.add('hidden');
             continueAdventureBtn.classList.add('hidden');
-            
+
             // 显示返回首页按钮
             setTimeout(() => {
                 backToHomeBtn.classList.remove('hidden');
@@ -870,13 +870,13 @@ document.addEventListener('DOMContentLoaded', () => {
         storyHistory = [];
         currentStoryData = null;
         currentAnswer = null;
-        
+
         // 重置UI状态
         knowledgeItems.forEach(item => item.classList.remove('selected'));
         scenarioCards.forEach(card => card.classList.remove('selected'));
         updateSelectionDisplay();
         updateStartButtonState();
-        
+
         // 切换到首页
         storyScreen.classList.add('hidden');
         themeSelectionScreen.classList.remove('hidden');
@@ -902,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
     backToQuestionBtn.addEventListener('click', () => {
         displayStage1();
     });
-    
+
     // 初始化数字键盘事件监听器（优化版：只初始化一次）
     function initNumberKeyboard() {
         // 如果已经初始化，直接返回
@@ -910,35 +910,35 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('数字键盘已初始化，跳过重复初始化');
             return;
         }
-        
+
         // 重新获取所有数字键盘按钮
         numBtns = document.querySelectorAll('.num-btn');
         console.log('找到数字键盘按钮数量:', numBtns.length);
-        
+
         if (numBtns.length === 0) {
             console.warn('未找到数字键盘按钮');
             return;
         }
-        
+
         // 使用事件委托，只在父元素上绑定一次
         [numberKeyboard, choiceNumberKeyboard].forEach(keyboard => {
             if (keyboard) {
                 keyboard.addEventListener('click', handleKeyboardDelegation);
             }
         });
-        
+
         keyboardInitialized = true;
         console.log('数字键盘初始化完成');
     }
-    
+
     // 事件委托处理函数
     function handleKeyboardDelegation(event) {
         const btn = event.target.closest('.num-btn');
         if (!btn) return;
-        
+
         handleNumberKeyClick(event);
     }
-    
+
     // 数字键盘点击处理函数
     function handleNumberKeyClick(event) {
         const btn = event.target;
@@ -946,14 +946,14 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('点击数字键:', value);
         console.log('按钮元素:', btn);
         console.log('按钮data-value:', btn.getAttribute('data-value'));
-        
+
         // 判断当前是哪种答题界面
         let targetInput;
         const fillBlankHidden = fillBlankAnswer.classList.contains('hidden');
         const multipleChoiceHidden = multipleChoiceAnswer.classList.contains('hidden');
         console.log('填空题界面隐藏状态:', fillBlankHidden);
         console.log('选择题界面隐藏状态:', multipleChoiceHidden);
-        
+
         if (!fillBlankHidden) {
             // 填空题界面
             targetInput = answerInput;
@@ -963,10 +963,10 @@ document.addEventListener('DOMContentLoaded', () => {
             targetInput = choiceNumberInput;
             console.log('当前在选择题界面，目标输入框:', targetInput);
         }
-        
+
         if (targetInput) {
             const currentValue = targetInput.value;
-            
+
             if (value === 'delete') {
                 // 删除最后一个字符
                 targetInput.value = currentValue.slice(0, -1);
@@ -978,19 +978,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.log('未找到目标输入框');
         }
-        
+
         // 添加按钮点击动画效果
         btn.style.transform = 'scale(0.95)';
         setTimeout(() => {
             btn.style.transform = '';
         }, 100);
     }
-    
+
     // 初始化数字键盘
     initNumberKeyboard();
-    
+
     performanceMonitor.mark('初始化完成');
-    
+
     // 页面可见性变化监听（性能优化：页面不可见时暂停动画）
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
@@ -1004,10 +1004,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 图片生成功能（优化版：添加重试和缓存） ---
     const imageCache = new Map(); // 图片缓存
-    
+
     async function generateSceneImage(sceneDescription) {
         const startTime = performance.now();
-        
+
         try {
             // 检查缓存
             const cacheKey = `${sceneDescription}_${selectedScenarios.join('_')}`;
@@ -1019,7 +1019,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 imageLoading.classList.add('hidden');
                 return;
             }
-            
+
             // 显示优化的加载状态
             imageLoading.innerHTML = `
                 <div class="image-spinner"></div>
@@ -1028,21 +1028,21 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             imageLoading.classList.remove('hidden');
             sceneImage.classList.add('hidden');
-            
+
             // 使用重试机制
             const result = await retryWithBackoff(() => generateImageWithAPI(sceneDescription, cacheKey), 3);
             if (!result.success) {
                 throw new Error(result.error || '图片生成失败');
             }
-            
+
             const duration = (performance.now() - startTime) / 1000;
             console.log(`✅ 图片生成完成，耗时: ${duration.toFixed(2)}秒`);
-            
+
         } catch (error) {
             console.error('❌ 生成场景图片时出错:', error);
             const duration = (performance.now() - startTime) / 1000;
             console.log(`⏱️ 失败耗时: ${duration.toFixed(2)}秒`);
-            
+
             // 显示友好的错误提示
             imageLoading.innerHTML = `
                 <div style="text-align: center; padding: 20px;">
@@ -1057,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
     }
-    
+
     // 实际的图片生成API调用
     async function generateImageWithAPI(sceneDescription, cacheKey) {
         try {
@@ -1065,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('开始提取生图元素...');
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
-            
+
             const extractResponse = await fetch(`${PROXY_API_URL}/api/generate-story`, {
                 method: 'POST',
                 headers: {
@@ -1079,14 +1079,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }),
                 signal: controller.signal
             }).finally(() => clearTimeout(timeoutId));
-            
+
             if (!extractResponse.ok) {
                 throw new Error('元素提取API请求失败');
             }
-            
+
             const extractData = await extractResponse.json();
             let extractedElements = '';
-            
+
             // 处理不同的响应格式
             if (extractData.content) {
                 extractedElements = extractData.content;
@@ -1098,9 +1098,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('无法解析元素提取结果，使用默认元素');
                 extractedElements = 'cartoon style, colorful, child-friendly';
             }
-            
+
             console.log('提取的生图元素:', extractedElements);
-            
+
             // 根据选择的情境添加环境元素
             let scenarioElements = '';
             if (selectedScenarios.length > 0) {
@@ -1128,12 +1128,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         scenarioElements = ', adventure setting, exciting environment';
                 }
             }
-            
+
             // 第二步：构建优化的图片提示词
             const imagePrompt = `${extractedElements}${scenarioElements}, cute cartoon style, vibrant colors, child-friendly, educational illustration, kawaii style, simple and clear composition, suitable for elementary school students, digital art, anime style, cheerful atmosphere, safe and friendly environment, no scary elements`;
-            
+
             console.log('最终生图提示词:', imagePrompt);
-            
+
             // 第三步：调用图片生成API
             const response = await fetch(`${PROXY_API_URL}/api/generate-image`, {
                 method: 'POST',
@@ -1146,15 +1146,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     height: 200
                 })
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(`图片生成API请求失败: ${errorData.error || response.statusText}`);
             }
-            
+
             const data = await response.json();
             console.log('图片API响应数据:', data);
-            
+
             // 处理图片API响应数据，直接检查data.imageUrl
             let imageUrl;
             if (data.imageUrl) {
@@ -1163,10 +1163,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('未知的图片API响应格式:', data);
                 throw new Error('无法识别的图片API响应格式，缺少imageUrl字段');
             }
-            
+
             // 缓存图片URL
             imageCache.set(cacheKey, imageUrl);
-            
+
             // 预加载图片
             const img = new Image();
             img.onload = () => {
@@ -1179,15 +1179,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('图片加载失败');
             };
             img.src = imageUrl;
-            
+
             return { success: true };
-            
+
         } catch (error) {
             console.error('图片生成API调用失败:', error);
             return { success: false, error: error.message };
         }
     }
-    
+
     // 通用重试函数（指数退避）
     async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
         for (let i = 0; i < maxRetries; i++) {
@@ -1196,11 +1196,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return result;
             } catch (error) {
                 console.warn(`尝试 ${i + 1}/${maxRetries} 失败:`, error.message);
-                
+
                 if (i === maxRetries - 1) {
                     return { success: false, error: error.message };
                 }
-                
+
                 // 指数退避：1s, 2s, 4s...
                 const delay = baseDelay * Math.pow(2, i);
                 console.log(`等待 ${delay}ms 后重试...`);
@@ -1208,12 +1208,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     // --- 核心功能函数（优化版：添加缓存和防抖） ---
     const storyCache = new Map(); // 故事缓存
     let lastGenerateTime = 0;
     const GENERATE_COOLDOWN = 1000; // 1秒冷却时间
-    
+
     async function generateStory(isContinuation = false) {
         // 防抖：避免频繁请求
         const now = Date.now();
@@ -1222,7 +1222,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         lastGenerateTime = now;
-        
+
         loadingIndicator.classList.remove('hidden');
         storyContent.classList.add('hidden');
 
@@ -1324,19 +1324,19 @@ document.addEventListener('DOMContentLoaded', () => {
             userPrompt = `请根据上面的对话，继续创作下一段冒险故事，并融入一个新的【${selectedKnowledgePrompts}】相关的数学题。`;
         }
         if (storyHistory.length === 0) {
-             storyHistory.push({ "role": "system", "content": systemPrompt });
+            storyHistory.push({ "role": "system", "content": systemPrompt });
         }
         storyHistory.push({ "role": "user", "content": userPrompt });
 
         try {
             console.log('即将请求的文本生成API地址是：', `${PROXY_API_URL}/api/generate-story`);
-            
+
             // 使用重试机制包装API调用
             const result = await retryWithBackoff(async () => {
                 // 使用 AbortController 实现超时（更好的浏览器兼容性）
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 120000); // 120秒超时
-                
+
                 try {
                     const response = await fetch(`${PROXY_API_URL}/api/generate-story`, {
                         method: 'POST',
@@ -1355,24 +1355,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         const errorData = await response.json().catch(() => ({}));
                         throw new Error(`中转服务器请求失败: ${errorData.error || response.statusText}`);
                     }
-                    
+
                     return response;
                 } catch (error) {
                     clearTimeout(timeoutId);
                     throw error;
                 }
             }, 2, 3000); // 最多重试2次，初始延迟3秒
-            
+
             // 检查是否是错误对象（重试失败后返回）
             if (result && result.success === false) {
                 throw new Error(result.error || 'API请求失败');
             }
-            
+
             const response = result;
 
             const data = await response.json();
             console.log('API响应数据:', data);
-            
+
             // 处理不同的响应格式
             let storyData;
             if (data.choices && data.choices[0] && data.choices[0].message) {
@@ -1406,7 +1406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('未知的API响应格式:', data);
                 throw new Error('无法识别的API响应格式，请检查控制台日志');
             }
-            
+
             console.log('提取的故事数据:', storyData);
 
             storyHistory.push({ "role": "assistant", "content": storyData });
@@ -1415,7 +1415,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('调用中转站错误:', error);
             storyText.textContent = `糟糕，故事生成失败了。\n错误信息：${error.message}\n\n请检查网络连接或稍后再试。`;
-            
+
             // 显示重试按钮
             const retryBtn = document.createElement('button');
             retryBtn.textContent = '🔄 重新生成故事';
@@ -1446,19 +1446,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (jsonMatch) {
                 const storyData = JSON.parse(jsonMatch[0]);
                 console.log('解析到的故事数据:', storyData);
-                
+
                 // 检查是否是新的多章节格式
                 if (storyData.chapters && Array.isArray(storyData.chapters)) {
                     // 存储所有章节
                     allChapters = storyData.chapters;
                     currentChapterIndex = 0;
                     console.log('多章节格式，章节数量:', allChapters.length);
-                    
+
                     // 验证第一章节数据
                     if (!allChapters[0] || !allChapters[0].story || !allChapters[0].question) {
                         throw new Error('第一章节数据格式不完整');
                     }
-                    
+
                     // 存储当前章节数据
                     currentStoryData = allChapters[0];
                 } else {
@@ -1467,7 +1467,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!storyData.story || !storyData.question) {
                         throw new Error('故事数据格式不完整');
                     }
-                    
+
                     // 存储完整的故事数据
                     currentStoryData = storyData;
                     allChapters = [storyData]; // 转换为章节数组格式
@@ -1479,7 +1479,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 显示第一阶段：故事情景和问题
             displayStage1();
-            
+
         } catch (error) {
             console.error('解析故事数据失败:', error);
             // 回退到旧格式解析
@@ -1490,38 +1490,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // 显示第一阶段：故事和问题（优化版：减少DOM操作）
     function displayStage1() {
         if (!currentStoryData) return;
-        
+
         // 使用DocumentFragment批量更新DOM
         const fragment = document.createDocumentFragment();
-        
+
         // 生成场景图片
         if (currentStoryData.sceneDescription) {
             generateSceneImage(currentStoryData.sceneDescription);
         }
-        
+
         // 设置当前题型和答案
         currentQuestionType = currentStoryData.questionType || 'fill';
         currentAnswer = currentStoryData.answer;
-        
+
         console.log('题型设置:', {
             原始questionType: currentStoryData.questionType,
             设置后的currentQuestionType: currentQuestionType,
             是否为选择题: currentQuestionType === 'choice'
         });
-        
+
         // 使用requestAnimationFrame优化DOM更新
         requestAnimationFrame(() => {
             // 显示故事和问题
             storyText.textContent = currentStoryData.story;
             questionText.textContent = currentStoryData.question;
         });
-        
+
         // 根据题型显示相应的答题界面
         if (currentQuestionType === 'choice') {
             // 显示选择题界面
             fillBlankAnswer.classList.add('hidden');
             multipleChoiceAnswer.classList.remove('hidden');
-            
+
             // 设置选择题选项
             console.log('选择题数据检查:', {
                 hasChoices: !!currentStoryData.choices,
@@ -1529,23 +1529,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 choices: currentStoryData.choices,
                 questionType: currentStoryData.questionType
             });
-            
+
             // 设置选择题选项，确保所有4个按钮都有内容
             choiceBtns.forEach((btn, index) => {
                 btn.classList.remove('selected', 'correct', 'incorrect');
             });
-            
+
             // 重置数字输入框
             if (choiceNumberInput) {
                 choiceNumberInput.value = '';
                 choiceNumberInput.style.borderColor = '#ddd';
                 choiceNumberInput.style.backgroundColor = '';
             }
-            
+
             choiceBtns.forEach((btn, index) => {
-                
+
                 let optionText = `选项${index + 1}`; // 默认文本
-                
+
                 if (currentStoryData.choices && Array.isArray(currentStoryData.choices)) {
                     const choice = currentStoryData.choices[index];
                     if (choice && typeof choice === 'string' && choice.trim() !== '') {
@@ -1556,11 +1556,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         optionText = choice.text.trim();
                     }
                 }
-                
+
                 btn.textContent = `${String.fromCharCode(65 + index)}. ${optionText}`;
                 console.log(`选项${String.fromCharCode(65 + index)}设置为:`, btn.textContent);
             });
-            
+
             if (currentStoryData.choices && currentStoryData.choices.length === 4) {
                 console.log('选择题选项已设置（完整数据）');
             } else {
@@ -1575,28 +1575,28 @@ document.addEventListener('DOMContentLoaded', () => {
             multipleChoiceAnswer.classList.add('hidden');
             answerInput.value = '';
         }
-        
+
         // 显示第一阶段，隐藏其他阶段
         document.getElementById('story-stage-1').classList.remove('hidden');
         document.getElementById('hint-stage').classList.add('hidden');
         document.getElementById('story-ending-stage').classList.add('hidden');
-        
+
         questionArea.classList.remove('hidden');
         feedbackArea.textContent = '';
         submitAnswerBtn.disabled = false;
-        
+
         // 清空答案输入框
         answerInput.value = '';
-        
+
         // 键盘已经初始化，不需要重复初始化
     }
 
     // 显示提示阶段
     function displayHintStage() {
         if (!currentStoryData) return;
-        
+
         document.getElementById('hint-content').textContent = currentStoryData.hint;
-        
+
         // 显示提示阶段，隐藏其他阶段
         document.getElementById('story-stage-1').classList.add('hidden');
         document.getElementById('hint-stage').classList.remove('hidden');
@@ -1606,16 +1606,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 显示故事结尾阶段
     function displayEndingStage() {
         if (!currentStoryData) return;
-        
+
         document.getElementById('story-ending-text').textContent = currentStoryData.ending;
-        
+
         // 显示结尾阶段，隐藏其他阶段
         document.getElementById('story-stage-1').classList.add('hidden');
         document.getElementById('hint-stage').classList.add('hidden');
         document.getElementById('story-ending-stage').classList.remove('hidden');
-        
+
         console.log('当前章节索引:', currentChapterIndex, '总章节数:', allChapters.length);
-        
+
         // 显示继续冒险按钮（如果还有更多章节）
         if (currentChapterIndex + 1 < allChapters.length) {
             console.log('显示继续冒险按钮');
@@ -1655,7 +1655,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 继续故事生成函数 ---
     // generateContinueStory函数已删除，现在使用预生成的章节数据
-    
+
     // 页面加载完成后初始化AI伙伴
     initializePartner();
 });
