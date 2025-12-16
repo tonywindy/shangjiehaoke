@@ -402,21 +402,29 @@
         </div>
 
         <!-- 游戏界面 -->
-        <div id="game-screen" class="hidden w-full">
-            <div id="game-area" class="flex flex-col md:flex-row gap-4 w-full">
-                <!-- 玩家模板，JS会复制这个结构 -->
-            </div>
-        </div>
+        <!-- BGM -->
+        <audio id="bgm" loop>
+            <source src="public/climbbgm.MP3" type="audio/mpeg">
+        </audio>
 
-        <!-- 游戏结束界面 -->
-        <div id="game-over-screen" class="hidden text-center glass-panel p-10 max-w-2xl mx-auto z-50 relative">
-            <h2 id="game-over-title" class="text-4xl md:text-5xl font-bold mb-4">游戏结束</h2>
-            <p id="game-over-message" class="text-2xl text-gray-600 mb-8"></p>
-            <button onclick="showLobby()"
-                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
-                返回主菜单
-            </button>
+        <button onclick="quitGame()"
+            class="mb-4 bg-gray-500 bg-opacity-50 hover:bg-opacity-80 text-white font-bold py-2 px-4 rounded-full text-sm backdrop-filter backdrop-blur-sm transition-all">
+            ⬅ 返回主菜单
+        </button>
+        <div id="game-area" class="flex flex-col md:flex-row gap-4 w-full">
+            <!-- 玩家模板，JS会复制这个结构 -->
         </div>
+    </div>
+
+    <!-- 游戏结束界面 -->
+    <div id="game-over-screen" class="hidden text-center glass-panel p-10 max-w-2xl mx-auto z-50 relative">
+        <h2 id="game-over-title" class="text-4xl md:text-5xl font-bold mb-4">游戏结束</h2>
+        <p id="game-over-message" class="text-2xl text-gray-600 mb-8"></p>
+        <button onclick="showLobby()"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg text-xl shadow-md transition-transform transform hover:scale-105">
+            返回主菜单
+        </button>
+    </div>
     </div>
 
     <!-- 动画层 -->
@@ -473,9 +481,10 @@
         const gameArea = document.getElementById('game-area');
         const playerTemplate = document.getElementById('player-template');
         const animationOverlay = document.getElementById('animation-overlay');
+        const bgm = document.getElementById('bgm');
 
         // 游戏状态
-        let gameState = {};
+        let gameState = {}; // isOver, gameInterval, etc.
         const animals = ['🐼', '🐵', '🦊', '🦁', '🐸', '🦄', '🚀', '🐢'];
 
         // 游戏设置
@@ -688,6 +697,18 @@
             });
 
             gameState.gameInterval = setInterval(updateTimers, 1000);
+
+            // Try to play BGM
+            bgm.currentTime = 0;
+            bgm.play().catch(e => console.log("Audio play failed (user interaction needed likely):", e));
+        }
+
+        function quitGame() {
+            gameState.isOver = true;
+            clearInterval(gameState.gameInterval);
+            bgm.pause();
+            bgm.currentTime = 0;
+            showLobby();
         }
 
         function updateTimers() {
@@ -769,6 +790,8 @@
             gameState.isOver = true;
             clearInterval(gameState.gameInterval);
             updateTimers(); // 最后更新一次时间
+
+            bgm.pause(); // Stop BGM on finish
 
             playEndAnimation(winnerId);
 
