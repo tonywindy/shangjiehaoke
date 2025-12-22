@@ -23,6 +23,7 @@ export default defineConfig({
         zuoweibiao: resolve(__dirname, 'zuoweibiao.html'),
         recite: resolve(__dirname, 'recite/index.html'),
         yingbi: resolve(__dirname, 'yingbi.html'),
+        shizhen: resolve(__dirname, 'shizhen.html'),
       },
     },
   },
