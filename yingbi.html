@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抛硬币频率分析模拟器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb, #e3f2fd);
+            color: #1565c0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #90caf9;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #0d47a1;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            color: #1565c0;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .coin-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #64b5f6;
+        }
+
+        .stats-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #64b5f6;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .coin-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+            perspective: 1000px;
+        }
+
+        .coin {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+
+        .coin-heads {
+            background: linear-gradient(135deg, #FFD700, #D4AF37);
+            border: 5px solid #B8860B;
+            transform: rotateY(0deg);
+        }
+
+        .coin-tails {
+            background: linear-gradient(135deg, #4B0082, #2E0854);
+            border: 5px solid #483D8B;
+            transform: rotateY(180deg);
+        }
+
+        .coin-flip {
+            animation: flip 0.6s ease-in-out;
+        }
+
+        @keyframes flip {
+            0% {
+                transform: rotateY(0);
+            }
+
+            50% {
+                transform: rotateY(900deg);
+            }
+
+            100% {
+                transform: rotateY(1800deg);
+            }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(to right, #1e88e5, #1976d2);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #90caf9;
+            cursor: not-allowed;
+            transform: none;
+            color: #0d47a1;
+        }
+
+        #autoBtn {
+            background: linear-gradient(to right, #43a047, #2e7d32);
+        }
+
+        #stopBtn {
+            background: linear-gradient(to right, #e53935, #c62828);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #0d47a1;
+        }
+
+        input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #90caf9;
+            background: rgba(255, 255, 255, 0.9);
+            color: #0d47a1;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1e88e5;
+            background: white;
+        }
+
+        /* 九宫格数字键盘样式 */
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .numpad button {
+            padding: 15px;
+            font-size: 1.2rem;
+            background: linear-gradient(to bottom, #ffffff, #e3f2fd);
+            color: #0d47a1;
+            border: 2px solid #90caf9;
+            border-radius: 8px;
+        }
+
+        .numpad button:hover {
+            background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+        }
+
+        .numpad button:active {
+            background: #90caf9;
+            color: white;
+        }
+
+        .numpad-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .numpad-controls button {
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            border: 2px solid #90caf9;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-num-zero {
+            background: linear-gradient(to bottom, #ffffff, #e3f2fd);
+            color: #0d47a1;
+        }
+
+        .btn-num-zero:hover {
+            background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+        }
+
+        .btn-clear {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border: none !important;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #90caf9;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #90caf9;
+        }
+
+        th {
+            background: #e3f2fd;
+            font-weight: bold;
+            color: #0d47a1;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .highlight {
+            background: #e3f2fd;
+            font-weight: bold;
+            color: #0d47a1;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            margin-top: 10px;
+            border: 1px solid #90caf9;
+            position: relative;
+        }
+
+        #chartCanvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .result-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            min-height: 30px;
+            margin-top: 10px;
+            color: #1565c0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e3f2fd;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #42a5f5, #1e88e5);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .speed-control {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #1565c0;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .numpad,
+            .numpad-zero {
+                gap: 6px;
+            }
+
+            .numpad button,
+            .numpad-zero button {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>抛硬币频率分析模拟器</h1>
+            <p class="subtitle">通过模拟抛硬币实验，观察随着抛掷次数增加，正反面频率的变化趋势。</p>
+        </header>
+
+        <div class="main-content">
+            <section class="coin-section">
+                <h2>硬币模拟</h2>
+                <div class="coin-container">
+                    <div id="coin" class="coin coin-heads">正面</div>
+                </div>
+                <div id="resultDisplay" class="result-display">准备就绪</div>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <label for="countInput">设置抛掷次数:</label>
+                        <input type="number" id="countInput" min="1" max="100000" value="100" readonly>
+
+                        <!-- 九宫格数字键盘 (1-9) -->
+                        <div class="numpad">
+                            <button onclick="appendNum('1')">1</button>
+                            <button onclick="appendNum('2')">2</button>
+                            <button onclick="appendNum('3')">3</button>
+                            <button onclick="appendNum('4')">4</button>
+                            <button onclick="appendNum('5')">5</button>
+                            <button onclick="appendNum('6')">6</button>
+                            <button onclick="appendNum('7')">7</button>
+                            <button onclick="appendNum('8')">8</button>
+                            <button onclick="appendNum('9')">9</button>
+                        </div>
+
+                        <div class="numpad-controls">
+                            <button class="btn-num-zero" onclick="appendNum('0')">0</button>
+                            <button class="btn-clear" onclick="clearInput()">清除</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <button id="flipBtn">单次抛掷</button>
+                        <button id="autoBtn">批量模拟</button>
+                        <button id="stopBtn" disabled>停止</button>
+                        <button id="resetBtn">重置统计</button>
+                    </div>
+
+                    <div class="speed-control">
+                        <span>模拟速度: 约3秒完成 | 图表实时变化</span>
+                    </div>
+
+                    <div id="chartError" class="error-message">
+                        图表加载失败，请检查浏览器兼容性
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-section">
+                <h2>统计数据</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>统计项</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>总抛掷次数</td>
+                            <td id="totalCount">0</td>
+                        </tr>
+                        <tr>
+                            <td>正面次数</td>
+                            <td id="headsCount">0</td>
+                        </tr>
+                        <tr>
+                            <td>反面次数</td>
+                            <td id="tailsCount">0</td>
+                        </tr>
+                        <tr class="highlight">
+                            <td>正面频率</td>
+                            <td id="headsFreq">0.00%</td>
+                        </tr>
+                        <tr class="highlight">
+                            <td>反面频率</td>
+                            <td id="tailsFreq">0.00%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="margin-top: 15px;">频率变化趋势图</h3>
+                <div class="chart-container">
+                    <canvas id="chartCanvas"></canvas>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // 简化的Chart.js折线图实现（完全离线可用）
+        class SimpleLineChart {
+            constructor(canvas, config) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.config = config;
+                this.data = config.data;
+                this.options = config.options;
+                this.resize();
+            }
+
+            resize() {
+                const container = this.canvas.parentElement;
+                this.canvas.width = container.clientWidth;
+                this.canvas.height = container.clientHeight;
+            }
+
+            update() {
+                this.draw();
+            }
+
+            draw() {
+                const ctx = this.ctx;
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+
+                // 清空画布
+                ctx.clearRect(0, 0, width, height);
+
+                // 获取数据
+                const labels = this.data.labels;
+                const datasets = this.data.datasets;
+
+                // 计算边距
+                const padding = 40;
+                const chartWidth = width - padding * 2;
+                const chartHeight = height - padding * 2;
+
+                // 绘制坐标轴（始终绘制，即使没有数据）
+                ctx.strokeStyle = '#90caf9';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(padding, padding);
+                ctx.lineTo(padding, height - padding);
+                ctx.lineTo(width - padding, height - padding);
+                ctx.stroke();
+
+                // 绘制Y轴标签和网格
+                ctx.fillStyle = '#1565c0';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'right';
+                for (let i = 0; i <= 5; i++) {
+                    const y = padding + (chartHeight * i / 5);
+                    const value = 100 - (i * 20);
+                    ctx.fillText(value + '%', padding - 5, y + 3);
+
+                    if (i > 0 && i < 5) {
+                        ctx.strokeStyle = 'rgba(21, 101, 192, 0.1)';
+                        ctx.beginPath();
+                        ctx.moveTo(padding, y);
+                        ctx.lineTo(width - padding, y);
+                        ctx.stroke();
+                    }
+                }
+
+                // 如果没有数据，只绘制坐标轴
+                if (labels.length === 0) return;
+
+                // 绘制X轴标签（最多10个）
+                ctx.textAlign = 'center';
+                const step = Math.max(1, Math.floor(labels.length / 10));
+                for (let i = 0; i < labels.length; i += step) {
+                    const x = padding + (chartWidth * i / (labels.length - 1));
+                    ctx.fillText(labels[i], x, height - padding + 15);
+                }
+
+                // 绘制数据线
+                datasets.forEach(dataset => {
+                    if (dataset.label === '50%理论线') {
+                        // 绘制虚线
+                        ctx.strokeStyle = dataset.borderColor;
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([5, 5]);
+                        ctx.beginPath();
+                        const y = padding + chartHeight * (1 - 0.5);
+                        ctx.moveTo(padding, y);
+                        ctx.lineTo(width - padding, y);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    } else {
+                        // 绘制数据线
+                        ctx.strokeStyle = dataset.borderColor;
+                        ctx.lineWidth = dataset.borderWidth || 2;
+                        ctx.beginPath();
+
+                        dataset.data.forEach((value, index) => {
+                            const x = padding + (chartWidth * index / (labels.length - 1));
+                            const y = padding + chartHeight * (1 - value / 100);
+
+                            if (index === 0) {
+                                ctx.moveTo(x, y);
+                            } else {
+                                ctx.lineTo(x, y);
+                            }
+                        });
+
+                        ctx.stroke();
+
+                        // 绘制数据点
+                        if (dataset.pointRadius > 0) {
+                            ctx.fillStyle = dataset.borderColor;
+                            dataset.data.forEach((value, index) => {
+                                const x = padding + (chartWidth * index / (labels.length - 1));
+                                const y = padding + chartHeight * (1 - value / 100);
+                                ctx.beginPath();
+                                ctx.arc(x, y, dataset.pointRadius, 0, Math.PI * 2);
+                                ctx.fill();
+                            });
+                        }
+                    }
+                });
+
+                // 绘制图例
+                if (this.options.plugins && this.options.plugins.legend) {
+                    const legendY = 20;
+                    let legendX = padding;
+                    datasets.forEach(dataset => {
+                        ctx.fillStyle = dataset.borderColor;
+                        ctx.fillRect(legendX, legendY, 15, 3);
+                        ctx.fillStyle = '#0d47a1';
+                        ctx.font = '11px Arial';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(dataset.label, legendX + 20, legendY + 3);
+                        legendX += ctx.measureText(dataset.label).width + 40;
+                    });
+                }
+            }
+        }
+
+        // 获取DOM元素
+        const coin = document.getElementById('coin');
+        const flipBtn = document.getElementById('flipBtn');
+        const autoBtn = document.getElementById('autoBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const countInput = document.getElementById('countInput');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const chartError = document.getElementById('chartError');
+
+        const totalCountEl = document.getElementById('totalCount');
+        const headsCountEl = document.getElementById('headsCount');
+        const tailsCountEl = document.getElementById('tailsCount');
+        const headsFreqEl = document.getElementById('headsFreq');
+        const tailsFreqEl = document.getElementById('tailsFreq');
+
+        // 统计数据
+        let stats = {
+            total: 0,
+            heads: 0,
+            tails: 0,
+            headsFreq: 0,
+            tailsFreq: 0
+        };
+
+        // 图表数据
+        let chartData = {
+            labels: [],
+            headsFreq: [],
+            tailsFreq: []
+        };
+
+        // 图表实例
+        let freqChart = null;
+
+        // 自动抛掷状态
+        let autoFlipInterval = null;
+        let isAutoFlipping = false;
+        let isBatchMode = false;
+
+        // 九宫格数字键盘功能
+        function appendNum(num) {
+            const currentValue = countInput.value;
+            if (currentValue === '0') {
+                countInput.value = num;
+            } else {
+                // 限制最大位数为5位（最大支持99999）
+                if (currentValue.length < 5) {
+                    countInput.value = currentValue + num;
+                }
+            }
+        }
+
+        function clearInput() {
+            countInput.value = '0';
+        }
+
+
+        // 初始化图表
+        function initChart() {
+            try {
+                const canvas = document.getElementById('chartCanvas');
+                if (!canvas) {
+                    chartError.style.display = 'block';
+                    return;
+                }
+
+                // 使用简化的图表类
+                freqChart = new SimpleLineChart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [
+                            {
+                                label: '正面频率',
+                                data: chartData.headsFreq,
+                                borderColor: '#FFD700',
+                                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                pointRadius: 2
+                            },
+                            {
+                                label: '反面频率',
+                                data: chartData.tailsFreq,
+                                borderColor: '#8E2DE2',
+                                backgroundColor: 'rgba(142, 45, 226, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                pointRadius: 2
+                            },
+                            {
+                                label: '50%理论线',
+                                data: Array(chartData.labels.length).fill(50),
+                                borderColor: '#43a047',
+                                borderWidth: 1,
+                                borderDash: [5, 5],
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#0d47a1',
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: '抛掷次数',
+                                    color: '#0d47a1'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: '频率(%)',
+                                    color: '#0d47a1'
+                                },
+                                min: 0,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+
+                // 监听窗口大小变化
+                window.addEventListener('resize', () => {
+                    if (freqChart) {
+                        freqChart.resize();
+                        freqChart.update();
+                    }
+                });
+
+            } catch (error) {
+                console.error('图表初始化失败:', error);
+                chartError.style.display = 'block';
+            }
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            if (stats.total > 0) {
+                stats.headsFreq = (stats.heads / stats.total) * 100;
+                stats.tailsFreq = (stats.tails / stats.total) * 100;
+            } else {
+                stats.headsFreq = 0;
+                stats.tailsFreq = 0;
+            }
+
+            totalCountEl.textContent = stats.total;
+            headsCountEl.textContent = stats.heads;
+            tailsCountEl.textContent = stats.tails;
+            headsFreqEl.textContent = stats.headsFreq.toFixed(2) + '%';
+            tailsFreqEl.textContent = stats.tailsFreq.toFixed(2) + '%';
+
+            // 更新图表数据
+            if (stats.total > 0) {
+                let shouldRecord;
+
+                if (isBatchMode) {
+                    shouldRecord = true;
+                } else {
+                    shouldRecord =
+                        stats.total === 1 ||
+                        stats.total % 5 === 0 ||
+                        stats.total % 10 === 0 ||
+                        stats.total === parseInt(countInput.value) ||
+                        Math.abs(stats.headsFreq - chartData.headsFreq[chartData.headsFreq.length - 1]) > 5;
+                }
+
+                if (shouldRecord) {
+                    chartData.labels.push(stats.total);
+                    chartData.headsFreq.push(stats.headsFreq);
+                    chartData.tailsFreq.push(stats.tailsFreq);
+
+                    if (chartData.labels.length > 50) {
+                        chartData.labels.shift();
+                        chartData.headsFreq.shift();
+                        chartData.tailsFreq.shift();
+                    }
+
+                    if (freqChart) {
+                        freqChart.update();
+                    }
+                }
+            }
+        }
+
+        // 单次抛掷
+        function flipCoin() {
+            coin.classList.add('coin-flip');
+
+            setTimeout(() => {
+                const isHeads = Math.random() > 0.5;
+
+                if (isHeads) {
+                    coin.className = 'coin coin-heads';
+                    coin.textContent = '正面';
+                    stats.heads++;
+                    resultDisplay.textContent = '本次结果：正面！';
+                } else {
+                    coin.className = 'coin coin-tails';
+                    coin.textContent = '反面';
+                    stats.tails++;
+                    resultDisplay.textContent = '本次结果：反面！';
+                }
+
+                stats.total++;
+                updateStats();
+
+                setTimeout(() => {
+                    coin.classList.remove('coin-flip');
+                }, 300);
+            }, 300);
+        }
+
+        // 批量模拟
+        function startBatchSimulation() {
+            if (isAutoFlipping) return;
+
+            const count = parseInt(countInput.value);
+            if (isNaN(count) || count < 1) {
+                alert('请输入有效的抛掷次数（至少1次）');
+                return;
+            }
+
+            isAutoFlipping = true;
+            isBatchMode = true;
+            flipBtn.disabled = true;
+            autoBtn.disabled = true;
+            stopBtn.disabled = false;
+            countInput.disabled = true;
+
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+
+            const targetTime = 3000;
+            const batches = 20;
+            const batchSize = Math.ceil(count / batches);
+            const delayPerBatch = Math.max(50, Math.floor(targetTime / batches));
+
+            let processed = 0;
+            let batchIndex = 0;
+
+            function processBatch() {
+                if (processed >= count || !isAutoFlipping) {
+                    stopBatchSimulation();
+                    resultDisplay.textContent = `完成！共模拟${count}次`;
+                    progressBar.style.display = 'none';
+                    return;
+                }
+
+                const currentBatch = Math.min(batchSize, count - processed);
+                let batchHeads = 0;
+
+                for (let i = 0; i < currentBatch; i++) {
+                    if (Math.random() > 0.5) batchHeads++;
+                }
+
+                stats.heads += batchHeads;
+                stats.tails += (currentBatch - batchHeads);
+                stats.total += currentBatch;
+                processed += currentBatch;
+                batchIndex++;
+
+                updateStats();
+
+                const progress = (processed / count) * 100;
+                progressFill.style.width = progress + '%';
+
+                const isHeads = batchHeads > (currentBatch / 2);
+                if (isHeads) {
+                    coin.className = 'coin coin-heads';
+                    coin.textContent = '正面';
+                } else {
+                    coin.className = 'coin coin-tails';
+                    coin.textContent = '反面';
+                }
+
+                resultDisplay.textContent = `批量模拟中... ${processed}/${count}次 (${batchIndex}批)`;
+
+                if (isAutoFlipping) {
+                    setTimeout(processBatch, delayPerBatch);
+                }
+            }
+
+            processBatch();
+        }
+
+        // 停止模拟
+        function stopBatchSimulation() {
+            if (!isAutoFlipping) return;
+
+            isAutoFlipping = false;
+            isBatchMode = false;
+            flipBtn.disabled = false;
+            autoBtn.disabled = false;
+            stopBtn.disabled = true;
+            countInput.disabled = false;
+        }
+
+        // 重置统计
+        function resetStats() {
+            stopBatchSimulation();
+
+            stats = {
+                total: 0,
+                heads: 0,
+                tails: 0,
+                headsFreq: 0,
+                tailsFreq: 0
+            };
+
+            // 清空数组而不是创建新对象
+            chartData.labels.length = 0;
+            chartData.headsFreq.length = 0;
+            chartData.tailsFreq.length = 0;
+
+            coin.className = 'coin coin-heads';
+            coin.textContent = '正面';
+            resultDisplay.textContent = '准备就绪';
+            progressBar.style.display = 'none';
+
+            updateStats();
+
+            // 确保图表实例使用最新数据
+            if (freqChart) {
+                freqChart.data.labels = chartData.labels;
+                freqChart.data.datasets[0].data = chartData.headsFreq;
+                freqChart.data.datasets[1].data = chartData.tailsFreq;
+                freqChart.data.datasets[2].data = Array(chartData.labels.length).fill(50);
+                freqChart.update();
+            }
+        }
+
+        // 事件监听
+        flipBtn.addEventListener('click', flipCoin);
+        autoBtn.addEventListener('click', startBatchSimulation);
+        stopBtn.addEventListener('click', stopBatchSimulation);
+        resetBtn.addEventListener('click', resetStats);
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            initChart();
+        });
+    </script>
+</body>
+
+</html>

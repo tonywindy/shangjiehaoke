@@ -22,6 +22,7 @@ export default defineConfig({
         shudui: resolve(__dirname, 'shudui.html'),
         zuoweibiao: resolve(__dirname, 'zuoweibiao.html'),
         recite: resolve(__dirname, 'recite/index.html'),
+        yingbi: resolve(__dirname, 'yingbi.html'),
       },
     },
   },
