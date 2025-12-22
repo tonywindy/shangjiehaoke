@@ -82,7 +82,7 @@ const WorksPage = () => {
             {/* 作品 7 */}
             <a href="/recite/index.html" className="work-item">
               <div className="work-image-container">
-                <img src="/background1.jpg" alt="背诵冒险记" />
+                <img src="/beisong-background.jpg" alt="背诵冒险记" />
               </div>
               <div className="work-info">
                 <h3>背诵冒险记</h3>
