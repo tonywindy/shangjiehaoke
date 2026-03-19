@@ -24,6 +24,7 @@ export default defineConfig({
         recite: resolve(__dirname, 'recite/index.html'),
         yingbi: resolve(__dirname, 'yingbi.html'),
         shizhen: resolve(__dirname, 'shizhen.html'),
+        lucheng: resolve(__dirname, 'lucheng/index.html'),
       },
     },
   },
