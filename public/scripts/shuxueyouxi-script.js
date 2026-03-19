@@ -1253,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', () => {
 2. 对于比较、判断、选择类题目，使用选择题形式
 3. 分数相关题目优先使用选择题形式
 
-请严格按照以下JSON格式返回内容：
+请严格按照以下JSON格式返回内容，并确保返回合法的JSON字符串（无结尾逗号、使用双引号）：
 {
   "chapters": [
     {
@@ -1267,58 +1267,12 @@ document.addEventListener('DOMContentLoaded', () => {
       "hint": "解题提示和思路，不直接给出答案",
       "ending": "本章结尾，30-50字"
     },
-    {
-      "story": "第2章故事情景描述，长度100-120字",
-      "sceneDescription": "场景描述，用于AI生图，描述当前章节的具体场景环境，30-50字",
-      "question": "具体的数学问题",
-      "questionType": "题型类型：fill（填空题）或choice（选择题）",
-      "answer": "正确答案",
-      "choices": ["选项A", "选项B", "选项C", "选项D"],
-      "correctChoice": "正确选项（A/B/C/D，仅选择题需要）",
-      "hint": "解题提示和思路，不直接给出答案",
-      "ending": "本章结尾，30-50字"
-    },
-    {
-      "story": "第3章故事情景描述，长度100-120字",
-      "sceneDescription": "场景描述，用于AI生图，描述当前章节的具体场景环境，30-50字",
-      "question": "具体的数学问题",
-      "questionType": "题型类型：fill（填空题）或choice（选择题）",
-      "answer": "正确答案",
-      "choices": ["选项A", "选项B", "选项C", "选项D"],
-      "correctChoice": "正确选项（A/B/C/D，仅选择题需要）",
-      "hint": "解题提示和思路，不直接给出答案",
-      "ending": "本章结尾，30-50字"
-    },
-    {
-      "story": "第4章故事情景描述，长度100-120字",
-      "sceneDescription": "场景描述，用于AI生图，描述当前章节的具体场景环境，30-50字",
-      "question": "具体的数学问题",
-      "questionType": "题型类型：fill（填空题）或choice（选择题）",
-      "answer": "正确答案",
-      "choices": ["选项A", "选项B", "选项C", "选项D"],
-      "correctChoice": "正确选项（A/B/C/D，仅选择题需要）",
-      "hint": "解题提示和思路，不直接给出答案",
-      "ending": "本章结尾，30-50字"
-    },
-    {
-      "story": "第5章故事情景描述，长度100-120字",
-      "sceneDescription": "场景描述，用于AI生图，描述当前章节的具体场景环境，30-50字",
-      "question": "具体的数学问题",
-      "questionType": "题型类型：fill（填空题）或choice（选择题）",
-      "answer": "正确答案",
-      "choices": ["选项A", "选项B", "选项C", "选项D"],
-      "correctChoice": "正确选项（A/B/C/D，仅选择题需要）",
-      "hint": "解题提示和思路，不直接给出答案",
-      "ending": "故事的完美结局，50-80字"
-    }
+    ... (请生成完整的5个章节)
   ]
 }
 
 注意：
-- 5个章节要形成一个完整连贯的冒险故事
-- 如果是填空题，choices和correctChoice可以为空
-- 如果是选择题，必须提供4个选项，其中只有一个正确
-- 不要包含任何额外的解释或标记，只返回JSON格式的内容。`;
+- 严格返回完整且合法的JSON格式，不要截断！不要包含任何额外的解释或标记！千万不要在最后留下未闭合的括号或引号！`;
         let userPrompt = `故事必须围绕以下冒险情景展开：${selectedScenarios.join('、')}。`;
         if (isContinuation) {
             userPrompt = `请根据上面的对话，继续创作下一段冒险故事，并融入一个新的【${selectedKnowledgePrompts}】相关的数学题。`;
@@ -1344,7 +1298,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            messages: storyHistory
+                            messages: storyHistory,
+                            max_tokens: 3000
                         }),
                         signal: controller.signal
                     });
@@ -1376,31 +1331,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // 处理不同的响应格式
             let storyData;
             if (data.choices && data.choices[0] && data.choices[0].message) {
-                // OpenAI标准格式
                 storyData = data.choices[0].message.content;
             } else if (data.output && data.output.text) {
-                // 百炼大模型格式 - output.text
                 storyData = data.output.text;
             } else if (data.output && typeof data.output === 'string') {
-                // 百炼大模型格式 - output字符串
                 storyData = data.output;
             } else if (data.result && data.result.output) {
-                // 百炼大模型格式 - result.output
                 storyData = data.result.output;
             } else if (data.data && data.data.output) {
-                // 百炼大模型格式 - data.output
                 storyData = data.data.output;
             } else if (data.content) {
-                // 直接内容格式
                 storyData = data.content;
             } else if (data.response) {
-                // 响应字段格式
                 storyData = data.response;
             } else if (data.text) {
-                // 文本字段格式
                 storyData = data.text;
             } else if (typeof data === 'string') {
-                // 直接字符串格式
                 storyData = data;
             } else {
                 console.error('未知的API响应格式:', data);
@@ -1441,10 +1387,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 新的分阶段解析函数 ---
     function parseAndDisplayStoryStages(text) {
         try {
+            // 预处理清理 markdown 标记
+            let cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+
             // 尝试解析JSON格式
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
-                const storyData = JSON.parse(jsonMatch[0]);
+                const storyData = JSON.parse(jsonMatch[0].replace(/\n/g, "\\n").replace(/\r/g, "").replace(/\t/g, "\\t").replace(/\\n/g, "\n").replace(/\\t/g, "\t"));
                 console.log('解析到的故事数据:', storyData);
 
                 // 检查是否是新的多章节格式
