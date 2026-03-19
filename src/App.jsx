@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import './App.css'
-import videoSrc from '/your-video.mp4';
+import videoSrc from '/videos/your-video.mp4';
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -74,7 +74,7 @@ function App() {
             
             {/* 使用图片logo */}
             <img 
-              src="/logo1.png" 
+              src="/images/logo1.png" 
               alt="上节好课 Logo" 
               className="logo-image"
             />

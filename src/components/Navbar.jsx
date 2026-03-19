@@ -48,7 +48,7 @@ const Navbar = ({ currentPage = 'home' }) => {
             </span>
             <div className="qr-popup" role="dialog" aria-label="公众号二维码">
               <img 
-                src="/erweima.png" 
+                src="/images/erweima.png" 
                 alt="公众号二维码" 
                 className="qr-code" 
                 loading="lazy"

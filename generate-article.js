@@ -112,7 +112,7 @@ function generateArticle(inputFile, outputFile) {
       .replace(/\{\{TABLE_OF_CONTENTS\}\}/g, '<!-- 目录将自动生成 -->')
       .replace(/\{\{RELATED_ARTICLES\}\}/g, `
             <div class="related-item">
-              <a href="./contact.html" class="related-link">
+              <a href="/contact.html" class="related-link">
                 <div class="related-title">更多教育思考</div>
                 <div class="related-meta">
                   <span>📅 持续更新</span>

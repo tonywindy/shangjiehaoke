@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完美停车——路程实验室</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部标题和进度 -->
+        <header class="header">
+            <h1>🚗 完美停车——路程实验室</h1>
+            <div class="progress-info">
+                <span class="level">第 <span id="currentLevel">1</span> 关</span>
+                <div class="stars">
+                    <span id="starsDisplay">☆☆☆</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主游戏区域 -->
+        <main class="game-area">
+            <!-- 公式显示 -->
+            <div class="formula-box">
+                <div class="formula">路程 = 速度 × 时间</div>
+                <div class="formula-result" id="formulaResult">路程 = 0 × 0 = 0 米</div>
+            </div>
+
+            <!-- 目标距离显示 -->
+            <div class="target-info">
+                <span class="target-label">🎯 目标距离：</span>
+                <span class="target-distance" id="targetDistance">20</span>
+                <span class="target-unit">米</span>
+            </div>
+
+            <!-- 赛道区域 -->
+            <div class="track-container">
+                <div class="track">
+                    <!-- 刻度线 -->
+                    <div class="scale-marks">
+                        <div class="scale-mark" style="left: 0%"></div>
+                        <div class="scale-mark" style="left: 10%"></div>
+                        <div class="scale-mark" style="left: 20%"></div>
+                        <div class="scale-mark" style="left: 30%"></div>
+                        <div class="scale-mark" style="left: 40%"></div>
+                        <div class="scale-mark" style="left: 50%"></div>
+                        <div class="scale-mark" style="left: 60%"></div>
+                        <div class="scale-mark" style="left: 70%"></div>
+                        <div class="scale-mark" style="left: 80%"></div>
+                        <div class="scale-mark" style="left: 90%"></div>
+                        <div class="scale-mark" style="left: 100%"></div>
+                    </div>
+
+                    <!-- 起点小车 -->
+                    <div class="car start-car">🚗</div>
+
+                    <!-- 预测位置小车（半透明） -->
+                    <div class="car preview-car" id="previewCar">🚗</div>
+
+                    <!-- 停车标志 -->
+                    <div class="parking-sign" id="parkingSign">🚩</div>
+
+                    <!-- 运动中的小车 -->
+                    <div class="car moving-car" id="movingCar">🚗</div>
+                </div>
+
+                <!-- 距离刻度标签 -->
+                <div class="distance-labels">
+                    <span class="label">0m</span>
+                    <span class="label">20m</span>
+                    <span class="label">40m</span>
+                    <span class="label">60m</span>
+                    <span class="label">80m</span>
+                    <span class="label">100m</span>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <!-- 速度控制 -->
+                <div class="control-group">
+                    <label for="speedSlider" class="control-label">
+                        <span class="label-text">⚡ 速度</span>
+                        <span class="value-display" id="speedValue">5</span>
+                        <span class="unit">m/s</span>
+                    </label>
+                    <input 
+                        type="range" 
+                        id="speedSlider" 
+                        class="slider" 
+                        min="1" 
+                        max="10" 
+                        value="5"
+                    >
+                    <div class="slider-track"></div>
+                </div>
+
+                <!-- 时间控制 -->
+                <div class="control-group">
+                    <label for="timeSlider" class="control-label">
+                        <span class="label-text">⏱️ 时间</span>
+                        <span class="value-display" id="timeValue">4</span>
+                        <span class="unit">s</span>
+                    </label>
+                    <input 
+                        type="range" 
+                        id="timeSlider" 
+                        class="slider" 
+                        min="1" 
+                        max="10" 
+                        value="4"
+                    >
+                    <div class="slider-track"></div>
+                </div>
+            </div>
+
+            <!-- 出发按钮 -->
+            <button class="launch-button" id="launchBtn">🚀 出发！</button>
+
+            <!-- 反馈信息 -->
+            <div class="feedback" id="feedback"></div>
+        </main>
+
+        <!-- 模态框：关卡完成 -->
+        <div class="modal" id="levelCompleteModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🎉 完美停车！</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="stars-animation">
+                        <span class="star">✨</span>
+                        <span class="star">✨</span>
+                        <span class="star">✨</span>
+                    </div>
+                    <p class="completion-text">获得一颗星！</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="nextLevelBtn">下一关 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模态框：游戏完成 -->
+        <div class="modal" id="gameCompleteModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🏆 恭喜！全部完成！</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="stars-animation">
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                        <span class="star">⭐</span>
+                    </div>
+                    <p class="completion-text">你已经掌握了路程、速度和时间的关系！</p>
+                    <p class="completion-text">路程 = 速度 × 时间</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="restartBtn">重新开始</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
