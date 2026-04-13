@@ -51,7 +51,7 @@ export const COLORS = {
 // 导航链接配置
 export const NAV_LINKS = [
   { path: '/', label: '初见之页', key: 'home' },
-  { path: '/works', label: '些许尝试', key: 'works' },
+  { path: '/works.html', label: '些许尝试', key: 'works' },
   { path: '/quotes', label: '一点想法', key: 'quotes' },
 ];
 

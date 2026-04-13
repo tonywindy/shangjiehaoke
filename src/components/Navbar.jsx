@@ -25,15 +25,27 @@ const Navbar = ({ currentPage = 'home' }) => {
         
         <div className="nav-menu" role="menubar">
           {NAV_LINKS.map((link) => (
-            <Link
-              key={link.key}
-              to={link.path}
-              className={`nav-link ${currentPage === link.key ? 'active' : ''}`}
-              role="menuitem"
-              aria-current={currentPage === link.key ? 'page' : undefined}
-            >
-              {link.label}
-            </Link>
+            link.path.endsWith('.html') ? (
+              <a
+                key={link.key}
+                href={link.path}
+                className={`nav-link ${currentPage === link.key ? 'active' : ''}`}
+                role="menuitem"
+                aria-current={currentPage === link.key ? 'page' : undefined}
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.key}
+                to={link.path}
+                className={`nav-link ${currentPage === link.key ? 'active' : ''}`}
+                role="menuitem"
+                aria-current={currentPage === link.key ? 'page' : undefined}
+              >
+                {link.label}
+              </Link>
+            )
           ))}
           
           <div className="feedback-container">
