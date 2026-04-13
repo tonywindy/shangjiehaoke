@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轴对称探索画板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb, #e3f2fd);
+            color: #1565c0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #90caf9;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #0d47a1;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #1565c0;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .controls-section {
+            flex: 1;
+            min-width: 250px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #64b5f6;
+        }
+
+        .canvas-section {
+            flex: 2;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #64b5f6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1 / 1;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #bbdefb;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #axesCanvas {
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #drawingCanvas {
+            z-index: 20;
+            /* touch-action: none prevents scrolling while drawing on mobile */
+            touch-action: none;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #0d47a1;
+            border-bottom: 2px dashed #90caf9;
+            padding-bottom: 5px;
+        }
+
+        .symmetry-options,
+        .brush-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .toggle-label:hover {
+            background: #e3f2fd;
+        }
+
+        .toggle-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #1e88e5;
+        }
+
+        .brush-options label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        input[type="color"] {
+            border: none;
+            border-radius: 4px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            accent-color: #1e88e5;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(to right, #1e88e5, #1976d2);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #clearBtn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+        }
+
+        @media screen and (max-width: 600px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .canvas-section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>轴对称探索画板</h1>
+            <p class="subtitle">选择对称轴并在边上画图，另一边会神奇地出现对应的对称图形！</p>
+        </header>
+
+        <div class="main-content">
+            <section class="controls-section">
+                <h2>设定对称模式</h2>
+                <div class="symmetry-options">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="verticalSymmetry" checked>
+                        左右对称 (纵向对称轴)
+                    </label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="horizontalSymmetry">
+                        上下对称 (横向对称轴)
+                    </label>
+                </div>
+
+                <h2>画笔工具</h2>
+                <div class="brush-options">
+                    <label>
+                        颜色:
+                        <input type="color" id="brushColor" value="#1976d2">
+                    </label>
+                    <label>
+                        粗细: <span id="brushSizeDisplay">5</span>px
+                        <input type="range" id="brushSize" min="1" max="30" value="5">
+                    </label>
+                </div>
+
+                <div class="actions">
+                    <button id="clearBtn">🧹 清空画板</button>
+                </div>
+            </section>
+
+            <section class="canvas-section">
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="axesCanvas"></canvas>
+                    <canvas id="drawingCanvas"></canvas>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const drawingCanvas = document.getElementById('drawingCanvas');
+        const axesCanvas = document.getElementById('axesCanvas');
+        const dCtx = drawingCanvas.getContext('2d');
+        const aCtx = axesCanvas.getContext('2d');
+
+        // 使用较高分辨率确保画线清晰
+        const CAN_SIZE = 1000;
+        drawingCanvas.width = CAN_SIZE;
+        drawingCanvas.height = CAN_SIZE;
+        axesCanvas.width = CAN_SIZE;
+        axesCanvas.height = CAN_SIZE;
+
+        // UI Controls
+        const cbVertical = document.getElementById('verticalSymmetry');
+        const cbHorizontal = document.getElementById('horizontalSymmetry');
+        const colorPicker = document.getElementById('brushColor');
+        const sizeSlider = document.getElementById('brushSize');
+        const sizeDisplay = document.getElementById('brushSizeDisplay');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // State variables
+        let isDrawing = false;
+        let lastPositions = [];
+
+        // 绘制对称轴虚线
+        function drawAxes() {
+            aCtx.clearRect(0, 0, CAN_SIZE, CAN_SIZE);
+            aCtx.beginPath();
+            aCtx.setLineDash([15, 15]);
+            aCtx.strokeStyle = 'rgba(25, 118, 210, 0.4)';
+            aCtx.lineWidth = 4;
+
+            const mid = CAN_SIZE / 2;
+
+            if (cbVertical.checked) {
+                aCtx.moveTo(mid, 0);
+                aCtx.lineTo(mid, CAN_SIZE);
+            }
+            if (cbHorizontal.checked) {
+                aCtx.moveTo(0, mid);
+                aCtx.lineTo(CAN_SIZE, mid);
+            }
+            aCtx.stroke();
+        }
+
+        // 监听对称轴变更
+        cbVertical.addEventListener('change', drawAxes);
+        cbHorizontal.addEventListener('change', drawAxes);
+
+        // 更新画笔粗细显示
+        sizeSlider.addEventListener('input', () => {
+            sizeDisplay.textContent = sizeSlider.value;
+        });
+
+        // 获取鼠标或触摸屏的相对坐标（使用 Pointer Event 获得最佳设备兼容性）
+        function getMousePos(evt) {
+            const rect = drawingCanvas.getBoundingClientRect();
+            return {
+                x: (evt.clientX - rect.left) * (CAN_SIZE / rect.width),
+                y: (evt.clientY - rect.top) * (CAN_SIZE / rect.height)
+            };
+        }
+
+        // 获取当前点的所有对称坐标
+        function getSymmetricPoints(x, y) {
+            const points = [{ x, y }];
+            const vSym = cbVertical.checked;
+            const hSym = cbHorizontal.checked;
+
+            if (vSym && !hSym) {
+                points.push({ x: CAN_SIZE - x, y: y });
+            } else if (!vSym && hSym) {
+                points.push({ x: x, y: CAN_SIZE - y });
+            } else if (vSym && hSym) {
+                points.push({ x: CAN_SIZE - x, y: y });
+                points.push({ x: x, y: CAN_SIZE - y });
+                points.push({ x: CAN_SIZE - x, y: CAN_SIZE - y });
+            }
+
+            return points;
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            drawingCanvas.setPointerCapture(e.pointerId);
+            const { x, y } = getMousePos(e);
+            lastPositions = getSymmetricPoints(x, y);
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const { x, y } = getMousePos(e);
+            const currentPositions = getSymmetricPoints(x, y);
+
+            dCtx.lineCap = 'round';
+            dCtx.lineJoin = 'round';
+            dCtx.strokeStyle = colorPicker.value;
+            // 因为分辨率是1000，画笔也需要同比放大一点，不然看起来很细
+            dCtx.lineWidth = sizeSlider.value * (CAN_SIZE / drawingCanvas.clientWidth);
+
+            for (let i = 0; i < currentPositions.length; i++) {
+                dCtx.beginPath();
+                dCtx.moveTo(lastPositions[i].x, lastPositions[i].y);
+                dCtx.lineTo(currentPositions[i].x, currentPositions[i].y);
+                dCtx.stroke();
+            }
+
+            lastPositions = currentPositions;
+            e.preventDefault();
+        }
+
+        function stopDrawing(e) {
+            isDrawing = false;
+            if (e && e.pointerId) {
+                drawingCanvas.releasePointerCapture(e.pointerId);
+            }
+        }
+
+        // 统一使用 Pointer Events（完美兼容鼠标、触摸屏、触控笔，非常适合一体机）
+        drawingCanvas.addEventListener('pointerdown', startDrawing);
+        drawingCanvas.addEventListener('pointermove', draw);
+        drawingCanvas.addEventListener('pointerup', stopDrawing);
+        drawingCanvas.addEventListener('pointercancel', stopDrawing);
+        drawingCanvas.addEventListener('pointerout', stopDrawing);
+
+        // 清空画板
+        clearBtn.addEventListener('click', () => {
+            dCtx.clearRect(0, 0, CAN_SIZE, CAN_SIZE);
+        });
+
+        // 初始化
+        drawAxes();
+        
+        // 窗口大小变化时虽然不需要重置状态，但如果需要可以处理
+        window.addEventListener('resize', () => {
+            // 目前采用固定的内部CAN_SIZE映射到灵活的CSS尺寸，因此不需要在resize时重置画板
+        });
+    </script>
+</body>
+
+</html>

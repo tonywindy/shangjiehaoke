@@ -25,6 +25,7 @@ export default defineConfig({
         yingbi: resolve(__dirname, 'yingbi.html'),
         shizhen: resolve(__dirname, 'shizhen.html'),
         lucheng: resolve(__dirname, 'lucheng/index.html'),
+        duichen: resolve(__dirname, 'duichen.html'),
       },
     },
   },
