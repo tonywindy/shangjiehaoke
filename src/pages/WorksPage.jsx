@@ -138,6 +138,16 @@ const WorksPage = () => {
                 <h3>完美停车（路程问题）</h3>
               </div>
             </a>
+
+            {/* 作品 13 */}
+            <a href="/duichen.html" className="work-item">
+              <div className="work-image-container">
+                <img src="/images/duicheng.png" alt="轴对称探索画板" />
+              </div>
+              <div className="work-info">
+                <h3>轴对称探索画板</h3>
+              </div>
+            </a>
           </div>
         </div>
       </div>
