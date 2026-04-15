@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>交互式周长平移实验室</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        #board {
+            background-image:
+                linear-gradient(to right, #e2e8f0 2px, transparent 2px),
+                linear-gradient(to bottom, #e2e8f0 2px, transparent 2px);
+            background-position: top left;
+        }
+        .block-enter {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        /* Custom shadows for aesthetics */
+        .neon-shadow {
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-[#F0F4F8] overflow-hidden w-screen h-screen">
+    
+    <header class="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-lg shadow-sm h-16 flex items-center justify-between px-4 md:px-8 z-40">
+        <div class="flex items-center gap-3 md:gap-6">
+            <a href="/works.html" class="text-gray-500 hover:text-blue-600 transition-colors bg-gray-100 hover:bg-blue-50 px-3 md:px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
+                <span>←</span> 返回作品
+            </a>
+            <div class="h-8 w-px bg-gray-200 hidden md:block"></div>
+            <h1 class="text-lg md:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 tracking-tight">交互式周长平移实验室</h1>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button id="lock-btn" onclick="lockShape()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                <span class="hidden md:inline">确定图形</span>
+            </button>
+            <button onclick="clearBoard()" class="bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <span class="hidden md:inline">清空画布</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="fixed left-6 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur shadow-2xl rounded-3xl p-3 flex flex-col gap-4 z-40 border border-gray-100" id="color-palette">
+        <!-- JS generated colors -->
+    </div>
+
+    <!-- Tip floating -->
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-2 rounded-full shadow-lg font-bold text-sm md:text-base z-30 pointer-events-none transition-opacity duration-500" id="tip-message">
+        点击网格生成图形，拖拽橙色凹陷线段进行平移！
+    </div>
+
+    <!-- main board area -->
+    <main class="w-full h-full pt-16 flex items-center justify-center p-4 md:p-8 pl-24">
+       <div class="w-full h-full max-w-[1600px] bg-white rounded-[2rem] shadow-2xl border border-gray-200 relative flex items-center justify-center overflow-hidden" id="grid-wrapper">
+           <!-- touch container specifically for events -->
+           <div id="board" class="relative bg-gray-50 shadow-inner cursor-crosshair select-none touch-none rounded-xl">
+               <div id="blocks-container" class="absolute inset-0 pointer-events-none"></div>
+               <div id="edges-container" class="absolute inset-0 pointer-events-none"></div>
+           </div>
+       </div>
+    </main>
+
+    <!-- Win Modal -->
+    <div id="win-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-all duration-300">
+        <div class="bg-white rounded-[2rem] p-8 max-w-md w-full text-center shadow-2xl transform scale-90 transition-transform duration-300 border border-white" id="win-modal-content">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-5 text-4xl shadow-inner">🎉</div>
+            <h2 class="text-3xl font-black text-slate-800 mb-3">平移大作战完成！</h2>
+            <p class="text-slate-600 mb-6 text-base leading-relaxed">
+                你发现了吗？无论刚才的图形怎么凹凸不平，把它的凹陷线段平移后，外围的周长正好是一个<strong class="text-blue-600">完整长方形</strong>的周长！
+            </p>
+            
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 mb-8 border border-blue-100 shadow-sm">
+                <h3 class="text-sm font-bold text-blue-400 mb-3 uppercase tracking-widest">最终周长计算公式</h3>
+                <p class="text-2xl font-black text-indigo-700" id="perimeter-formula">(长 + 宽) × 2 = ?</p>
+                <div class="mt-4 pt-4 border-t border-blue-200/50">
+                    <p class="text-lg font-bold text-slate-700" id="perimeter-result">周长 = <span class="text-2xl text-indigo-600">0</span></p>
+                </div>
+            </div>
+            
+            <button onclick="closeWinModal()" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] hover:shadow-[0_12px_25px_-6px_rgba(79,70,229,0.6)] hover:-translate-y-1 active:translate-y-0 text-lg">
+                继续探索引擎
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const colors = [
+            'bg-blue-400', 'bg-indigo-400', 'bg-purple-400', 
+            'bg-pink-400', 'bg-rose-400', 'bg-orange-400', 
+            'bg-emerald-400', 'bg-cyan-400'
+        ];
+        let currentColor = colors[0];
+
+        let cellSize = 60; // 60px per grid cell
+        let COLS = 0;
+        let ROWS = 0;
+        
+        let blocks = [];
+        let grid = [];
+        let edges = [];
+        let minX = 0, maxX = 0, minY = 0, maxY = 0;
+        let isShapeLocked = false;
+
+        const board = document.getElementById('board');
+        
+        function init() {
+            renderColors();
+            initGrid();
+            window.addEventListener('resize', () => {
+                // To avoid breaking during play, only resize grid on init or if empty.
+                // For simplicity, we just recalculate dimensions if empty.
+                if (blocks.length === 0) {
+                    initGrid();
+                }
+            });
+            
+            board.addEventListener('pointerdown', onBoardClick);
+            
+            // Hide tip after 5 seconds
+            setTimeout(() => {
+                document.getElementById('tip-message').classList.add('opacity-0');
+            }, 5000);
+        }
+
+        function initGrid() {
+            const wrapper = document.getElementById('grid-wrapper');
+            // Give 40px padding inside wrapper
+            const width = wrapper.clientWidth - 40;
+            const height = wrapper.clientHeight - 40;
+            
+            // Re-calculate cell size dynamically to fit mostly ~20 columns if window is small
+            if (window.innerWidth < 768) {
+                cellSize = 40;
+            } else {
+                cellSize = 60;
+            }
+
+            COLS = Math.floor(width / cellSize);
+            ROWS = Math.floor(height / cellSize);
+            
+            board.style.width = `${COLS * cellSize}px`;
+            board.style.height = `${ROWS * cellSize}px`;
+            board.style.backgroundSize = `${cellSize}px ${cellSize}px`;
+            
+            grid = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+        }
+
+        function renderColors() {
+            const container = document.getElementById('color-palette');
+            container.innerHTML = '';
+            colors.forEach(color => {
+                const btn = document.createElement('button');
+                btn.className = `w-12 h-12 rounded-2xl transition-all duration-200 ${color} ${currentColor === color ? 'ring-4 ring-offset-2 ring-blue-500 scale-110 shadow-lg' : 'hover:scale-105 shadow-sm opacity-80 hover:opacity-100'} border-2 border-white/50`;
+                btn.onclick = () => {
+                    currentColor = color;
+                    renderColors();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function lockShape() {
+            if (blocks.length === 0) return;
+            isShapeLocked = true;
+            document.getElementById('lock-btn').classList.add('hidden');
+            document.getElementById('color-palette').classList.add('opacity-0', 'pointer-events-none');
+            createEdgeDOM();
+            
+            const tip = document.getElementById('tip-message');
+            tip.innerText = '现在可以拖拽任何线段到任意位置！试试拼接出外围的矩形。';
+            tip.classList.remove('opacity-0');
+            setTimeout(() => {
+                tip.classList.add('opacity-0');
+            }, 5000);
+        }
+
+        function onBoardClick(e) {
+            if (isShapeLocked) return;
+            
+            const rect = board.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+            
+            if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return;
+            
+            if (grid[row][col]) {
+                const block = grid[row][col];
+                const index = blocks.findIndex(b => b === block);
+                if (index > -1) blocks.splice(index, 1);
+                grid[row][col] = null;
+            } else {
+                const block = { x: col, y: row, color: currentColor, id: Date.now() + Math.random(), num: 0 };
+                blocks.push(block);
+                grid[row][col] = block;
+            }
+            
+            updateNumbering();
+            updateEdges();
+            renderBlocks();
+            createEdgeDOM();
+        }
+
+        function updateNumbering() {
+            blocks.forEach((b, i) => {
+                b.num = i + 1;
+            });
+        }
+
+        function calculateBoundingBox() {
+            if (blocks.length === 0) {
+                minX = maxX = minY = maxY = 0;
+                return;
+            }
+            minX = COLS;
+            maxX = 0;
+            minY = ROWS;
+            maxY = 0;
+            
+            blocks.forEach(b => {
+                if (b.x < minX) minX = b.x;
+                if (b.x >= maxX) maxX = b.x;
+                if (b.y < minY) minY = b.y;
+                if (b.y >= maxY) maxY = b.y;
+            });
+            maxX += 1;
+            maxY += 1;
+        }
+
+        function updateEdges() {
+            calculateBoundingBox();
+            edges = [];
+            if (blocks.length === 0) return;
+            
+            // Top edges
+            for(let y = 0; y <= ROWS; y++) {
+                let startX = -1;
+                for(let x = 0; x <= COLS; x++) {
+                    const hasBelow = y < ROWS && x < COLS && grid[y][x];
+                    const hasAbove = y > 0 && x < COLS && grid[y-1][x];
+                    if (hasBelow && !hasAbove) {
+                        if (startX === -1) startX = x;
+                    } else {
+                        if (startX !== -1) {
+                            edges.push({ id: Math.random(), type: 'top', original: y, current: y, target: minY, x: startX, len: x - startX, snapped: false });
+                            startX = -1;
+                        }
+                    }
+                }
+            }
+            // Bottom edges
+            for(let y = 0; y <= ROWS; y++) {
+                let startX = -1;
+                for(let x = 0; x <= COLS; x++) {
+                    const hasAbove = y > 0 && x < COLS && grid[y-1][x];
+                    const hasBelow = y < ROWS && x < COLS && grid[y][x];
+                    if (hasAbove && !hasBelow) {
+                        if (startX === -1) startX = x;
+                    } else {
+                        if (startX !== -1) {
+                            edges.push({ id: Math.random(), type: 'bottom', original: y, current: y, target: maxY, x: startX, len: x - startX, snapped: false });
+                            startX = -1;
+                        }
+                    }
+                }
+            }
+            // Left edges
+            for(let x = 0; x <= COLS; x++) {
+                let startY = -1;
+                for(let y = 0; y <= ROWS; y++) {
+                    const hasRight = x < COLS && y < ROWS && grid[y][x];
+                    const hasLeft = x > 0 && y < ROWS && grid[y][x-1];
+                    if (hasRight && !hasLeft) {
+                        if (startY === -1) startY = y;
+                    } else {
+                        if (startY !== -1) {
+                            edges.push({ id: Math.random(), type: 'left', original: x, current: x, target: minX, y: startY, len: y - startY, snapped: false });
+                            startY = -1;
+                        }
+                    }
+                }
+            }
+            // Right edges
+            for(let x = 0; x <= COLS; x++) {
+                let startY = -1;
+                for(let y = 0; y <= ROWS; y++) {
+                    const hasLeft = x > 0 && y < ROWS && grid[y][x-1];
+                    const hasRight = x < COLS && y < ROWS && grid[y][x];
+                    if (hasLeft && !hasRight) {
+                        if (startY === -1) startY = y;
+                    } else {
+                        if (startY !== -1) {
+                            edges.push({ id: Math.random(), type: 'right', original: x, current: x, target: maxX, y: startY, len: y - startY, snapped: false });
+                            startY = -1;
+                        }
+                    }
+                }
+            }
+        }
+
+        function renderBlocks() {
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = '';
+            
+            blocks.forEach(b => {
+                const div = document.createElement('div');
+                div.className = `absolute block-enter ${b.color} rounded-xl flex items-center justify-center text-white font-black text-2xl border-b-4 border-black/10`;
+                // Add tiny border for visual separation
+                div.style.left = `${b.x * cellSize + 2}px`;
+                div.style.top = `${b.y * cellSize + 2}px`;
+                div.style.width = `${cellSize - 4}px`;
+                div.style.height = `${cellSize - 4}px`;
+                div.innerText = b.num;
+                container.appendChild(div);
+            });
+        }
+
+        let draggingEdge = null;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let dragInitialCurrent = 0;
+
+        function createEdgeDOM() {
+            const container = document.getElementById('edges-container');
+            container.innerHTML = '';
+            
+            if (blocks.length > 0) {
+                const bbox = document.createElement('div');
+                // Use a thick, distinct dashed border for the bounding box
+                bbox.className = 'absolute pointer-events-none rounded transition-all duration-300';
+                bbox.style.left = `${minX * cellSize}px`;
+                bbox.style.top = `${minY * cellSize}px`;
+                bbox.style.width = `${(maxX - minX) * cellSize}px`;
+                bbox.style.height = `${(maxY - minY) * cellSize}px`;
+                bbox.style.border = '4px dashed #93c5fd'; // blue-300
+                bbox.style.zIndex = '0';
+                container.appendChild(bbox);
+            }
+            
+            edges.forEach(edge => {
+                const ghost = document.createElement('div');
+                ghost.className = 'absolute bg-slate-300 pointer-events-none rounded-full';
+                ghost.style.zIndex = '1';
+                
+                const hitArea = document.createElement('div');
+                hitArea.className = 'absolute cursor-grab group flex items-center justify-center pointer-events-auto';
+                hitArea.style.touchAction = 'none'; // CRITICAL for touch screens
+                hitArea.style.zIndex = '10';
+                
+                const line = document.createElement('div');
+                line.className = 'bg-orange-500 rounded-full group-active:scale-y-150 transition-transform duration-100 flex items-center justify-center shadow-md';
+                
+                const arrow = document.createElement('div');
+                arrow.className = 'text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity font-bold select-none drop-shadow-md';
+                
+                const STROKE = 8;
+                const HIT_AREA = 36; // Big hit area for touch
+                
+                if (edge.type === 'top' || edge.type === 'bottom') {
+                    const y = edge.current * cellSize;
+                    const x = edge.x * cellSize;
+                    const w = edge.len * cellSize;
+                    
+                    ghost.style.left = `${x}px`;
+                    ghost.style.top = `${edge.original * cellSize - STROKE/2}px`;
+                    ghost.style.width = `${w}px`;
+                    ghost.style.height = `${STROKE}px`;
+                    
+                    hitArea.style.left = `${x + 2}px`; // slightly inset so corners don't block each other completely
+                    hitArea.style.top = `${y - HIT_AREA/2}px`;
+                    hitArea.style.width = `${w - 4}px`;
+                    hitArea.style.height = `${HIT_AREA}px`;
+                    
+                    line.style.width = '100%';
+                    line.style.height = `${STROKE}px`;
+                    
+                    arrow.innerHTML = '↕';
+                } else {
+                     const x = edge.current * cellSize;
+                     const y = edge.y * cellSize;
+                     const h = edge.len * cellSize;
+                     
+                     ghost.style.left = `${edge.original * cellSize - STROKE/2}px`;
+                     ghost.style.top = `${y}px`;
+                     ghost.style.width = `${STROKE}px`;
+                     ghost.style.height = `${h}px`;
+                     
+                     hitArea.style.left = `${x - HIT_AREA/2}px`;
+                     hitArea.style.top = `${y + 2}px`;
+                     hitArea.style.width = `${HIT_AREA}px`;
+                     hitArea.style.height = `${h - 4}px`;
+                     
+                     line.style.width = `${STROKE}px`;
+                     line.style.height = '100%';
+                     
+                     arrow.innerHTML = '↔';
+                }
+                
+                ghost.style.opacity = '0'; // Only show when moved
+                edge.snapped = (edge.current === edge.target);
+                
+                if (edge.snapped && isShapeLocked) {
+                    line.className = 'bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.8)] flex items-center justify-center relative cursor-grab';
+                    arrow.innerHTML = '✓';
+                    arrow.className = 'text-white text-xs opacity-100 font-bold drop-shadow-md';
+                    ghost.style.opacity = edge.current !== edge.original ? '1' : '0';
+                    hitArea.addEventListener('pointerdown', (e) => startDrag(e, edge, hitArea, ghost, line));
+                } else if (isShapeLocked) {
+                    line.classList.add('neon-shadow');
+                    hitArea.style.cursor = 'grab';
+                    ghost.style.opacity = edge.current !== edge.original ? '1' : '0';
+                    hitArea.addEventListener('pointerdown', (e) => startDrag(e, edge, hitArea, ghost, line));
+                } else {
+                    hitArea.style.cursor = 'default';
+                    arrow.style.display = 'none';
+                    if (edge.original === edge.target) {
+                        line.className = 'bg-slate-700/80 rounded-full shadow-sm';
+                    }
+                }
+
+                line.appendChild(arrow);
+                hitArea.appendChild(line);
+                container.appendChild(ghost);
+                container.appendChild(hitArea);
+            });
+        }
+
+        function startDrag(e, edge, div, ghost, line) {
+            if (!isShapeLocked) return;
+            
+            e.stopPropagation(); // prevent adding block
+            div.setPointerCapture(e.pointerId);
+            
+            draggingEdge = edge;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            dragInitialCurrent = edge.current;
+            
+            div.style.cursor = 'grabbing';
+            line.style.transform = edge.type === 'top' || edge.type === 'bottom' ? 'scaleY(1.5)' : 'scaleX(1.5)';
+            ghost.style.opacity = '1';
+            
+            const onMove = (ev) => {
+                if (!draggingEdge) return;
+                ev.stopPropagation();
+                
+                const deltaX = ev.clientX - dragStartX;
+                const deltaY = ev.clientY - dragStartY;
+                
+                let offsetCells = 0;
+                let newCurrent = dragInitialCurrent;
+                
+                if (edge.type === 'top' || edge.type === 'bottom') {
+                    offsetCells = Math.round(deltaY / cellSize);
+                    newCurrent = dragInitialCurrent + offsetCells;
+                    // Clamp to board limits
+                    newCurrent = Math.max(0, Math.min(ROWS, newCurrent));
+                } else if (edge.type === 'left' || edge.type === 'right') {
+                    offsetCells = Math.round(deltaX / cellSize);
+                    newCurrent = dragInitialCurrent + offsetCells;
+                    newCurrent = Math.max(0, Math.min(COLS, newCurrent));
+                }
+                
+                edge.current = newCurrent;
+                
+                if (edge.type === 'top' || edge.type === 'bottom') {
+                    div.style.top = `${newCurrent * cellSize - 18}px`; // center of 36px hitarea
+                } else {
+                    div.style.left = `${newCurrent * cellSize - 18}px`;
+                }
+                
+                if (newCurrent === edge.target) {
+                    line.style.backgroundColor = '#10b981'; // emerald-500
+                    line.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.8)';
+                } else {
+                    line.style.backgroundColor = '#f97316'; // orange-500
+                    line.style.boxShadow = '0 0 15px rgba(249, 115, 22, 0.6)';
+                }
+            };
+            
+            const onUp = (ev) => {
+                if (!draggingEdge) return;
+                ev.stopPropagation();
+                
+                div.releasePointerCapture(ev.pointerId);
+                div.removeEventListener('pointermove', onMove);
+                div.removeEventListener('pointerup', onUp);
+                
+                div.style.cursor = 'grab';
+                line.style.transform = 'scale(1)';
+                
+                edge.snapped = (edge.current === edge.target);
+                createEdgeDOM();
+                checkWin();
+                
+                draggingEdge = null;
+            };
+            
+            div.addEventListener('pointermove', onMove);
+            div.addEventListener('pointerup', onUp);
+        }
+
+        function checkWin() {
+            const movableEdges = edges.filter(e => e.original !== e.target);
+            if (movableEdges.length > 0 && movableEdges.every(e => e.snapped)) {
+                setTimeout(showWinModal, 300);
+            }
+        }
+
+        function showWinModal() {
+            const modal = document.getElementById('win-modal');
+            const content = document.getElementById('win-modal-content');
+            
+            const l = maxX - minX;
+            const w = maxY - minY;
+            const perimeter = (l + w) * 2;
+            
+            document.getElementById('perimeter-formula').innerHTML = `<span class="text-slate-500">(</span><span class="text-blue-500">${l}</span> <span class="text-slate-400">+</span> <span class="text-teal-500">${w}</span><span class="text-slate-500">)</span> <span class="text-slate-400">×</span> 2 = <span class="text-indigo-600">${perimeter}</span>`;
+            document.getElementById('perimeter-result').innerHTML = `周长 = <span class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-emerald-500">${perimeter}</span>`;
+            
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-90');
+            
+            if (window.confetti) {
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.5 },
+                    colors: ['#3b82f6', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6']
+                });
+            }
+        }
+
+        function closeWinModal() {
+             const modal = document.getElementById('win-modal');
+             const content = document.getElementById('win-modal-content');
+             modal.classList.add('opacity-0');
+             content.classList.add('scale-90');
+             setTimeout(() => {
+                 modal.classList.add('hidden');
+             }, 300);
+        }
+
+        function clearBoard() {
+            isShapeLocked = false;
+            document.getElementById('lock-btn').classList.remove('hidden');
+            document.getElementById('color-palette').classList.remove('opacity-0', 'pointer-events-none');
+            
+            blocks = [];
+            grid = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+            edges = [];
+            renderBlocks();
+            createEdgeDOM();
+            
+            // clear background dashes
+            document.getElementById('edges-container').innerHTML = '';
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
