@@ -482,6 +482,77 @@
   font-size: 1rem;
 }
 
+.featured-works-section {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.featured-works-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.featured-work-card {
+  display: block;
+  overflow: hidden;
+  text-decoration: none;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.featured-work-card:hover {
+  transform: translateY(-6px);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.featured-work-image {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.featured-work-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.featured-work-content {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  text-align: left;
+}
+
+.featured-work-content h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.08rem;
+  line-height: 1.5;
+}
+
+.featured-work-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.featured-work-tags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  background: rgba(0, 212, 255, 0.14);
+  color: #8fe9ff;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 /* 服务特色板块 */
 .features-section {
   background: rgba(0, 0, 0, 0.2);
@@ -652,7 +723,8 @@
   }
 
   .about-grid,
-  .features-grid {
+  .features-grid,
+  .featured-works-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
   }

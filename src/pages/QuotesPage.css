@@ -1,6 +1,6 @@
 /* QuotesPage 根容器样式 */
 .quotes-page {
-  background: #fefefe;
+  background: #f7f7ff;
   min-height: 100vh;
 }
 
@@ -43,7 +43,7 @@
   --author-line-height: 1.6;
   
   /* 主色调 */
-  --bg-primary: #fefefe;
+  --bg-primary: #f7f7ff;
   --bg-secondary: #f8f9fa;
   --text-primary: #2d3748;
   --text-secondary: #718096;

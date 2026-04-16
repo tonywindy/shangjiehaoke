@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
+import { FEATURED_WORKS } from './data/works-data'
 import './App.css'
 import videoSrc from '/videos/your-video.mp4';
 
@@ -128,6 +129,33 @@ function App() {
                   <h3>一点思考</h3>
                   <p>不止于代码，也关于教育本身的感悟与洞察。</p>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section featured-works-section">
+          <div className="section-container">
+            <div className="section-content">
+              <h2 className="section-title">继续探索</h2>
+              <p className="section-subtitle">首页推荐区直接读取统一作品数据，后续新增卡片时不再需要同步改多处。</p>
+
+              <div className="featured-works-grid">
+                {FEATURED_WORKS.map((work) => (
+                  <a href={work.path} className="featured-work-card" key={work.id}>
+                    <div className="featured-work-image">
+                      <img src={work.cover} alt={work.title} loading="lazy" />
+                    </div>
+                    <div className="featured-work-content">
+                      <h3>{work.title}</h3>
+                      <div className="featured-work-tags" aria-label={`${work.title}标签`}>
+                        {work.tags.map((tag) => (
+                          <span key={tag}>{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </a>
+                ))}
               </div>
             </div>
           </div>
