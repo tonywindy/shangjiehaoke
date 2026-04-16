@@ -52,7 +52,7 @@ export const COLORS = {
 export const NAV_LINKS = [
   { path: '/', label: '初见之页', key: 'home' },
   { path: '/works.html', label: '些许尝试', key: 'works' },
-  { path: '/contact.html', label: '一点想法', key: 'quotes' },
+  { path: '/contact', label: '一点想法', key: 'quotes' },
 ];
 
 // 页面标题

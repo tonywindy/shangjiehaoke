@@ -14,6 +14,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />} />
         <Route path="/works" element={<WorksPage />} />
         <Route path="/quotes" element={<QuotesPage />} />
+        <Route path="/contact" element={<QuotesPage />} />
         <Route path="/shizhen" element={<ShizhenPage />} />
         {/* 兼容原有的HTML路径 */}
         <Route path="/works.html" element={<WorksPage />} />

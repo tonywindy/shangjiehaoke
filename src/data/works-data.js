@@ -30,7 +30,7 @@ export const SITE_PAGES = [
     id: 'quotes',
     title: '一点想法',
     description: '金句与思考页，负责内容展示、收藏与下载。',
-    path: '/contact.html',
+    path: '/contact',
     pageType: PAGE_TYPES.SITE,
     tags: ['React', '内容页'],
   },
