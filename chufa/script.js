@@ -626,6 +626,7 @@ function renderSource() {
 
 function renderSquirrels() {
   ui.squirrelGrid.innerHTML = "";
+  const showHundredsTrack = state.digits.hundreds > 0;
   state.squirrels.forEach((squirrel) => {
     const card = document.createElement("div");
     card.className = "squirrel-card";
@@ -634,10 +635,12 @@ function renderSquirrels() {
         <div class="squirrel-emoji">🐿️</div>
         <div class="squirrel-name">松鼠${String.fromCharCode(65 + squirrel.id - 1)}</div>
       </div>
+      ${showHundredsTrack ? `
       <div class="receive-zone">
         <div class="zone-title">百位区（百包）</div>
         <div class="item-grid">${Array.from({ length: squirrel.hundreds }, () => '<span class="item hundreds">100</span>').join("")}</div>
       </div>
+      ` : ""}
       <div class="receive-zone">
         <div class="zone-title">十位区（十包）</div>
         <div class="item-grid">${Array.from({ length: squirrel.tens }, () => '<span class="item tens">10</span>').join("")}</div>
