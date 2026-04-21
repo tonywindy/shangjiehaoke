@@ -2,9 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  base: '/',
+  base: mode === 'production' ? '/shangjiehaoke/' : '/',
   publicDir: 'public',
   build: {
     rollupOptions: {
@@ -31,4 +31,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
