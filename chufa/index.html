@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>分松果学除法</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand-pill">
+        <span class="brand-icon">🌰</span>
+        <div>
+          <div class="brand-title">分松果学除法</div>
+          <div class="brand-subtitle">松果平均分给松鼠</div>
+        </div>
+      </div>
+
+      <div class="headline-pill">
+        <span id="headlineText">87 个松果平均分给 2 只松鼠</span>
+      </div>
+
+      <div class="toolbar">
+        <button id="soundBtn" class="toolbar-btn" type="button">🔊 声音</button>
+        <button id="resetBtn" class="toolbar-btn" type="button">↻ 重置</button>
+        <button id="settingsBtn" class="toolbar-btn" type="button">⚙ 设置</button>
+      </div>
+    </header>
+
+    <section class="control-panel" id="settingsPanel">
+      <div class="field-group">
+        <label for="dividend">被除数</label>
+        <input id="dividend" type="number" min="10" max="999" value="87" />
+      </div>
+      <div class="field-group">
+        <label for="divisor">除数</label>
+        <input id="divisor" type="number" min="2" max="9" value="2" />
+      </div>
+      <div class="field-group">
+        <label for="mode">模式</label>
+        <select id="mode">
+          <option value="teacher">教师演示模式</option>
+          <option value="student">学生练习模式</option>
+        </select>
+      </div>
+      <button id="startBtn" class="primary-btn" type="button">开始分配</button>
+    </section>
+
+    <main class="layout-grid">
+      <section id="leftPanel" class="panel left-panel">
+        <div class="panel-title green-title">剩余松果</div>
+
+        <div class="total-card">
+          <div class="total-label">还剩</div>
+          <div class="total-number-wrap">
+            <span class="big-number" id="remainingTotal">324</span>
+            <span class="total-unit">个</span>
+          </div>
+        </div>
+
+        <div class="unit-board">
+          <div class="unit-box" id="hundredsCard">
+            <div class="unit-box-title">
+              <span>百包（每包100个）</span>
+              <span class="unit-count" id="hundredsCount">3 个</span>
+            </div>
+            <div id="hundredsItems" class="item-grid"></div>
+          </div>
+
+          <div class="unit-box hidden" id="tensCard">
+            <div class="unit-box-title">
+              <span>十包（每包10个）</span>
+              <span class="unit-count" id="tensCount">2 个</span>
+            </div>
+            <div id="tensItems" class="item-grid"></div>
+          </div>
+
+          <div class="unit-box hidden" id="onesCard">
+            <div class="unit-box-title">
+              <span>单个松果（1个）</span>
+              <span class="unit-count" id="onesCount">4 个</span>
+            </div>
+            <div id="onesItems" class="item-grid small-grid"></div>
+          </div>
+        </div>
+
+        <div class="tips-card">
+          <div class="tips-title">操作提示</div>
+          <div id="leftHint" class="tips-text">先分百位：3 个百平均分给 3 只松鼠。</div>
+        </div>
+
+        <div class="mode-strip">
+          <div class="mode-chip" id="teacherChip">▶ 教师演示模式</div>
+          <div class="mode-chip" id="studentChip">👦 学生练习模式</div>
+        </div>
+      </section>
+
+      <section id="middlePanel" class="panel center-panel">
+        <div class="panel-title blue-title">松鼠分配区</div>
+        <div class="squirrel-stage">
+          <div id="squirrelGrid" class="squirrel-grid"></div>
+          <div class="center-status-card">
+            <div class="center-status-title">当前状态</div>
+            <div id="statusBox" class="center-status-main">点击“开始分配”进入演示。</div>
+            <div id="dropZone" class="drop-zone hidden">把左侧当前单位拖到这里，完成一轮平均分</div>
+          </div>
+        </div>
+
+        <div id="questionBox" class="question-box hidden">
+          <p id="questionText">还能继续平均分吗？</p>
+          <div class="question-actions">
+            <button id="canBtn" class="ghost-btn" type="button">能</button>
+            <button id="cannotBtn" class="warn-btn" type="button">不能</button>
+          </div>
+        </div>
+
+        <div class="feedback-banner" id="operationFeedback">操作反馈：等待开始</div>
+        <div class="concept-note" id="conceptFeedback">概念反馈：商表示每只分到多少。</div>
+        <div class="error-note" id="errorFeedback">错误反馈：暂无</div>
+      </section>
+
+      <section id="rightPanel" class="panel right-panel">
+        <div class="panel-title purple-title">竖式计算区</div>
+
+        <div class="equation-card">
+          <div class="equation-line">
+            <span id="equationDividend">324</span>
+            <span>÷</span>
+            <span id="equationDivisor">3</span>
+            <span>=</span>
+            <span class="slot-group">
+              <span class="digit-slot" id="slotHundreds">□</span>
+              <span class="digit-slot" id="slotTens">□</span>
+              <span class="digit-slot" id="slotOnes">□</span>
+            </span>
+            <span>……</span>
+            <span class="digit-slot remainder-slot" id="slotRemainder">□</span>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <div class="card-header">
+            <span>计算步骤引导</span>
+            <span id="stepCounter" class="step-counter">步骤 0 / 4</span>
+          </div>
+          <div class="guide-main">
+            <div id="divisionSummary" class="guide-question">先看被除数的哪一部分？</div>
+            <div class="guide-choices">
+              <div id="guideChoiceHundreds" class="guide-choice active">百位</div>
+              <div id="guideChoiceTens" class="guide-choice">十位</div>
+              <div id="guideChoiceOnes" class="guide-choice">个位</div>
+              <div id="guideChoiceWhole" class="guide-choice">余数判断</div>
+            </div>
+            <div id="teacherActionBar" class="teacher-action-bar hidden">
+              <button id="prevStepBtn" class="ghost-btn prev-step-btn" type="button">上一步</button>
+              <button id="nextStepBtn" class="primary-btn next-step-btn" type="button">下一步</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="long-division-card">
+          <div class="card-header">
+            <span>竖式区域</span>
+            <span class="muted">根据步骤逐步填写</span>
+          </div>
+          <div class="division-visual">
+            <div class="division-gridboard">
+              <div class="grid-overlay">
+                <span class="grid-cell c2 r1 mini-slot" id="visualQ1">□</span>
+                <span class="grid-cell c3 r1 mini-slot" id="visualQ2">□</span>
+                <span class="grid-cell c4 r1 mini-slot" id="visualQ3">□</span>
+
+                <span class="grid-cell c1 r2 divisor-digit" id="visualDivisor">3</span>
+                <span class="grid-cell c2 r2 mini-slot active-slot" id="visualD1">3</span>
+                <span class="grid-cell c3 r2 mini-slot active-slot" id="visualD2">2</span>
+                <span class="grid-cell c4 r2 mini-slot active-slot" id="visualD3">4</span>
+
+                <span class="grid-cell c2 r3 mini-slot" id="visualS1H">□</span>
+                <span class="grid-cell c3 r3 mini-slot" id="visualS1T">□</span>
+                <span class="grid-cell c4 r3 mini-slot" id="visualS1O">□</span>
+
+                <span class="grid-cell c2 r4 mini-slot" id="visualB1H">□</span>
+                <span class="grid-cell c3 r4 mini-slot" id="visualB1T">□</span>
+                <span class="grid-cell c4 r4 mini-slot" id="visualB1O">□</span>
+
+                <span class="grid-cell c2 r5 mini-slot" id="visualS2H">□</span>
+                <span class="grid-cell c3 r5 mini-slot" id="visualS2T">□</span>
+                <span class="grid-cell c4 r5 mini-slot" id="visualS2O">□</span>
+
+                <span class="grid-cell c2 r6 mini-slot" id="visualB2H">□</span>
+                <span class="grid-cell c3 r6 mini-slot" id="visualB2T">□</span>
+                <span class="grid-cell c4 r6 mini-slot" id="visualB2O">□</span>
+
+                <span class="grid-cell c2 r7 mini-slot" id="visualS3H">□</span>
+                <span class="grid-cell c3 r7 mini-slot" id="visualS3T">□</span>
+                <span class="grid-cell c4 r7 mini-slot" id="visualS3O">□</span>
+
+                <span class="grid-cell c2 r8 mini-slot" id="visualR1">□</span>
+                <span class="grid-cell c3 r8 mini-slot" id="visualR2">□</span>
+                <span class="grid-cell c4 r8 mini-slot" id="visualR3">□</span>
+              </div>
+              <div class="division-bracket"></div>
+              <div class="division-line line-top"></div>
+              <div class="division-line line-mid1"></div>
+              <div class="division-line line-mid2"></div>
+              <div class="division-line line-bottom"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="history-card">
+          <div class="card-header">
+            <span>讲解记录</span>
+          </div>
+          <div id="divisionSteps" class="history-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

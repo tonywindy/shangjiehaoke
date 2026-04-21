@@ -38,6 +38,15 @@ export const SITE_PAGES = [
 
 export const WORKS_DATA = [
   {
+    id: 'chufa',
+    title: '分松果学除法',
+    cover: '/images/chufa.png',
+    path: '/chufa/index.html',
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['除法', '互动学习'],
+    featured: true,
+  },
+  {
     id: 'zhouchangpingyi',
     title: '平移变换与周长变化',
     cover: '/images/zhouchangpingyi.png',
