@@ -831,45 +831,37 @@ button {
 .division-gridboard.compact-leading-skip #visualS1H,
 .division-gridboard.compact-leading-skip #visualS1T,
 .division-gridboard.compact-leading-skip #visualS1O {
-  visibility: hidden;
+  visibility: visible;
 }
 
 .division-gridboard.compact-leading-skip #visualB1H,
 .division-gridboard.compact-leading-skip #visualB1T,
 .division-gridboard.compact-leading-skip #visualB1O {
-  top: 112px;
+  top: 168px;
 }
 
 .division-gridboard.compact-leading-skip #visualS2H,
 .division-gridboard.compact-leading-skip #visualS2T,
 .division-gridboard.compact-leading-skip #visualS2O {
-  top: 168px;
+  top: 224px;
 }
 
 .division-gridboard.compact-leading-skip #visualB2H,
 .division-gridboard.compact-leading-skip #visualB2T,
 .division-gridboard.compact-leading-skip #visualB2O {
-  top: 224px;
+  visibility: hidden;
 }
 
 .division-gridboard.compact-leading-skip #visualS3H,
 .division-gridboard.compact-leading-skip #visualS3T,
 .division-gridboard.compact-leading-skip #visualS3O {
-  top: 280px;
+  visibility: hidden;
 }
 
 .division-gridboard.compact-leading-skip #visualR1,
 .division-gridboard.compact-leading-skip #visualR2,
 .division-gridboard.compact-leading-skip #visualR3 {
-  top: 336px;
-}
-
-.division-gridboard.compact-leading-skip .line-mid1 {
-  top: 214px;
-}
-
-.division-gridboard.compact-leading-skip .line-mid2 {
-  top: 326px;
+  top: 280px;
 }
 
 .division-gridboard.compact-leading-skip .line-bottom {

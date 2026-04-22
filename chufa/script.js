@@ -728,36 +728,38 @@ function renderDivision() {
     element.classList.toggle("hidden", state.digits.hundreds === 0 || (element === ui.visualQ1 && leadingHundredsSkipped));
   });
 
-  const subtract1 = leadingHundredsSkipped ? null : state.quotientDigits.hundreds * state.divisor * 100;
   const onesStageStart = state.stageStartPools.ones;
   const mergedTensToOnes =
     state.quotientDigits.tens === 0 && ["ones", "question", "done"].includes(state.phase);
-  const bring1 = state.phase === "tens" || state.phase === "ones" || state.phase === "question" || state.phase === "done"
-    ? leadingHundredsSkipped
-      ? state.stageStartPools.tens
-      : mergedTensToOnes
-      ? onesStageStart
-      : state.stageStartPools.tens !== null
-        ? state.stageStartPools.tens * 10
-        : null
-    : null;
+  const subtract1 = leadingHundredsSkipped
+    ? state.quotientDigits.tens * state.divisor * 10
+    : state.quotientDigits.hundreds * state.divisor * 100;
+  const bring1 = leadingHundredsSkipped
+    ? state.phase === "ones" || state.phase === "question" || state.phase === "done"
+      ? state.stageStartPools.ones
+      : null
+    : state.phase === "tens" || state.phase === "ones" || state.phase === "question" || state.phase === "done"
+      ? mergedTensToOnes
+        ? onesStageStart
+        : state.stageStartPools.tens !== null
+          ? state.stageStartPools.tens * 10
+          : null
+      : null;
   const subtract2 = leadingHundredsSkipped
-    ? state.quotientDigits.tens * state.divisor
+    ? (state.phase === "ones" || state.phase === "question" || state.phase === "done"
+      ? state.quotientDigits.ones * state.divisor
+      : null)
     : mergedTensToOnes
       ? null
       : state.quotientDigits.tens * state.divisor * 10;
   const bring2 = leadingHundredsSkipped
-    ? state.phase === "ones" || state.phase === "question" || state.phase === "done"
-      ? state.stageStartPools.ones
-      : null
-    : mergedTensToOnes
     ? null
-    : state.phase === "ones" || state.phase === "question" || state.phase === "done"
-      ? state.stageStartPools.ones
-      : null;
-  const subtract3 = leadingHundredsSkipped
-    ? state.quotientDigits.ones * state.divisor
-    : state.quotientDigits.ones * state.divisor;
+    : mergedTensToOnes
+      ? null
+      : state.phase === "ones" || state.phase === "question" || state.phase === "done"
+        ? state.stageStartPools.ones
+        : null;
+  const subtract3 = leadingHundredsSkipped ? null : state.quotientDigits.ones * state.divisor;
   const remainder = ["question", "done"].includes(state.phase) ? state.currentPlacePool : null;
   ui.divisionGridboard.classList.toggle("compact-two-step", !leadingHundredsSkipped && mergedTensToOnes);
 
