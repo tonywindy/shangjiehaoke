@@ -636,16 +636,16 @@ function renderSquirrels() {
         <div class="squirrel-name">松鼠${String.fromCharCode(65 + squirrel.id - 1)}</div>
       </div>
       ${showHundredsTrack ? `
-      <div class="receive-zone">
+      <div class="receive-zone" data-zone-kind="hundreds">
         <div class="zone-title">百位区（百包）</div>
         <div class="item-grid">${Array.from({ length: squirrel.hundreds }, () => '<span class="item hundreds">100</span>').join("")}</div>
       </div>
       ` : ""}
-      <div class="receive-zone">
+      <div class="receive-zone" data-zone-kind="tens">
         <div class="zone-title">十位区（十包）</div>
         <div class="item-grid">${Array.from({ length: squirrel.tens }, () => '<span class="item tens">10</span>').join("")}</div>
       </div>
-      <div class="receive-zone">
+      <div class="receive-zone" data-zone-kind="ones">
         <div class="zone-title ones-zone-title">个位区（单个）</div>
         <div class="item-grid small-grid">${Array.from({ length: squirrel.ones }, () => '<span class="item ones">1</span>').join("")}</div>
       </div>
@@ -817,11 +817,13 @@ function flashPanels() {
 function animateDistribution(kind, dragStartRect) {
   const startRect = dragStartRect || ui.middlePanel.getBoundingClientRect();
   const cards = Array.from(document.querySelectorAll(".squirrel-card"));
-  const zoneIndex = { hundreds: 0, tens: 1, ones: 2 }[kind];
   const label = { hundreds: "100", tens: "10", ones: "1" }[kind];
 
   cards.forEach((card, index) => {
-    const zone = card.querySelectorAll(".receive-zone")[zoneIndex];
+    const zone = card.querySelector(`[data-zone-kind="${kind}"]`);
+    if (!zone) {
+      return;
+    }
     const targetRect = zone.getBoundingClientRect();
     const flying = document.createElement("div");
     flying.className = `flying-item ${kind}`;
