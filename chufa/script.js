@@ -671,13 +671,14 @@ function renderQuestion() {
 }
 
 function renderEquation() {
+  const leadingHundredsSkipped = state.digits.hundreds > 0 && state.digits.hundreds < state.divisor;
   ui.equationDividend.textContent = state.dividend;
   ui.equationDivisor.textContent = state.divisor;
-  ui.slotHundreds.textContent = state.started ? (state.digits.hundreds > 0 ? state.quotientDigits.hundreds : "□") : "□";
+  ui.slotHundreds.textContent = state.started ? (state.digits.hundreds > 0 && !leadingHundredsSkipped ? state.quotientDigits.hundreds : "□") : "□";
   ui.slotTens.textContent = state.started ? state.quotientDigits.tens : "□";
   ui.slotOnes.textContent = state.started ? state.quotientDigits.ones : "□";
   ui.slotRemainder.textContent = ["question", "done"].includes(state.phase) ? state.currentPlacePool : "□";
-  ui.slotHundreds.classList.toggle("hidden", state.digits.hundreds === 0);
+  ui.slotHundreds.classList.toggle("hidden", state.digits.hundreds === 0 || leadingHundredsSkipped);
   updateSlotHighlights();
 }
 
@@ -694,6 +695,7 @@ function setRowTriplet(rowElements, value) {
 }
 
 function renderDivision() {
+  const leadingHundredsSkipped = state.digits.hundreds > 0 && state.digits.hundreds < state.divisor;
   const stepInfo = getStepInfo();
   ui.stepCounter.textContent = stepInfo.counter;
   ui.divisionSummary.textContent = stepInfo.summary;
@@ -704,9 +706,10 @@ function renderDivision() {
   ui.guideChoiceWhole.classList.toggle("active", stepInfo.choice === "whole");
   ui.guideChoiceHundreds.classList.toggle("hidden", state.digits.hundreds === 0);
   ui.divisionGridboard.classList.toggle("compact-two-digit", state.digits.hundreds === 0);
+  ui.divisionGridboard.classList.toggle("compact-leading-skip", leadingHundredsSkipped);
 
   ui.visualDivisor.textContent = state.divisor;
-  ui.visualQ1.textContent = state.started ? (state.digits.hundreds > 0 ? state.quotientDigits.hundreds : "□") : "□";
+  ui.visualQ1.textContent = state.started ? (state.digits.hundreds > 0 && !leadingHundredsSkipped ? state.quotientDigits.hundreds : "□") : "□";
   ui.visualQ2.textContent = state.started ? state.quotientDigits.tens : "□";
   ui.visualQ3.textContent = state.started ? state.quotientDigits.ones : "□";
   ui.visualD1.textContent = state.digits.hundreds > 0 ? state.digits.hundreds : "□";
@@ -722,7 +725,7 @@ function renderDivision() {
     ui.visualS3H,
     ui.visualR1,
   ].forEach((element) => {
-    element.classList.toggle("hidden", state.digits.hundreds === 0);
+    element.classList.toggle("hidden", state.digits.hundreds === 0 || (element === ui.visualQ1 && leadingHundredsSkipped));
   });
 
   const subtract1 = state.quotientDigits.hundreds * state.divisor * 100;
