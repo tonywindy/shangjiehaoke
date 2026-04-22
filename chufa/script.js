@@ -728,26 +728,38 @@ function renderDivision() {
     element.classList.toggle("hidden", state.digits.hundreds === 0 || (element === ui.visualQ1 && leadingHundredsSkipped));
   });
 
-  const subtract1 = state.quotientDigits.hundreds * state.divisor * 100;
+  const subtract1 = leadingHundredsSkipped ? null : state.quotientDigits.hundreds * state.divisor * 100;
   const onesStageStart = state.stageStartPools.ones;
   const mergedTensToOnes =
     state.quotientDigits.tens === 0 && ["ones", "question", "done"].includes(state.phase);
   const bring1 = state.phase === "tens" || state.phase === "ones" || state.phase === "question" || state.phase === "done"
-    ? mergedTensToOnes
+    ? leadingHundredsSkipped
+      ? state.stageStartPools.tens
+      : mergedTensToOnes
       ? onesStageStart
       : state.stageStartPools.tens !== null
         ? state.stageStartPools.tens * 10
         : null
     : null;
-  const subtract2 = mergedTensToOnes ? null : state.quotientDigits.tens * state.divisor * 10;
-  const bring2 = mergedTensToOnes
+  const subtract2 = leadingHundredsSkipped
+    ? state.quotientDigits.tens * state.divisor
+    : mergedTensToOnes
+      ? null
+      : state.quotientDigits.tens * state.divisor * 10;
+  const bring2 = leadingHundredsSkipped
+    ? state.phase === "ones" || state.phase === "question" || state.phase === "done"
+      ? state.stageStartPools.ones
+      : null
+    : mergedTensToOnes
     ? null
     : state.phase === "ones" || state.phase === "question" || state.phase === "done"
       ? state.stageStartPools.ones
       : null;
-  const subtract3 = state.quotientDigits.ones * state.divisor;
+  const subtract3 = leadingHundredsSkipped
+    ? state.quotientDigits.ones * state.divisor
+    : state.quotientDigits.ones * state.divisor;
   const remainder = ["question", "done"].includes(state.phase) ? state.currentPlacePool : null;
-  ui.divisionGridboard.classList.toggle("compact-two-step", mergedTensToOnes);
+  ui.divisionGridboard.classList.toggle("compact-two-step", !leadingHundredsSkipped && mergedTensToOnes);
 
   setRowTriplet([ui.visualS1H, ui.visualS1T, ui.visualS1O], subtract1 || null);
   setRowTriplet([ui.visualB1H, ui.visualB1T, ui.visualB1O], bring1);
