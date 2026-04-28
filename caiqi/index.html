@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>校园装饰师挑战</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="game-shell">
+    <header class="game-header">
+      <img class="header-character" src="zuoshang.png" alt="" />
+      <div class="title-wrap">
+        <h1>校园装饰师挑战</h1>
+      </div>
+      <div class="sr-only" id="taskText">第2关：第15面彩旗是什么颜色？</div>
+    </header>
+
+    <main class="game-board">
+      <section class="left-column">
+        <section class="scene-card">
+          <div class="section-tab orange">彩旗展示区</div>
+          <div class="notice-card">观察前面的彩旗，找出规律，找一找第<span id="noticeTotal">15</span>面彩旗是什么颜色吧！</div>
+          <div class="school-scene">
+            <div class="flag-strip" id="flagStrip" aria-label="彩旗列表"></div>
+          </div>
+        </section>
+
+        <section class="group-result-card">
+          <div class="section-tab green">分组结果区 <small>（分组后显示）</small></div>
+          <p class="empty-guide" id="groupSummary">点击右侧“开始分组”按钮，看看每一组有几个彩旗吧！</p>
+          <div class="group-list" id="groupList"></div>
+        </section>
+
+        <section class="tips-strip">
+          <div class="tips-title">小提示</div>
+          <div class="tips-step">1. 先观察，找出彩旗的排列规律。</div>
+          <div class="tips-arrow">→</div>
+          <div class="tips-step">2. 可以一个一个填，也可以分组看。</div>
+          <div class="tips-arrow">→</div>
+          <div class="tips-step">3. 找到第N面在这一组的第几个。</div>
+        </section>
+      </section>
+
+      <aside class="right-column">
+        <section class="method-card method-blue">
+          <div class="method-title">方法一：列举法 <small>（一个一个填）</small></div>
+          <p>先选颜色，再点击空白的彩旗进行填色。</p>
+          <div class="palette" id="palette" aria-label="颜色选择"></div>
+          <div class="feedback" id="fillFeedback">先观察前面的彩旗规律。</div>
+        </section>
+
+        <section class="method-card method-purple">
+          <div class="method-title">方法二：分组法</div>
+          <p>输入每几个一组，然后点击“开始分组”。</p>
+          <label class="group-input">
+            <span>每</span>
+            <input id="groupSizeInput" type="number" min="2" max="8" value="4" />
+            <span>面一组</span>
+          </label>
+          <button class="group-button" id="groupBtn" type="button">开始分组</button>
+          <div class="feedback" id="groupFeedback">输入你观察到的周期。</div>
+        </section>
+
+        <section class="method-card method-orange">
+          <div class="method-title">方法三：定位法 <small>（分组后出现）</small></div>
+          <p id="locateQuestion">第15面在这一组的第几个？</p>
+          <div class="position-buttons" id="positionButtons"></div>
+          <div class="feedback" id="locateFeedback">分组后再定位。</div>
+        </section>
+
+        <section class="goal-card">
+          <div>
+            <div class="goal-title">闯关目标</div>
+            <p id="resultText">找出第15面彩旗的颜色！</p>
+          </div>
+          <img class="helper-character" src="youxia.png" alt="" />
+        </section>
+
+        <section class="config-card">
+          <div class="config-title">教师设置</div>
+          <div class="config-grid">
+            <label>
+              <span>总数 N</span>
+              <input id="totalInput" type="number" min="1" max="80" value="15" />
+            </label>
+            <label>
+              <span>周期 k</span>
+              <input id="cycleInput" type="number" min="2" max="8" value="4" />
+            </label>
+            <label class="wide">
+              <span>一个周期</span>
+              <input id="patternInput" type="text" value="红 红 蓝 黄" />
+            </label>
+          </div>
+          <div class="config-actions">
+            <button id="applyConfigBtn" type="button">应用题目</button>
+            <button id="newQuestionBtn" type="button">再来一题</button>
+            <button id="resetBtn" type="button">重置</button>
+          </div>
+          <div class="jump-row">
+            <input id="jumpInput" type="number" min="1" value="15" />
+            <button id="jumpBtn" type="button">跳到第N面</button>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

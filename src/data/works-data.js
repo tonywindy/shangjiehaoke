@@ -74,6 +74,15 @@ export const WORKS_DATA = [
     featured: true,
   },
   {
+    id: 'caiqi',
+    title: '校园装饰师挑战',
+    cover: '/images/caiqi.png',
+    path: '/caiqi/index.html',
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['周期规律', '彩旗推理'],
+    featured: true,
+  },
+  {
     id: 'climb',
     title: '两位数乘法登山挑战游戏',
     cover: '/images/dengshan.jpeg',
