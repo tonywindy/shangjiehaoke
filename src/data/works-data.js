@@ -56,6 +56,15 @@ export const WORKS_DATA = [
     featured: true,
   },
   {
+    id: 'laocheng-zhouchangtanmi',
+    title: '源城小卫士 · 周长探险',
+    cover: '/laocheng/fengmian.png',
+    path: '/laocheng/zhouchangtanmi.html',
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['周长', '情境闯关'],
+    featured: true,
+  },
+  {
     id: 'shuxueyouxi',
     title: '一人一世界数学情境答题游戏',
     cover: '/images/shijie.jpeg',
