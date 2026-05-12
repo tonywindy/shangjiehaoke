@@ -1,3 +1,5 @@
+import miwenCover from '../../miwen/fm.png';
+
 /**
  * 页面与作品统一数据源
  * - 站点页：继续由 React 页面承载
@@ -89,6 +91,15 @@ export const WORKS_DATA = [
     path: '/caiqi/index.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['周期规律', '彩旗推理'],
+    featured: true,
+  },
+  {
+    id: 'miwen',
+    title: '中文密信生成器',
+    cover: miwenCover,
+    path: '/miwen/index.html',
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['文字游戏', '加密生成'],
     featured: true,
   },
   {

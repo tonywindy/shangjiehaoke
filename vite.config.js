@@ -14,6 +14,7 @@ export default defineConfig({
         works: resolve(__dirname, 'works.html'),
         chufa: resolve(__dirname, 'chufa/index.html'),
         caiqi: resolve(__dirname, 'caiqi/index.html'),
+        miwen: resolve(__dirname, 'miwen/index.html'),
         climb: resolve(__dirname, 'climb.html'),
         zhouchang: resolve(__dirname, 'zhouchang.html'),
         shuxueyouxi: resolve(__dirname, 'shuxueyouxi.html'),
