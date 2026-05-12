@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSceneDescription = ''; // 当前场景描述，用于生成图片
 
     // --- API 配置 (不变) ---
-    const PROXY_API_URL = 'https://api.shangjiehaoke.xyz';
+    const PROXY_API_URL = 'https://api.shangjiehaoke.top';
     const API_URL = PROXY_API_URL;
     const API_KEY = 'dummy-key'; // 代理服务器不需要真实的API Key
 
@@ -1058,50 +1058,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function buildPollinationsImageUrl(prompt) {
+        const encodedPrompt = encodeURIComponent(prompt);
+        return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=300&height=200&nologo=true&safe=true`;
+    }
+
+    function buildCompactImagePrompt(sceneDescription, scenarioElements) {
+        const scenario = selectedScenarios[0] || '数学冒险';
+        const scenarioPromptMap = {
+            '神秘恐龙岛': 'cute dinosaur island adventure, tropical jungle, friendly dinosaurs',
+            '海底探险': 'cute underwater adventure, coral reef, colorful fish',
+            '星际探险': 'cute space adventure, planets, stars, spaceship',
+            '魔法森林寻宝': 'cute magical forest treasure hunt, glowing trees',
+            '超级英雄拯救世界': 'cute superhero city adventure, bright heroic scene',
+            '时空穿越': 'cute time travel adventure, glowing portal'
+        };
+        const scenarioPrompt = scenarioPromptMap[scenario] || 'cute math adventure scene';
+
+        // Pollinations 对过长或复杂的提示词不稳定，这里压缩成短英文提示词。
+        return `${scenarioPrompt}${scenarioElements}, child-friendly cartoon illustration, bright colors`;
+    }
+
+    function useFallbackSceneImage(cacheKey) {
+        const fallbackUrl = '/images/shijie.jpeg';
+        imageCache.set(cacheKey, fallbackUrl);
+        sceneImage.src = fallbackUrl;
+        sceneImage.classList.remove('hidden');
+        imageLoading.classList.add('hidden');
+    }
+
+    function loadSceneImage(imageUrl, cacheKey) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                imageCache.set(cacheKey, imageUrl);
+                sceneImage.src = imageUrl;
+                sceneImage.classList.remove('hidden');
+                imageLoading.classList.add('hidden');
+                resolve();
+            };
+            img.onerror = () => {
+                reject(new Error('图片加载失败'));
+            };
+            img.src = imageUrl;
+        });
+    }
+
     // 实际的图片生成API调用
     async function generateImageWithAPI(sceneDescription, cacheKey) {
         try {
-            // 第一步：调用百炼大模型提取生图元素
-            console.log('开始提取生图元素...');
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
-
-            const extractResponse = await fetch(`${PROXY_API_URL}/api/generate-story`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    messages: [{
-                        role: 'user',
-                        content: `请分析以下题目内容，提取出适合生成图片的关键视觉元素，包括：场景环境、物体、角色、颜色、风格等。请用简洁的英文关键词列出，用逗号分隔：\n\n题目内容：${sceneDescription}\n\n选择的情境：${selectedScenarios.join('、')}\n\n请只返回英文关键词，不要其他解释。`
-                    }]
-                }),
-                signal: controller.signal
-            }).finally(() => clearTimeout(timeoutId));
-
-            if (!extractResponse.ok) {
-                throw new Error('元素提取API请求失败');
-            }
-
-            const extractData = await extractResponse.json();
-            let extractedElements = '';
-
-            // 处理不同的响应格式
-            if (extractData.content) {
-                extractedElements = extractData.content;
-            } else if (extractData.choices && extractData.choices[0] && extractData.choices[0].message) {
-                extractedElements = extractData.choices[0].message.content;
-            } else if (typeof extractData === 'string') {
-                extractedElements = extractData;
-            } else {
-                console.warn('无法解析元素提取结果，使用默认元素');
-                extractedElements = 'cartoon style, colorful, child-friendly';
-            }
-
-            console.log('提取的生图元素:', extractedElements);
-
-            // 根据选择的情境添加环境元素
+            // 直接使用当前章节的场景描述构建图片提示词，避免额外调用故事接口返回非图片关键词。
             let scenarioElements = '';
             if (selectedScenarios.length > 0) {
                 const scenario = selectedScenarios[0];
@@ -1129,56 +1135,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 第二步：构建优化的图片提示词
-            const imagePrompt = `${extractedElements}${scenarioElements}, cute cartoon style, vibrant colors, child-friendly, educational illustration, kawaii style, simple and clear composition, suitable for elementary school students, digital art, anime style, cheerful atmosphere, safe and friendly environment, no scary elements`;
+            const imagePrompt = buildCompactImagePrompt(sceneDescription, scenarioElements);
 
             console.log('最终生图提示词:', imagePrompt);
 
-            // 第三步：调用图片生成API
-            const response = await fetch(`${PROXY_API_URL}/api/generate-image`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    prompt: imagePrompt,
-                    width: 300,
-                    height: 200
-                })
-            });
+            let imageUrl = '';
+            try {
+                const response = await fetch(`${PROXY_API_URL}/api/generate-image`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: imagePrompt,
+                        width: 300,
+                        height: 200
+                    })
+                });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`图片生成API请求失败: ${errorData.error || response.statusText}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`图片生成API请求失败: ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('图片API响应数据:', data);
+
+                if (data.imageUrl) {
+                    imageUrl = data.imageUrl;
+                } else {
+                    throw new Error('无法识别的图片API响应格式，缺少imageUrl字段');
+                }
+            } catch (proxyError) {
+                console.warn('图片代理接口失败，改用Pollinations直链:', proxyError.message);
+                imageUrl = buildPollinationsImageUrl(imagePrompt);
             }
 
-            const data = await response.json();
-            console.log('图片API响应数据:', data);
-
-            // 处理图片API响应数据，直接检查data.imageUrl
-            let imageUrl;
-            if (data.imageUrl) {
-                imageUrl = data.imageUrl;
-            } else {
-                console.error('未知的图片API响应格式:', data);
-                throw new Error('无法识别的图片API响应格式，缺少imageUrl字段');
+            try {
+                await loadSceneImage(imageUrl, cacheKey);
+            } catch (imageLoadError) {
+                console.warn('在线图片加载失败，使用本地兜底图:', imageLoadError.message);
+                useFallbackSceneImage(cacheKey);
             }
-
-            // 缓存图片URL
-            imageCache.set(cacheKey, imageUrl);
-
-            // 预加载图片
-            const img = new Image();
-            img.onload = () => {
-                sceneImage.src = imageUrl;
-                sceneImage.classList.remove('hidden');
-                imageLoading.classList.add('hidden');
-            };
-            img.onerror = () => {
-                console.error('图片加载失败');
-                throw new Error('图片加载失败');
-            };
-            img.src = imageUrl;
 
             return { success: true };
 

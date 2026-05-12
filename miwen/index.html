@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小小交通员：中文密信生成器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page">
+    <img class="title-art" src="biaoti.png" alt="小小交通员：中文密信生成器">
+    <button class="fullscreen-button" id="fullscreenBtn" type="button" aria-label="进入全屏">⛶ 全屏</button>
+    <img class="role-figure" src="renwu.png" alt="手拿信封的小小交通员">
+    <main class="workspace">
+      <aside class="role-panel" aria-label="明文输入区">
+        <div class="input-area">
+          <div class="input-topline">
+            <label class="plain-label" for="plainInput">明文 <span>最多36个字符</span></label>
+            <span id="charCount">当前字数：0 / 36</span>
+          </div>
+          <textarea id="plainInput" maxlength="60" rows="2"></textarea>
+          <div class="input-controls">
+            <label for="groupSelect">选择小组明文：</label>
+            <select id="groupSelect">
+              <option value="0">第1组</option>
+              <option value="1">第2组</option>
+              <option value="2">第3组</option>
+              <option value="3">第4组</option>
+              <option value="4">第5组</option>
+              <option value="5">第6组</option>
+              <option value="6">第7组</option>
+              <option value="7">第8组</option>
+            </select>
+            <span>不足 36 格会自动用“★”补齐</span>
+          </div>
+        </div>
+      </aside>
+
+      <section class="grid-panel" aria-label="中文密信操作区">
+        <div class="grid-heading">
+          <div>
+            <h2 id="gridTitle">明文方格</h2>
+            <span>6行×6列</span>
+          </div>
+          <div class="state-pill" id="statePill">等待放入方格</div>
+        </div>
+
+        <div class="cipher-stage">
+          <div class="grid-wrap">
+            <div class="col-markers" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+            </div>
+            <div class="row-markers" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+            </div>
+            <div class="cipher-grid" id="cipherGrid" aria-label="6行6列中文密信方格"></div>
+          </div>
+
+          <div class="result-band">
+            <div class="result-card">
+              <span class="result-label">密文方格</span>
+              <div class="result-grid" id="resultGrid" aria-label="密文6行6列方格"></div>
+            </div>
+            <div class="cipher-text">
+              <span class="result-label">密文</span>
+              <output id="cipherOutput">等待生成</output>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="key-panel" aria-label="密钥卡区">
+        <div class="key-card" id="keyCard">
+          <div class="key-card-head">
+            <h2>密钥卡</h2>
+            <button class="icon-button" id="toggleKeyBtn" type="button" aria-label="隐藏密钥">隐藏</button>
+          </div>
+          <dl class="key-list">
+            <div><dt>方格</dt><dd>6行6列</dd></div>
+            <div><dt>移动列</dt><dd>第1列、第3列、第5列</dd></div>
+            <div><dt>加密方向</dt><dd>向下</dd></div>
+            <div><dt>移动格数</dt><dd>3行</dd></div>
+            <div><dt>解密方向</dt><dd>向上</dd></div>
+          </dl>
+          <div class="rule-strip">
+            <strong>加密：</strong>奇数列向下移动3行<br>
+            <strong>解密：</strong>奇数列向上移动3行
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-place" id="placeBtn" type="button">▦ 放入方格</button>
+          <button class="btn-encrypt" id="encryptBtn" type="button">↓ 开始加密</button>
+          <button class="btn-decrypt" id="decryptBtn" type="button">↑ 开始解密</button>
+          <button class="secondary" id="resetBtn" type="button">↻ 重置</button>
+        </div>
+
+        <div class="feedback" id="feedback" role="status" aria-live="polite">
+          请选择明文，然后点击“放入方格”。
+        </div>
+      </aside>
+    </main>
+
+  </div>
+
+  <footer class="security-bar">
+    <strong>信息安全提醒：</strong>
+    课堂密信只用于学习。不要输入真实密码、手机号、家庭住址、身份证号、验证码等个人信息。
+  </footer>
+
+  <dialog id="safetyDialog" class="modal">
+    <div class="modal-content">
+      <h2>开始加密前，请先确认</h2>
+      <p>请确认你的密信中没有真实个人信息。</p>
+      <button id="confirmSafetyBtn" type="button">我知道了</button>
+    </div>
+  </dialog>
+
+  <dialog id="summaryDialog" class="modal">
+    <div class="modal-content summary-card">
+      <h2>我发现了</h2>
+      <ol>
+        <li>明文是原来想说的话。</li>
+        <li>密文是加密后别人一下子看不懂的话。</li>
+        <li>密钥是加密和解密的秘密规则。</li>
+        <li>加密时按规则移动。</li>
+        <li>解密时要反向移动。</li>
+        <li>保护信息，关键要保护密钥。</li>
+      </ol>
+      <button id="closeSummaryBtn" type="button">完成</button>
+    </div>
+  </dialog>
+
+  <template id="printTemplate">
+    <section class="print-card">
+      <h1>小小交通员密信卡</h1>
+      <p><strong>密文：</strong><span id="printCipher"></span></p>
+      <p><strong>密钥：</strong>6行6列，奇数列下移3行。</p>
+    </section>
+  </template>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
