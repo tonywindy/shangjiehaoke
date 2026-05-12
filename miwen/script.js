@@ -41,6 +41,7 @@ const els = {
 
 const state = {
   grid: Array(SIZE).fill(""),
+  plainGrid: Array(SIZE).fill(""),
   resultGrid: Array(SIZE).fill(""),
   originalText: "",
   cipherText: "",
@@ -194,6 +195,7 @@ async function placeText() {
   setFeedback("正在把明文放入方格，请观察排列顺序。");
 
   const padded = padToGrid(chars);
+  state.plainGrid = [...padded];
   state.grid = Array(SIZE).fill("");
   renderGrid();
   renderResultGrid();
@@ -242,13 +244,14 @@ async function encryptFlow() {
 
   state.resultGrid = [...state.grid];
   state.mode = "cipher";
-  state.cipherText = state.grid.join("");
-  els.title.textContent = "密文方格";
+  state.cipherText = state.resultGrid.join("");
+  state.grid = [...state.plainGrid];
+  els.title.textContent = "明文方格";
   els.state.textContent = "加密完成";
   els.cipherOutput.textContent = state.cipherText;
-  renderGrid({ cipher: true, highlight: true });
+  renderGrid({ highlight: true });
   renderResultGrid({ cipher: true, highlight: true });
-  setFeedback("加密成功！密文已经生成。", "success");
+  setFeedback("加密成功！左侧保留明文，右侧展示密文，方便对照观察。", "success");
   setBusy(false);
 }
 
@@ -260,6 +263,7 @@ async function decryptFlow() {
   }
 
   setBusy(true);
+  state.grid = [...state.resultGrid];
   els.title.textContent = "解密中";
   els.state.textContent = "反向上移";
   setFeedback("加密时向下移动3行，解密时要反过来，向上移动3行。解密是加密的反向操作。");
@@ -291,6 +295,7 @@ async function decryptFlow() {
 
 function resetAll() {
   state.grid = Array(SIZE).fill("");
+  state.plainGrid = Array(SIZE).fill("");
   state.resultGrid = Array(SIZE).fill("");
   state.originalText = "";
   state.cipherText = "";
