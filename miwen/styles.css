@@ -286,12 +286,19 @@ textarea.too-long {
 .grid-heading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   margin: 0 0 clamp(6px, 0.9vh, 10px);
 }
 
-.grid-heading h2,
+.board-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.board-title-row h2,
 .result-label {
   display: inline-block;
   margin: 0;
@@ -304,8 +311,7 @@ textarea.too-long {
   font-weight: 900;
 }
 
-.grid-heading span {
-  margin-left: 8px;
+.board-title-row span {
   color: #5b351b;
   font-size: clamp(13px, 1vw, 18px);
   font-weight: 900;
@@ -324,9 +330,17 @@ textarea.too-long {
 
 .cipher-stage {
   display: grid;
-  grid-template-columns: minmax(310px, 1fr) minmax(280px, 0.9fr);
-  gap: clamp(10px, 1.2vw, 18px);
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
+  align-items: start;
+  gap: clamp(18px, 2vw, 32px);
   min-height: 0;
+}
+
+.grid-column {
+  display: grid;
+  grid-template-rows: 48px auto;
+  gap: 8px;
+  min-width: 0;
 }
 
 .grid-wrap {
@@ -504,31 +518,28 @@ textarea.too-long {
 .result-band {
   display: grid;
   grid-template-rows: minmax(0, 1fr);
-  gap: clamp(8px, 1vh, 12px);
   min-height: 0;
 }
 
 .result-card {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: 48px auto;
   gap: 8px;
   min-height: 0;
-  padding: 10px;
-  border: 2px dashed rgba(176, 103, 48, 0.64);
-  border-radius: 8px;
-  background: rgba(255, 244, 214, 0.64);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .result-grid {
   --gap: 4px;
-  align-self: start;
-  justify-self: center;
-  width: min(100%, 190px);
+  width: 100%;
   max-height: none;
 }
 
 .result-cell {
-  font-size: clamp(14px, 1.18vw, 21px);
+  font-size: clamp(17px, 1.65vw, 28px);
 }
 
 .cipher-text {
@@ -749,7 +760,8 @@ textarea.too-long {
   }
 
   .cipher-stage {
-    grid-template-columns: minmax(290px, 1fr) minmax(230px, 0.78fr);
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    gap: 16px;
   }
 
   .role-figure {
@@ -829,16 +841,8 @@ textarea.too-long {
     font-size: clamp(13px, 1.15vw, 19px);
   }
 
-  .result-cell {
-    font-size: clamp(12px, 0.92vw, 16px);
-  }
-
-  .result-grid {
-    width: min(100%, 180px);
-  }
-
   .result-grid .result-cell {
-    font-size: 11px;
+    font-size: clamp(13px, 1.15vw, 19px);
   }
 
   .feedback {
@@ -942,10 +946,14 @@ textarea.too-long {
 }
 
 .result-band {
-  display: block;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .result-card {
+  display: grid;
+  grid-template-rows: 48px auto;
+  gap: 8px;
   min-height: 0;
   height: auto;
   padding: 0;
@@ -954,11 +962,11 @@ textarea.too-long {
 }
 
 .result-card .result-label {
-  margin-bottom: calc(var(--marker, 28px) + 5px);
+  margin-bottom: 0;
 }
 
 .result-grid {
-  width: min(100%, calc(100vh - 285px));
+  width: 100%;
   --gap: 5px;
   padding: 5px;
 }

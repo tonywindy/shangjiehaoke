@@ -38,28 +38,41 @@
 
       <section class="grid-panel" aria-label="中文密信操作区">
         <div class="grid-heading">
-          <div>
-            <h2 id="gridTitle">明文方格</h2>
-            <span>6行×6列</span>
-          </div>
           <div class="state-pill" id="statePill">等待放入方格</div>
         </div>
 
         <div class="cipher-stage">
-          <div class="grid-wrap">
-            <div class="col-markers" aria-hidden="true">
-              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+          <div class="grid-column">
+            <div class="board-title-row">
+              <h2 id="gridTitle">明文方格</h2>
+              <span>6行×6列</span>
             </div>
-            <div class="row-markers" aria-hidden="true">
-              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+            <div class="grid-wrap">
+              <div class="col-markers" aria-hidden="true">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+              </div>
+              <div class="row-markers" aria-hidden="true">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+              </div>
+              <div class="cipher-grid" id="cipherGrid" aria-label="6行6列中文密信方格"></div>
             </div>
-            <div class="cipher-grid" id="cipherGrid" aria-label="6行6列中文密信方格"></div>
           </div>
 
           <div class="result-band">
-            <div class="result-card">
-              <span class="result-label">密文方格</span>
-              <div class="result-grid" id="resultGrid" aria-label="密文6行6列方格"></div>
+            <div class="result-card grid-column">
+              <div class="board-title-row">
+                <h2 class="result-label">密文方格</h2>
+                <span>6行×6列</span>
+              </div>
+              <div class="grid-wrap result-wrap">
+                <div class="col-markers" aria-hidden="true">
+                  <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+                </div>
+                <div class="row-markers" aria-hidden="true">
+                  <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+                </div>
+                <div class="result-grid" id="resultGrid" aria-label="密文6行6列方格"></div>
+              </div>
             </div>
             <div class="cipher-text">
               <span class="result-label">密文</span>
