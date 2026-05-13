@@ -468,19 +468,31 @@ textarea.too-long {
   box-shadow: 0 10px 18px rgba(117, 55, 23, 0.28), 0 0 0 4px rgba(215, 47, 40, 0.14);
 }
 
-.cell.move-down {
+.result-cell.moving-col {
+  z-index: 6;
+  animation-duration: 0.86s;
+  animation-timing-function: cubic-bezier(0.2, 0.74, 0.28, 1);
+  animation-fill-mode: both;
+  box-shadow: 0 10px 18px rgba(117, 55, 23, 0.28), 0 0 0 4px rgba(215, 47, 40, 0.14);
+}
+
+.cell.move-down,
+.result-cell.move-down {
   animation-name: moveDown;
 }
 
-.cell.move-down.wrap-down {
+.cell.move-down.wrap-down,
+.result-cell.move-down.wrap-down {
   animation-name: wrapDown;
 }
 
-.cell.move-up {
+.cell.move-up,
+.result-cell.move-up {
   animation-name: moveUp;
 }
 
-.cell.move-up.wrap-up {
+.cell.move-up.wrap-up,
+.result-cell.move-up.wrap-up {
   animation-name: wrapUp;
 }
 

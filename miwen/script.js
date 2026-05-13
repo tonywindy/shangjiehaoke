@@ -130,10 +130,11 @@ function renderGrid(options = {}) {
 function renderResultGrid(options = {}) {
   if (!els.resultGrid) return;
 
-  const { highlight = false, cipher = false } = options;
+  const { highlight = false, cipher = false, movingCol = null, moveDirection = "" } = options;
   els.resultGrid.innerHTML = "";
 
   for (let index = 0; index < SIZE; index += 1) {
+    const row = Math.floor(index / COLS);
     const col = index % COLS;
     const cell = document.createElement("div");
     cell.className = "result-cell";
@@ -143,6 +144,13 @@ function renderResultGrid(options = {}) {
     if (MOVE_COLS.includes(col)) cell.classList.add("odd-col");
     if (cipher) cell.classList.add("cipher");
     if (highlight && MOVE_COLS.includes(col)) cell.classList.add("highlight");
+    if (movingCol === col) {
+      const wrapsDown = moveDirection === "down" && row >= ROWS - SHIFT;
+      const wrapsUp = moveDirection === "up" && row < SHIFT;
+      cell.classList.add(moveDirection === "up" ? "move-up" : "move-down", "moving-col", "highlight");
+      if (wrapsDown) cell.classList.add("wrap-down");
+      if (wrapsUp) cell.classList.add("wrap-up");
+    }
 
     els.resultGrid.appendChild(cell);
   }
@@ -263,30 +271,32 @@ async function decryptFlow() {
   }
 
   setBusy(true);
-  state.grid = [...state.resultGrid];
-  els.title.textContent = "解密中";
+  state.grid = [...state.plainGrid];
+  els.title.textContent = "明文方格";
   els.state.textContent = "反向上移";
-  setFeedback("加密时向下移动3行，解密时要反过来，向上移动3行。解密是加密的反向操作。");
-  renderGrid({ cipher: true, highlight: true });
+  setFeedback("左侧明文方格保持不动。请观察右侧密文方格：解密时奇数列向上移动3行。");
+  renderGrid({ highlight: true });
+  renderResultGrid({ cipher: true, highlight: true });
   await sleep(700);
 
   for (const col of MOVE_COLS) {
     els.state.textContent = `第${col + 1}列上移`;
-    renderGrid({ cipher: true, movingCol: col, moveDirection: "up" });
+    renderGrid({ highlight: true });
+    renderResultGrid({ cipher: true, movingCol: col, moveDirection: "up" });
     await sleep(900);
-    state.grid = shiftOneColumn(state.grid, col, "up");
-    renderGrid({ cipher: true, highlight: true });
+    state.resultGrid = shiftOneColumn(state.resultGrid, col, "up");
+    renderGrid({ highlight: true });
+    renderResultGrid({ cipher: true, highlight: true });
     await sleep(180);
   }
 
-  state.resultGrid = Array(SIZE).fill("");
   state.mode = "plain";
-  const restored = cleanPlainText(state.grid);
-  els.title.textContent = "还原明文方格";
+  const restored = cleanPlainText(state.resultGrid);
+  els.title.textContent = "明文方格";
   els.state.textContent = "解密成功";
   renderGrid({ highlight: true });
-  renderResultGrid();
-  setFeedback(`解密成功！还原出的明文是：${restored}`, "success");
+  renderResultGrid({ highlight: true });
+  setFeedback(`解密成功！右侧已经还原，可以和左侧明文对比：${restored}`, "success");
   setBusy(false);
 
   await sleep(450);
