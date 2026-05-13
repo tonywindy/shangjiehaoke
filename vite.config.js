@@ -7,11 +7,13 @@ function copyStaticGameScripts() {
   return {
     name: 'copy-static-game-scripts',
     closeBundle() {
-      mkdirSync(resolve(__dirname, 'dist/caiqi'), { recursive: true });
-      copyFileSync(
-        resolve(__dirname, 'caiqi/script.js'),
-        resolve(__dirname, 'dist/caiqi/script.js')
-      );
+      [
+        ['caiqi/script.js', 'dist/caiqi/script.js'],
+        ['miwen/script.js', 'dist/miwen/script.js'],
+      ].forEach(([from, to]) => {
+        mkdirSync(resolve(__dirname, to, '..'), { recursive: true });
+        copyFileSync(resolve(__dirname, from), resolve(__dirname, to));
+      });
     },
   };
 }
