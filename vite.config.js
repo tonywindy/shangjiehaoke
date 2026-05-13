@@ -1,9 +1,23 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { copyFileSync, mkdirSync } from 'fs';
+
+function copyStaticGameScripts() {
+  return {
+    name: 'copy-static-game-scripts',
+    closeBundle() {
+      mkdirSync(resolve(__dirname, 'dist/caiqi'), { recursive: true });
+      copyFileSync(
+        resolve(__dirname, 'caiqi/script.js'),
+        resolve(__dirname, 'dist/caiqi/script.js')
+      );
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), copyStaticGameScripts()],
   base: '/',
   publicDir: 'public',
   build: {

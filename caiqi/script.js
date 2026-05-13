@@ -24,7 +24,6 @@ const state = {
   flags: [],
   selectedColor: "红",
   grouped: false,
-  selectedPosition: null,
 };
 
 const ui = {
@@ -44,12 +43,8 @@ const ui = {
   groupSizeInput: document.getElementById("groupSizeInput"),
   groupBtn: document.getElementById("groupBtn"),
   groupFeedback: document.getElementById("groupFeedback"),
-  locateQuestion: document.getElementById("locateQuestion"),
-  positionButtons: document.getElementById("positionButtons"),
-  locateFeedback: document.getElementById("locateFeedback"),
   groupSummary: document.getElementById("groupSummary"),
   groupList: document.getElementById("groupList"),
-  resultText: document.getElementById("resultText"),
 };
 
 function parsePattern(text) {
@@ -102,7 +97,6 @@ function applyConfig(config) {
   state.cycle = next.cycle;
   state.pattern = next.pattern;
   state.grouped = false;
-  state.selectedPosition = null;
   state.selectedColor = state.pattern[0];
   state.flags = Array.from({ length: state.total }, (_, index) => {
     const number = index + 1;
@@ -118,17 +112,14 @@ function applyConfig(config) {
 
   setFeedback(ui.fillFeedback, "先观察前面的彩旗规律。", "");
   setFeedback(ui.groupFeedback, "输入你观察到的周期。", "");
-  setFeedback(ui.locateFeedback, "分组后再定位。", "");
   render();
 }
 
 function render() {
   ui.taskText.textContent = `第2关：第${state.total}面彩旗是什么颜色？`;
   ui.noticeTotal.textContent = state.total;
-  ui.locateQuestion.textContent = `第${state.total}面在这一组的第几个？`;
   renderPalette();
   renderFlags();
-  renderPositionButtons();
   renderGroups();
 }
 
@@ -170,61 +161,48 @@ function renderFlags() {
   });
 }
 
-function renderPositionButtons() {
-  ui.positionButtons.innerHTML = "";
-  for (let index = 1; index <= state.cycle; index += 1) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `position-button${state.selectedPosition === index ? " selected" : ""}`;
-    button.textContent = `第${index}个`;
-    button.addEventListener("click", () => choosePosition(index));
-    ui.positionButtons.appendChild(button);
-  }
-}
-
 function renderGroups() {
   ui.groupList.innerHTML = "";
 
   if (!state.grouped) {
     ui.groupSummary.classList.add("empty-guide");
-    ui.groupSummary.textContent = "点击右侧“开始分组”按钮，看看每一组有几个彩旗吧！";
-    ui.resultText.textContent = `找出第${state.total}面彩旗的颜色！`;
+    ui.groupSummary.textContent = "点击左侧“开始分组”按钮，看看每一组有几个彩旗吧！";
     return;
   }
 
   ui.groupSummary.classList.remove("empty-guide");
   const groupCount = Math.ceil(state.total / state.cycle);
-  ui.groupSummary.textContent = `每${state.cycle}面一组，共${groupCount}组。`;
+  ui.groupSummary.textContent = `每${state.cycle}面一组，共${groupCount}组。每一列对应这一组里的固定位置。`;
 
-  for (let groupIndex = 0; groupIndex < groupCount; groupIndex += 1) {
-    const row = document.createElement("div");
-    row.className = "group-row";
-    const label = document.createElement("div");
-    label.className = "group-label";
-    label.textContent = `第${groupIndex + 1}组`;
+  const table = document.createElement("div");
+  table.className = "group-table";
+  table.style.setProperty("--group-columns", state.cycle);
 
-    const flags = document.createElement("div");
-    flags.className = "group-flags";
+  state.pattern.forEach((color, patternIndex) => {
+    const column = document.createElement("div");
+    column.className = "group-column";
 
-    for (let itemIndex = 0; itemIndex < state.cycle; itemIndex += 1) {
-      const number = groupIndex * state.cycle + itemIndex + 1;
-      const mini = document.createElement("div");
-      mini.className = `mini-flag${number === state.total ? " target" : ""}`;
-      if (number <= state.total) {
-        const color = state.flags[number - 1];
-        mini.textContent = color || "□";
-        mini.style.background = color ? getColorValue(color) : "rgba(255,255,255,0.82)";
-        mini.style.color = color === "黑" ? "#ffffff" : "#253041";
-      } else {
-        mini.textContent = "";
-        mini.style.opacity = "0.25";
-      }
-      flags.appendChild(mini);
+    const colorCell = document.createElement("div");
+    colorCell.className = "group-color";
+    colorCell.textContent = color;
+    colorCell.style.borderColor = getColorValue(color);
+    colorCell.style.background = `${getColorValue(color)}22`;
+
+    const numberList = document.createElement("div");
+    numberList.className = "group-number-list";
+
+    for (let number = patternIndex + 1; number <= state.total; number += state.cycle) {
+      const numberCell = document.createElement("div");
+      numberCell.className = `group-number${number === state.total ? " target" : ""}`;
+      numberCell.textContent = number;
+      numberList.appendChild(numberCell);
     }
 
-    row.append(label, flags);
-    ui.groupList.appendChild(row);
-  }
+    column.append(colorCell, numberList);
+    table.appendChild(column);
+  });
+
+  ui.groupList.appendChild(table);
 }
 
 function fillFlag(number) {
@@ -251,34 +229,14 @@ function startGrouping() {
   }
 
   state.grouped = true;
-  setFeedback(ui.groupFeedback, `很好，每${state.cycle}面一组。`, "good");
-  setFeedback(ui.locateFeedback, `现在想一想：第${state.total}面在当前组里的第几个？`, "warn");
-  renderGroups();
-}
-
-function choosePosition(position) {
-  if (!state.grouped) {
-    setFeedback(ui.locateFeedback, "先完成分组，再定位第N面。", "warn");
-    return;
-  }
-
-  state.selectedPosition = position;
-  const answerPosition = targetPosition();
   const answerColor = targetColor();
-
-  if (position !== answerPosition) {
-    setFeedback(ui.locateFeedback, "再想一想：余数表示在这一组里的位置。", "bad");
-    renderPositionButtons();
-    return;
-  }
-
   state.flags[state.total - 1] = answerColor;
   const remainder = state.total % state.cycle;
-  const extra = remainder === 0 ? "没有余数，说明是这一组的最后一个。" : `余数是${remainder}，说明是这一组的第${remainder}个。`;
-  setFeedback(ui.locateFeedback, `${extra} 第${state.total}面是${answerColor}色。`, "good");
-  ui.resultText.textContent = `闯关成功：第${state.total}面是${answerColor}色！`;
-  render();
-  scrollToTarget();
+  const position = targetPosition();
+  const extra = remainder === 0 ? "没有余数，落在这一组的最后一面。" : `余数是${remainder}，落在这一组的第${position}面。`;
+  setFeedback(ui.groupFeedback, `很好，每${state.cycle}面一组。${extra} 第${state.total}面是${answerColor}色！`, "good");
+  renderFlags();
+  renderGroups();
 }
 
 function jumpToTarget() {
