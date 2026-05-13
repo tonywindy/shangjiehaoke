@@ -983,6 +983,7 @@ textarea.too-long {
   padding: 5px;
 }
 
+.cell,
 .result-cell {
   font-size: clamp(21px, 1.9vw, 34px);
 }
@@ -1047,10 +1048,8 @@ textarea.too-long {
     font-size: clamp(15px, 1.35vw, 22px);
   }
 
-  .result-cell {
-    font-size: clamp(18px, 1.62vw, 28px);
-  }
-
+  .cell,
+  .result-cell,
   .result-grid .result-cell {
     font-size: clamp(18px, 1.62vw, 28px);
   }
