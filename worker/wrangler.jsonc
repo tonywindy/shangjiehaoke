@@ -3,7 +3,7 @@
 	"name": "shangjiehaoke-ai-api",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-07-18",
-	"workers_dev": true,
+	"workers_dev": false,
 	"routes": [
 		{
 			"pattern": "api.shangjiehaoke.com",
@@ -12,6 +12,10 @@
 	],
 	"observability": {
 		"enabled": true
+	},
+	"vars": {
+		"TEACHER_USERNAME": "yuanlaoshi",
+		"TEACHER_DISPLAY_NAME": "袁老师"
 	},
 	"d1_databases": [
 		{

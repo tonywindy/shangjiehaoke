@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const KNOWLEDGE_OPTIONS = [
   { value: 'perimeter-concept', label: '周长的认识' },
@@ -9,6 +9,11 @@ const KNOWLEDGE_OPTIONS = [
 ];
 
 const AI_API_BASE_URL = import.meta.env.VITE_AI_API_BASE_URL || 'https://api.shangjiehaoke.com';
+
+const apiFetch = (path, options = {}) => fetch(`${AI_API_BASE_URL}${path}`, {
+  credentials: 'include',
+  ...options,
+});
 
 const DEMO_DIAGNOSIS = {
   recognizedAnswer: '8 + 5 = 13',
@@ -60,12 +65,147 @@ const Icon = ({ name, size = 20 }) => {
     lock: <><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></>,
     chevron: <path d="m9 18 6-6-6-6"/>,
     info: <><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></>,
+    history: <><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></>,
+    logout: <><path d="M10 17l5-5-5-5M15 12H3"/><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></>,
+    close: <><path d="m6 6 12 12M18 6 6 18"/></>,
   };
 
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {paths[name]}
     </svg>
+  );
+};
+
+const LoginScreen = ({ onLogin }) => {
+  const [username, setUsername] = useState('yuanlaoshi');
+  const [password, setPassword] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus('loading');
+    setError('');
+    try {
+      const response = await apiFetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '登录失败');
+      setPassword('');
+      onLogin(payload.teacher);
+    } catch (loginError) {
+      setStatus('error');
+      setError(loginError.message || '登录失败，请稍后重试');
+      return;
+    }
+    setStatus('idle');
+  };
+
+  return (
+    <main className="login-shell">
+      <section className="login-story">
+        <a className="login-brand" href="/">
+          <span className="brand-mark"><span>π</span></span>
+          <span><strong>上节好课</strong><small>AI 精准教学</small></span>
+        </a>
+        <div className="login-story-copy">
+          <span className="eyebrow"><Icon name="spark" size={15} /> 教师专属工作台</span>
+          <h1>看见每一次错误，<br />也看见成长的方向。</h1>
+          <p>从学生作品出发，完成诊断、分层与评价。AI 提供建议，教师保留最终判断。</p>
+        </div>
+        <div className="login-proof">
+          <span><Icon name="shield" size={17} /> 教师账号保护</span>
+          <span><Icon name="file" size={17} /> 诊断记录可追溯</span>
+          <span><Icon name="lock" size={17} /> 原始图片不留存</span>
+        </div>
+      </section>
+
+      <section className="login-panel">
+        <form className="login-card" onSubmit={handleSubmit}>
+          <span className="login-card-index">01 / TEACHER ACCESS</span>
+          <h2>教师登录</h2>
+          <p>登录后才能使用 AI 诊断额度，并查看自己的历史记录。</p>
+          <label>
+            <span>教师账号</span>
+            <input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" placeholder="请输入教师账号" required />
+          </label>
+          <label>
+            <span>密码</span>
+            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete="current-password" placeholder="请输入密码" required />
+          </label>
+          {error && <div className="login-error"><Icon name="info" size={15} /> {error}</div>}
+          <button type="submit" disabled={status === 'loading'}>
+            {status === 'loading' ? '正在验证…' : '进入教师工作台'}
+            {status !== 'loading' && <Icon name="arrow" size={18} />}
+          </button>
+          <small><Icon name="shield" size={13} /> 登录状态采用安全 Cookie 保存，密码不会存入浏览器。</small>
+        </form>
+      </section>
+    </main>
+  );
+};
+
+const HistoryDrawer = ({ open, onClose, onAuthExpired }) => {
+  const [status, setStatus] = useState('idle');
+  const [diagnoses, setDiagnoses] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const controller = new AbortController();
+    setStatus('loading');
+    setError('');
+    apiFetch('/api/diagnoses?limit=30', { signal: controller.signal })
+      .then(async (response) => {
+        if (response.status === 401) {
+          onAuthExpired();
+          throw new Error('登录状态已失效');
+        }
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '记录加载失败');
+        setDiagnoses(payload.diagnoses || []);
+        setStatus('ready');
+      })
+      .catch((historyError) => {
+        if (historyError.name === 'AbortError') return;
+        setError(historyError.message || '记录加载失败');
+        setStatus('error');
+      });
+    return () => controller.abort();
+  }, [open, onAuthExpired]);
+
+  if (!open) return null;
+  return (
+    <div className="history-overlay" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <aside className="history-drawer" role="dialog" aria-modal="true" aria-label="诊断历史记录">
+        <div className="history-heading">
+          <div><span>TEACHING ARCHIVE</span><h2>诊断记录</h2><p>这里只保存文字诊断，不保存学生原始图片。</p></div>
+          <button onClick={onClose} aria-label="关闭历史记录"><Icon name="close" size={20} /></button>
+        </div>
+        {status === 'loading' && <div className="history-empty">正在读取诊断记录…</div>}
+        {status === 'error' && <div className="history-empty is-error">{error}</div>}
+        {status === 'ready' && diagnoses.length === 0 && <div className="history-empty">还没有诊断记录，上传第一份学生作品后会自动出现在这里。</div>}
+        {status === 'ready' && diagnoses.length > 0 && (
+          <div className="history-list">
+            {diagnoses.map((item) => (
+              <article className="history-item" key={item.id}>
+                <div className="history-item-top">
+                  <span className="history-student">学生 {item.studentCode}</span>
+                  <span className={`history-status is-${item.status}`}>{item.status === 'confirmed' ? '教师已确认' : '待确认'}</span>
+                </div>
+                <h3>{item.errorType || '等待诊断'}</h3>
+                <p>{item.possibleCause || '暂无原因说明'}</p>
+                <div><span>{KNOWLEDGE_OPTIONS.find((option) => option.value === item.knowledgePoint)?.label || item.knowledgePoint}</span><time>{new Date(`${item.createdAt.replace(' ', 'T')}Z`).toLocaleString('zh-CN', { hour12: false })}</time></div>
+              </article>
+            ))}
+          </div>
+        )}
+      </aside>
+    </div>
   );
 };
 
@@ -168,7 +308,7 @@ const WorksheetPreview = ({ uploadedImage }) => (
   </div>
 );
 
-const DiagnosisView = ({ knowledge, onContinue }) => {
+const DiagnosisView = ({ knowledge, onContinue, onAuthExpired }) => {
   const inputRef = useRef(null);
   const abortRef = useRef(null);
   const [uploadedImage, setUploadedImage] = useState('');
@@ -178,6 +318,9 @@ const DiagnosisView = ({ knowledge, onContinue }) => {
   const [cause, setCause] = useState(DEMO_DIAGNOSIS.possibleCause);
   const [analysisStatus, setAnalysisStatus] = useState('demo');
   const [analysisError, setAnalysisError] = useState('');
+  const [studentCode, setStudentCode] = useState('07');
+  const [diagnosisId, setDiagnosisId] = useState('');
+  const [confirmationStatus, setConfirmationStatus] = useState('idle');
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -188,24 +331,32 @@ const DiagnosisView = ({ knowledge, onContinue }) => {
     setAnalysisStatus('loading');
     setAnalysisError('');
     setConfirmed(false);
+    setDiagnosisId('');
+    setConfirmationStatus('idle');
     setIsEditing(false);
 
     try {
       const formData = new FormData();
       formData.append('image', file);
       formData.append('knowledgePoint', knowledge);
-      const response = await fetch(`${AI_API_BASE_URL}/api/diagnoses/analyze`, {
+      formData.append('studentCode', studentCode.trim());
+      const response = await apiFetch('/api/diagnoses/analyze', {
         method: 'POST',
         body: formData,
         signal: controller.signal,
       });
       const payload = await response.json();
+      if (response.status === 401) {
+        onAuthExpired();
+        throw new Error('登录状态已失效，请重新登录');
+      }
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error?.message || 'AI分析失败，请稍后重试');
       }
 
       setDiagnosis(payload.diagnosis);
       setCause(payload.diagnosis.possibleCause);
+      setDiagnosisId(payload.meta?.diagnosisId || '');
       setAnalysisStatus('ready');
     } catch (error) {
       if (error.name === 'AbortError') return;
@@ -217,6 +368,12 @@ const DiagnosisView = ({ knowledge, onContinue }) => {
   const handleFile = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (!studentCode.trim()) {
+      setAnalysisStatus('error');
+      setAnalysisError('请先填写学生编号，再上传作品');
+      event.target.value = '';
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) {
       setAnalysisStatus('error');
       setAnalysisError('图片不能超过5MB，请压缩后重新上传');
@@ -233,6 +390,31 @@ const DiagnosisView = ({ knowledge, onContinue }) => {
   const confidenceLabel = `${Math.round((diagnosis.confidence || 0) * 100)}%`;
   const isReady = analysisStatus === 'ready';
 
+  const handleConfirmation = async () => {
+    if (!diagnosisId || confirmationStatus === 'loading') return;
+    const nextStatus = confirmed ? 'pending' : 'confirmed';
+    setConfirmationStatus('loading');
+    setAnalysisError('');
+    try {
+      const response = await apiFetch(`/api/diagnoses/${encodeURIComponent(diagnosisId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus, possibleCause: cause }),
+      });
+      const payload = await response.json();
+      if (response.status === 401) {
+        onAuthExpired();
+        throw new Error('登录状态已失效，请重新登录');
+      }
+      if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '诊断保存失败');
+      setConfirmed(nextStatus === 'confirmed');
+      setConfirmationStatus('idle');
+    } catch (confirmationError) {
+      setConfirmationStatus('error');
+      setAnalysisError(confirmationError.message || '诊断保存失败，请稍后重试');
+    }
+  };
+
   return (
     <section className="view-panel diagnosis-view">
       <div className="section-heading">
@@ -241,7 +423,7 @@ const DiagnosisView = ({ knowledge, onContinue }) => {
           <h2>看见错误背后的思考</h2>
           <p>上传学生作品，由 AI 提取学习证据；教师确认后形成可信诊断。</p>
         </div>
-        <div className="case-pill"><span>案例</span> 学生 07 · 前测</div>
+        <label className="student-code-field"><span>匿名学生编号</span><input value={studentCode} onChange={(event) => setStudentCode(event.target.value.slice(0, 32))} disabled={analysisStatus === 'loading'} aria-label="匿名学生编号" /></label>
       </div>
 
       <div className="diagnosis-grid">
@@ -310,9 +492,9 @@ const DiagnosisView = ({ knowledge, onContinue }) => {
           <div className={`teacher-confirm ${confirmed ? 'is-confirmed' : ''}`}>
             <div>
               <span className="confirm-check"><Icon name="check" size={15} /></span>
-              <span><strong>{confirmed ? '教师已确认诊断' : (isReady ? '等待教师专业判断' : '请先上传学生作品')}</strong><small>{confirmed ? '教师修改将在下一步形成学习画像' : (isReady ? '确认后才会生成学生画像和分层任务' : 'AI完成分析后才可确认')}</small></span>
+              <span><strong>{confirmed ? '教师已确认并保存' : (isReady ? 'AI草稿已保存，等待教师判断' : '请先上传学生作品')}</strong><small>{confirmed ? '教师修改已写入诊断历史记录' : (isReady ? '确认后才会生成学生画像和分层任务' : 'AI完成分析后才可确认')}</small></span>
             </div>
-            <button onClick={() => setConfirmed(!confirmed)} disabled={!isReady}>{confirmed ? '撤回确认' : '确认诊断'}</button>
+            <button onClick={handleConfirmation} disabled={!isReady || !diagnosisId || confirmationStatus === 'loading'}>{confirmationStatus === 'loading' ? '保存中…' : (confirmed ? '撤回确认' : '确认诊断')}</button>
           </div>
         </article>
       </div>
@@ -439,6 +621,9 @@ const EvaluationView = () => {
 const AIMathAssistantPage = () => {
   const [activeView, setActiveView] = useState('diagnosis');
   const [knowledge, setKnowledge] = useState('rectangle');
+  const [authStatus, setAuthStatus] = useState('checking');
+  const [teacher, setTeacher] = useState(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const knowledgeLabel = useMemo(
     () => KNOWLEDGE_OPTIONS.find((item) => item.value === knowledge)?.label,
     [knowledge],
@@ -448,6 +633,51 @@ const AIMathAssistantPage = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [activeView]);
 
+  const handleAuthExpired = useCallback(() => {
+    setTeacher(null);
+    setHistoryOpen(false);
+    setAuthStatus('anonymous');
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    apiFetch('/api/auth/me', { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) {
+          handleAuthExpired();
+          return;
+        }
+        const payload = await response.json();
+        setTeacher(payload.teacher);
+        setAuthStatus('authenticated');
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') handleAuthExpired();
+      });
+    return () => controller.abort();
+  }, [handleAuthExpired]);
+
+  const handleLogin = (loggedInTeacher) => {
+    setTeacher(loggedInTeacher);
+    setAuthStatus('authenticated');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await apiFetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      handleAuthExpired();
+    }
+  };
+
+  if (authStatus === 'checking') {
+    return <main className="auth-loading"><span className="brand-mark"><span>π</span></span><strong>正在进入教师工作台…</strong></main>;
+  }
+
+  if (authStatus !== 'authenticated' || !teacher) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   return (
     <div className="ai-math-app">
       <Sidebar activeView={activeView} setActiveView={setActiveView} />
@@ -456,18 +686,21 @@ const AIMathAssistantPage = () => {
           <div className="mobile-brand"><span className="brand-mark"><span>π</span></span><strong>AI 精准教学</strong></div>
           <CurriculumSelector knowledge={knowledge} setKnowledge={setKnowledge} />
           <div className="teacher-profile">
-            <span className="teacher-avatar">袁</span>
-            <span><strong>袁老师</strong><small>三年级数学</small></span>
+            <span className="teacher-avatar">{teacher.displayName?.slice(0, 1) || '师'}</span>
+            <span><strong>{teacher.displayName}</strong><small>三年级数学</small></span>
+            <button onClick={() => setHistoryOpen(true)} title="诊断记录" aria-label="打开诊断记录"><Icon name="history" size={17} /></button>
+            <button onClick={handleLogout} title="退出登录" aria-label="退出登录"><Icon name="logout" size={17} /></button>
           </div>
         </header>
 
         <div className="assistant-content">
           <div className="prototype-banner"><span>GLM 联调版</span><p>已接入 GLM-4.6V-Flash；AI诊断仅作建议，须由教师确认。</p></div>
-          {activeView === 'diagnosis' && <DiagnosisView knowledge={knowledge} onContinue={() => setActiveView('layering')} />}
+          {activeView === 'diagnosis' && <DiagnosisView knowledge={knowledge} onContinue={() => setActiveView('layering')} onAuthExpired={handleAuthExpired} />}
           {activeView === 'layering' && <LayeringView knowledgeLabel={knowledgeLabel} onContinue={() => setActiveView('evaluation')} />}
           {activeView === 'evaluation' && <EvaluationView />}
         </div>
       </main>
+      <HistoryDrawer open={historyOpen} onClose={() => setHistoryOpen(false)} onAuthExpired={handleAuthExpired} />
     </div>
   );
 };
