@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#fffdf7"/>
+  <rect x="55" y="55" width="1090" height="790" rx="18" fill="#ffffff" stroke="#d9d2c3" stroke-width="3"/>
+  <text x="110" y="135" font-family="PingFang SC, sans-serif" font-size="42" font-weight="700" fill="#222">三年级数学 · 周长练习</text>
+  <line x1="110" y1="170" x2="1090" y2="170" stroke="#d9d2c3" stroke-width="3"/>
+  <text x="110" y="245" font-family="PingFang SC, sans-serif" font-size="34" fill="#222">3. 给下面的长方形花圃围一圈篱笆，需要多少米？</text>
+  <rect x="360" y="325" width="440" height="250" fill="#f7fbf3" stroke="#2d6a4f" stroke-width="8"/>
+  <text x="565" y="310" font-family="PingFang SC, sans-serif" font-size="32" fill="#222">8米</text>
+  <text x="825" y="465" font-family="PingFang SC, sans-serif" font-size="32" fill="#222">5米</text>
+  <text x="150" y="690" font-family="KaiTi, STKaiti, serif" font-size="50" fill="#1859a9">答：8 + 5 = 13（米）</text>
+  <path d="M810 660 C860 620 900 730 960 660" fill="none" stroke="#d33" stroke-width="8" stroke-linecap="round"/>
+  <text x="975" y="700" font-family="PingFang SC, sans-serif" font-size="54" fill="#d33">？</text>
+</svg>

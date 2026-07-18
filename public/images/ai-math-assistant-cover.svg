@@ -1,0 +1,44 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="750" fill="#F5F1E7"/>
+  <circle cx="1100" cy="-10" r="270" fill="#DDECE5"/>
+  <circle cx="82" cy="700" r="210" fill="#F5D997" fill-opacity=".7"/>
+  <path d="M0 145H1200M0 290H1200M0 435H1200M0 580H1200M180 0V750M360 0V750M540 0V750M720 0V750M900 0V750M1080 0V750" stroke="#173F3A" stroke-opacity=".035"/>
+  <rect x="133" y="137" width="934" height="476" rx="42" fill="white" stroke="#D8E4DF" stroke-width="3"/>
+  <rect x="133" y="137" width="253" height="476" rx="42" fill="#173F3A"/>
+  <rect x="166" y="175" width="55" height="55" rx="17" fill="#F2C46F"/>
+  <text x="193.5" y="213" text-anchor="middle" fill="#173F3A" font-size="34" font-family="Georgia" font-weight="bold">π</text>
+  <rect x="167" y="278" width="185" height="74" rx="18" fill="white" fill-opacity=".11"/>
+  <rect x="167" y="370" width="185" height="74" rx="18" fill="white" fill-opacity=".05"/>
+  <rect x="167" y="462" width="185" height="74" rx="18" fill="white" fill-opacity=".05"/>
+  <circle cx="195" cy="315" r="8" fill="#F2C46F"/>
+  <rect x="219" y="299" width="86" height="9" rx="4.5" fill="white"/>
+  <rect x="219" y="320" width="103" height="6" rx="3" fill="white" fill-opacity=".42"/>
+  <circle cx="195" cy="407" r="8" fill="#61A58D"/>
+  <rect x="219" y="391" width="72" height="9" rx="4.5" fill="white" fill-opacity=".55"/>
+  <rect x="219" y="412" width="108" height="6" rx="3" fill="white" fill-opacity=".25"/>
+  <circle cx="195" cy="499" r="8" fill="#DF806A"/>
+  <rect x="219" y="483" width="78" height="9" rx="4.5" fill="white" fill-opacity=".55"/>
+  <rect x="219" y="504" width="96" height="6" rx="3" fill="white" fill-opacity=".25"/>
+  <text x="438" y="219" fill="#216F60" font-size="18" font-family="Arial" font-weight="bold" letter-spacing="3">AI 精准教学</text>
+  <text x="438" y="281" fill="#173F3A" font-size="43" font-family="serif" font-weight="bold">看见错误背后的思考</text>
+  <rect x="438" y="324" width="271" height="199" rx="24" fill="#F1F5F2"/>
+  <rect x="469" y="353" width="209" height="142" rx="10" fill="#FFFEF9"/>
+  <rect x="517" y="397" width="108" height="61" fill="#F7F0D8" stroke="#49645F" stroke-width="4"/>
+  <text x="571" y="385" text-anchor="middle" fill="#49645F" font-size="16" font-family="Arial">8米</text>
+  <text x="640" y="431" fill="#49645F" font-size="16" font-family="Arial">5米</text>
+  <rect x="742" y="324" width="278" height="56" rx="15" fill="#FBE8E2"/>
+  <circle cx="774" cy="352" r="15" fill="#E87F68"/>
+  <rect x="803" y="341" width="135" height="10" rx="5" fill="#9F5142" fill-opacity=".85"/>
+  <rect x="803" y="358" width="181" height="7" rx="3.5" fill="#9F5142" fill-opacity=".28"/>
+  <rect x="742" y="394" width="278" height="56" rx="15" fill="#FBF1D8"/>
+  <circle cx="774" cy="422" r="15" fill="#DBA951"/>
+  <rect x="803" y="411" width="151" height="10" rx="5" fill="#806022" fill-opacity=".85"/>
+  <rect x="803" y="428" width="169" height="7" rx="3.5" fill="#806022" fill-opacity=".28"/>
+  <rect x="742" y="464" width="278" height="56" rx="15" fill="#E5F2ED"/>
+  <circle cx="774" cy="492" r="15" fill="#216F60"/>
+  <path d="M767 492L772 497L781 486" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="803" y="481" width="128" height="10" rx="5" fill="#216F60" fill-opacity=".85"/>
+  <rect x="803" y="498" width="173" height="7" rx="3.5" fill="#216F60" fill-opacity=".25"/>
+  <rect x="742" y="543" width="160" height="34" rx="12" fill="#216F60"/>
+  <text x="822" y="566" text-anchor="middle" fill="white" font-size="14" font-family="Arial" font-weight="bold">教师确认诊断  →</text>
+</svg>

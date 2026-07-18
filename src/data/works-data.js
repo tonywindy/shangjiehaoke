@@ -40,6 +40,15 @@ export const SITE_PAGES = [
 
 export const WORKS_DATA = [
   {
+    id: 'ai-math-assistant',
+    title: 'AI小学数学精准教学助手',
+    cover: '/images/ai-math-assistant-cover.svg',
+    path: '/ai-math-assistant/index.html',
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['AI诊断', '三阶六步'],
+    featured: true,
+  },
+  {
     id: 'chufa',
     title: '分松果学除法',
     cover: '/images/chufa.png',

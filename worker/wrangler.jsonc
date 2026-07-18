@@ -1,0 +1,23 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "shangjiehaoke-ai-api",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-07-18",
+	"workers_dev": true,
+	"observability": {
+		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "shangjiehaoke-ai-db",
+			"database_id": "d02d1339-b537-4b35-b511-f32f8571d254"
+		}
+	],
+	"r2_buckets": [
+		{
+			"bucket_name": "shangjiehaoke-ai-evidence",
+			"binding": "EVIDENCE"
+		}
+	]
+}
