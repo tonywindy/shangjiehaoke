@@ -68,6 +68,8 @@ const Icon = ({ name, size = 20 }) => {
     history: <><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></>,
     logout: <><path d="M10 17l5-5-5-5M15 12H3"/><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></>,
     close: <><path d="m6 6 12 12M18 6 6 18"/></>,
+    plus: <><path d="M12 5v14M5 12h14"/></>,
+    school: <><path d="m3 10 9-6 9 6-9 6-9-6Z"/><path d="M7 13v5c3 2 7 2 10 0v-5M21 10v6"/></>,
   };
 
   return (
@@ -199,11 +201,200 @@ const HistoryDrawer = ({ open, onClose, onAuthExpired }) => {
                 </div>
                 <h3>{item.errorType || '等待诊断'}</h3>
                 <p>{item.possibleCause || '暂无原因说明'}</p>
-                <div><span>{KNOWLEDGE_OPTIONS.find((option) => option.value === item.knowledgePoint)?.label || item.knowledgePoint}</span><time>{new Date(`${item.createdAt.replace(' ', 'T')}Z`).toLocaleString('zh-CN', { hour12: false })}</time></div>
+                <div><span>{item.className || '默认班级'} · {KNOWLEDGE_OPTIONS.find((option) => option.value === item.knowledgePoint)?.label || item.knowledgePoint}</span><time>{new Date(`${item.createdAt.replace(' ', 'T')}Z`).toLocaleString('zh-CN', { hour12: false })}</time></div>
               </article>
             ))}
           </div>
         )}
+      </aside>
+    </div>
+  );
+};
+
+const ClassManagerDrawer = ({
+  open,
+  onClose,
+  classes,
+  selectedClassId,
+  onSelectClass,
+  onRefresh,
+  onAuthExpired,
+}) => {
+  const [activeClassId, setActiveClassId] = useState('');
+  const [newClassName, setNewClassName] = useState('');
+  const [renameName, setRenameName] = useState('');
+  const [studentCodes, setStudentCodes] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const activeClass = classes.find((item) => item.id === activeClassId) || classes[0];
+
+  useEffect(() => {
+    if (!open) return;
+    setActiveClassId((current) => (
+      classes.some((item) => item.id === current)
+        ? current
+        : selectedClassId || classes[0]?.id || ''
+    ));
+  }, [open, classes, selectedClassId]);
+
+  useEffect(() => {
+    setRenameName(activeClass?.name || '');
+  }, [activeClass?.name]);
+
+  const sendMutation = async (path, options) => {
+    const response = await apiFetch(path, options);
+    const payload = await response.json();
+    if (response.status === 401) {
+      onAuthExpired();
+      throw new Error('登录状态已失效，请重新登录');
+    }
+    if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '保存失败');
+    return payload;
+  };
+
+  const handleCreateClass = async (event) => {
+    event.preventDefault();
+    if (!newClassName.trim()) return;
+    setStatus('loading');
+    setError('');
+    setMessage('');
+    try {
+      const payload = await sendMutation('/api/classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newClassName.trim() }),
+      });
+      setNewClassName('');
+      setActiveClassId(payload.classId);
+      onSelectClass(payload.classId);
+      await onRefresh();
+      setMessage('新班级已创建');
+    } catch (mutationError) {
+      setError(mutationError.message || '班级创建失败');
+    } finally {
+      setStatus('idle');
+    }
+  };
+
+  const handleRenameClass = async (event) => {
+    event.preventDefault();
+    if (!activeClass || !renameName.trim() || renameName.trim() === activeClass.name) return;
+    setStatus('loading');
+    setError('');
+    setMessage('');
+    try {
+      await sendMutation(`/api/classes/${encodeURIComponent(activeClass.id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: renameName.trim() }),
+      });
+      await onRefresh();
+      setMessage('班级名称已保存');
+    } catch (mutationError) {
+      setError(mutationError.message || '班级修改失败');
+    } finally {
+      setStatus('idle');
+    }
+  };
+
+  const handleAddStudents = async (event) => {
+    event.preventDefault();
+    if (!activeClass) return;
+    const codes = [...new Set(studentCodes.split(/[\s,，、;；]+/).map((item) => item.trim()).filter(Boolean))];
+    if (!codes.length) {
+      setError('请至少输入一个学生编号');
+      return;
+    }
+    setStatus('loading');
+    setError('');
+    setMessage('');
+    try {
+      const payload = await sendMutation(`/api/classes/${encodeURIComponent(activeClass.id)}/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codes }),
+      });
+      setStudentCodes('');
+      await onRefresh();
+      setMessage(`已加入 ${payload.added} 个学生编号`);
+    } catch (mutationError) {
+      setError(mutationError.message || '学生编号添加失败');
+    } finally {
+      setStatus('idle');
+    }
+  };
+
+  const handleArchiveStudent = async (studentId) => {
+    setStatus('loading');
+    setError('');
+    setMessage('');
+    try {
+      await sendMutation(`/api/students/${encodeURIComponent(studentId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'archived' }),
+      });
+      await onRefresh();
+      setMessage('学生编号已移出当前名单，历史诊断仍会保留');
+    } catch (mutationError) {
+      setError(mutationError.message || '学生状态修改失败');
+    } finally {
+      setStatus('idle');
+    }
+  };
+
+  if (!open) return null;
+  return (
+    <div className="history-overlay" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <aside className="class-drawer" role="dialog" aria-modal="true" aria-label="班级与学生管理">
+        <div className="history-heading">
+          <div><span>CLASS ROSTER</span><h2>班级与学生</h2><p>仅使用匿名编号，避免录入学生真实姓名。</p></div>
+          <button onClick={onClose} aria-label="关闭班级管理"><Icon name="close" size={20} /></button>
+        </div>
+
+        <form className="class-create-form" onSubmit={handleCreateClass}>
+          <label><span>新建班级</span><input value={newClassName} onChange={(event) => setNewClassName(event.target.value.slice(0, 40))} placeholder="例如：三年级1班" /></label>
+          <button type="submit" disabled={status === 'loading' || !newClassName.trim()}><Icon name="plus" size={16} /> 添加班级</button>
+        </form>
+
+        <div className="class-tabs" aria-label="班级列表">
+          {classes.map((item) => (
+            <button
+              key={item.id}
+              className={item.id === activeClass?.id ? 'is-active' : ''}
+              onClick={() => { setActiveClassId(item.id); onSelectClass(item.id); setMessage(''); setError(''); }}
+            >
+              <span><Icon name="school" size={15} /> {item.name}</span>
+              <small>{item.students.length} 人 · {item.diagnosisCount || 0} 条诊断</small>
+            </button>
+          ))}
+        </div>
+
+        {activeClass && (
+          <div className="class-detail">
+            <form className="class-rename-form" onSubmit={handleRenameClass}>
+              <label><span>当前班级名称</span><input value={renameName} onChange={(event) => setRenameName(event.target.value.slice(0, 40))} /></label>
+              <button type="submit" disabled={status === 'loading' || !renameName.trim() || renameName.trim() === activeClass.name}>保存名称</button>
+            </form>
+
+            <form className="student-batch-form" onSubmit={handleAddStudents}>
+              <label><span>批量添加匿名编号</span><textarea value={studentCodes} onChange={(event) => setStudentCodes(event.target.value)} placeholder={'例如：\n01、02、03\n也可以从表格中复制一列编号'} /></label>
+              <div><small>支持换行、空格、逗号或顿号分隔，一次最多60个。</small><button type="submit" disabled={status === 'loading'}><Icon name="plus" size={15} /> 加入名单</button></div>
+            </form>
+
+            <div className="student-roster-heading"><strong>当前学生名单</strong><span>{activeClass.students.length} 人</span></div>
+            {activeClass.students.length ? (
+              <div className="student-roster">
+                {activeClass.students.map((student) => (
+                  <div key={student.id}><span>{student.anonymousCode}</span><small>{student.diagnosisCount || 0} 条诊断</small><button onClick={() => handleArchiveStudent(student.id)} disabled={status === 'loading'}>移出</button></div>
+                ))}
+              </div>
+            ) : <div className="history-empty">这个班级还没有学生编号，请在上方批量添加。</div>}
+          </div>
+        )}
+        {message && <div className="roster-message is-success"><Icon name="check" size={15} /> {message}</div>}
+        {error && <div className="roster-message is-error"><Icon name="info" size={15} /> {error}</div>}
       </aside>
     </div>
   );
@@ -308,7 +499,18 @@ const WorksheetPreview = ({ uploadedImage }) => (
   </div>
 );
 
-const DiagnosisView = ({ knowledge, onContinue, onAuthExpired }) => {
+const DiagnosisView = ({
+  knowledge,
+  onContinue,
+  onAuthExpired,
+  classes,
+  selectedClassId,
+  selectedStudentId,
+  onClassChange,
+  onStudentChange,
+  rosterStatus,
+  onManageRoster,
+}) => {
   const inputRef = useRef(null);
   const abortRef = useRef(null);
   const [uploadedImage, setUploadedImage] = useState('');
@@ -318,9 +520,10 @@ const DiagnosisView = ({ knowledge, onContinue, onAuthExpired }) => {
   const [cause, setCause] = useState(DEMO_DIAGNOSIS.possibleCause);
   const [analysisStatus, setAnalysisStatus] = useState('demo');
   const [analysisError, setAnalysisError] = useState('');
-  const [studentCode, setStudentCode] = useState('07');
   const [diagnosisId, setDiagnosisId] = useState('');
   const [confirmationStatus, setConfirmationStatus] = useState('idle');
+  const selectedClass = classes.find((item) => item.id === selectedClassId);
+  const selectedStudent = selectedClass?.students.find((item) => item.id === selectedStudentId);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -339,7 +542,9 @@ const DiagnosisView = ({ knowledge, onContinue, onAuthExpired }) => {
       const formData = new FormData();
       formData.append('image', file);
       formData.append('knowledgePoint', knowledge);
-      formData.append('studentCode', studentCode.trim());
+      formData.append('classId', selectedClassId);
+      formData.append('studentId', selectedStudentId);
+      formData.append('studentCode', selectedStudent?.anonymousCode || '');
       const response = await apiFetch('/api/diagnoses/analyze', {
         method: 'POST',
         body: formData,
@@ -368,9 +573,9 @@ const DiagnosisView = ({ knowledge, onContinue, onAuthExpired }) => {
   const handleFile = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!studentCode.trim()) {
+    if (!selectedClassId || !selectedStudentId) {
       setAnalysisStatus('error');
-      setAnalysisError('请先填写学生编号，再上传作品');
+      setAnalysisError('请先选择班级和学生；如果还没有名单，请点击“管理班级”添加');
       event.target.value = '';
       return;
     }
@@ -423,7 +628,16 @@ const DiagnosisView = ({ knowledge, onContinue, onAuthExpired }) => {
           <h2>看见错误背后的思考</h2>
           <p>上传学生作品，由 AI 提取学习证据；教师确认后形成可信诊断。</p>
         </div>
-        <label className="student-code-field"><span>匿名学生编号</span><input value={studentCode} onChange={(event) => setStudentCode(event.target.value.slice(0, 32))} disabled={analysisStatus === 'loading'} aria-label="匿名学生编号" /></label>
+        <div className="student-selection">
+          <label><span>班级</span><select value={selectedClassId} onChange={(event) => onClassChange(event.target.value)} disabled={analysisStatus === 'loading' || rosterStatus === 'loading'} aria-label="选择班级">
+            {classes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select></label>
+          <label><span>匿名学生编号</span><select value={selectedStudentId} onChange={(event) => onStudentChange(event.target.value)} disabled={analysisStatus === 'loading' || !selectedClass?.students.length} aria-label="选择学生">
+            {!selectedClass?.students.length && <option value="">暂无学生</option>}
+            {selectedClass?.students.map((item) => <option key={item.id} value={item.id}>{item.anonymousCode}</option>)}
+          </select></label>
+          <button onClick={onManageRoster}><Icon name="users" size={15} /> 管理班级</button>
+        </div>
       </div>
 
       <div className="diagnosis-grid">
@@ -624,6 +838,11 @@ const AIMathAssistantPage = () => {
   const [authStatus, setAuthStatus] = useState('checking');
   const [teacher, setTeacher] = useState(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [classManagerOpen, setClassManagerOpen] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [rosterStatus, setRosterStatus] = useState('idle');
   const knowledgeLabel = useMemo(
     () => KNOWLEDGE_OPTIONS.find((item) => item.value === knowledge)?.label,
     [knowledge],
@@ -636,8 +855,27 @@ const AIMathAssistantPage = () => {
   const handleAuthExpired = useCallback(() => {
     setTeacher(null);
     setHistoryOpen(false);
+    setClassManagerOpen(false);
+    setClasses([]);
     setAuthStatus('anonymous');
   }, []);
+
+  const loadClasses = useCallback(async () => {
+    setRosterStatus('loading');
+    try {
+      const response = await apiFetch('/api/classes');
+      if (response.status === 401) {
+        handleAuthExpired();
+        return;
+      }
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '班级名单加载失败');
+      setClasses(payload.classes || []);
+      setRosterStatus('ready');
+    } catch {
+      setRosterStatus('error');
+    }
+  }, [handleAuthExpired]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -656,6 +894,31 @@ const AIMathAssistantPage = () => {
       });
     return () => controller.abort();
   }, [handleAuthExpired]);
+
+  useEffect(() => {
+    if (authStatus === 'authenticated') loadClasses();
+  }, [authStatus, loadClasses]);
+
+  useEffect(() => {
+    if (!classes.length) {
+      setSelectedClassId('');
+      setSelectedStudentId('');
+      return;
+    }
+    const nextClass = classes.find((item) => item.id === selectedClassId) || classes[0];
+    if (nextClass.id !== selectedClassId) setSelectedClassId(nextClass.id);
+    setSelectedStudentId((current) => (
+      nextClass.students.some((student) => student.id === current)
+        ? current
+        : nextClass.students[0]?.id || ''
+    ));
+  }, [classes, selectedClassId]);
+
+  const handleClassChange = (classId) => {
+    const nextClass = classes.find((item) => item.id === classId);
+    setSelectedClassId(classId);
+    setSelectedStudentId(nextClass?.students[0]?.id || '');
+  };
 
   const handleLogin = (loggedInTeacher) => {
     setTeacher(loggedInTeacher);
@@ -688,6 +951,7 @@ const AIMathAssistantPage = () => {
           <div className="teacher-profile">
             <span className="teacher-avatar">{teacher.displayName?.slice(0, 1) || '师'}</span>
             <span><strong>{teacher.displayName}</strong><small>三年级数学</small></span>
+            <button onClick={() => setClassManagerOpen(true)} title="班级与学生" aria-label="打开班级与学生管理"><Icon name="users" size={17} /></button>
             <button onClick={() => setHistoryOpen(true)} title="诊断记录" aria-label="打开诊断记录"><Icon name="history" size={17} /></button>
             <button onClick={handleLogout} title="退出登录" aria-label="退出登录"><Icon name="logout" size={17} /></button>
           </div>
@@ -695,12 +959,34 @@ const AIMathAssistantPage = () => {
 
         <div className="assistant-content">
           <div className="prototype-banner"><span>GLM 联调版</span><p>已接入 GLM-4.6V-Flash；AI诊断仅作建议，须由教师确认。</p></div>
-          {activeView === 'diagnosis' && <DiagnosisView knowledge={knowledge} onContinue={() => setActiveView('layering')} onAuthExpired={handleAuthExpired} />}
+          {activeView === 'diagnosis' && (
+            <DiagnosisView
+              knowledge={knowledge}
+              onContinue={() => setActiveView('layering')}
+              onAuthExpired={handleAuthExpired}
+              classes={classes}
+              selectedClassId={selectedClassId}
+              selectedStudentId={selectedStudentId}
+              onClassChange={handleClassChange}
+              onStudentChange={setSelectedStudentId}
+              rosterStatus={rosterStatus}
+              onManageRoster={() => setClassManagerOpen(true)}
+            />
+          )}
           {activeView === 'layering' && <LayeringView knowledgeLabel={knowledgeLabel} onContinue={() => setActiveView('evaluation')} />}
           {activeView === 'evaluation' && <EvaluationView />}
         </div>
       </main>
       <HistoryDrawer open={historyOpen} onClose={() => setHistoryOpen(false)} onAuthExpired={handleAuthExpired} />
+      <ClassManagerDrawer
+        open={classManagerOpen}
+        onClose={() => setClassManagerOpen(false)}
+        classes={classes}
+        selectedClassId={selectedClassId}
+        onSelectClass={handleClassChange}
+        onRefresh={loadClasses}
+        onAuthExpired={handleAuthExpired}
+      />
     </div>
   );
 };

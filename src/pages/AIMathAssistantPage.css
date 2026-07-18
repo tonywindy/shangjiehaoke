@@ -183,9 +183,12 @@ button { color: inherit; }
 .case-pill, .ai-badge, .growth-badge { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .case-pill { padding: 8px 12px; border: 1px solid var(--ai-line); border-radius: 999px; color: #6c817c; background: #fff; font-size: 11px; }
 .case-pill span { color: var(--ai-green); font-weight: 800; }
-.student-code-field { min-width: 138px; padding: 8px 11px; border: 1px solid var(--ai-line); border-radius: 13px; display: grid; gap: 3px; background: #fff; }
-.student-code-field span { color: #879792; font-size: 8px; font-weight: 700; }
-.student-code-field input { width: 100%; padding: 0; border: 0; outline: 0; color: var(--ai-green); background: transparent; font: inherit; font-size: 12px; font-weight: 800; }
+.student-selection { display: flex; align-items: stretch; gap: 8px; }
+.student-selection label { min-width: 132px; padding: 7px 10px; border: 1px solid var(--ai-line); border-radius: 12px; display: grid; gap: 3px; background: #fff; }
+.student-selection label:nth-child(2) { min-width: 148px; }
+.student-selection label > span { color: #879792; font-size: 8px; font-weight: 700; }
+.student-selection select { width: 100%; padding: 0 17px 0 0; border: 0; outline: 0; color: var(--ai-green); background: transparent; font: inherit; font-size: 11px; font-weight: 800; }
+.student-selection > button { padding: 0 12px; border: 1px solid #bed1cb; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--ai-green); background: var(--ai-mint-light); cursor: pointer; font-size: 9px; font-weight: 800; white-space: nowrap; }
 
 .history-overlay { position: fixed; inset: 0; z-index: 50; display: flex; justify-content: flex-end; background: rgba(13,36,33,.38); backdrop-filter: blur(4px); }
 .history-drawer { width: min(500px, 92vw); height: 100%; padding: 28px; overflow-y: auto; background: var(--ai-paper); box-shadow: -25px 0 70px rgba(13,36,33,.2); animation: history-enter .25s ease-out; }
@@ -206,6 +209,39 @@ button { color: inherit; }
 .history-empty { margin-top: 22px; padding: 30px 20px; border: 1px dashed #cbd9d4; border-radius: 16px; color: #758983; text-align: center; font-size: 10px; line-height: 1.8; }
 .history-empty.is-error { color: #9c483d; background: #fff0ed; border-color: #efc9c1; }
 @keyframes history-enter { from { transform: translateX(24px); opacity: .4; } }
+
+.class-drawer { width: min(650px, 94vw); height: 100%; padding: 28px; overflow-y: auto; background: var(--ai-paper); box-shadow: -25px 0 70px rgba(13,36,33,.2); animation: history-enter .25s ease-out; }
+.class-create-form { margin-top: 20px; padding: 14px; border: 1px solid var(--ai-line); border-radius: 16px; display: flex; align-items: end; gap: 10px; background: #fff; }
+.class-create-form label, .class-rename-form label, .student-batch-form label { display: grid; gap: 7px; flex: 1; }
+.class-create-form label > span, .class-rename-form label > span, .student-batch-form label > span { color: #647a74; font-size: 9px; font-weight: 800; }
+.class-create-form input, .class-rename-form input, .student-batch-form textarea { width: 100%; border: 1px solid #dbe5e1; border-radius: 10px; outline: 0; color: var(--ai-ink); background: #fbfcfb; font: inherit; font-size: 11px; }
+.class-create-form input, .class-rename-form input { min-height: 40px; padding: 0 11px; }
+.class-create-form input:focus, .class-rename-form input:focus, .student-batch-form textarea:focus { border-color: #70a99c; box-shadow: 0 0 0 3px rgba(33,111,96,.08); background: #fff; }
+.class-create-form > button, .student-batch-form button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: #fff; background: var(--ai-green); cursor: pointer; font-size: 9px; font-weight: 800; white-space: nowrap; }
+.class-create-form > button:disabled, .class-rename-form button:disabled, .student-batch-form button:disabled { opacity: .5; cursor: not-allowed; }
+.class-tabs { margin-top: 15px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.class-tabs > button { padding: 12px 13px; border: 1px solid var(--ai-line); border-radius: 13px; display: grid; gap: 5px; color: #506b65; text-align: left; background: #fff; cursor: pointer; }
+.class-tabs > button.is-active { border-color: #8cb9ad; color: var(--ai-green); background: var(--ai-mint-light); box-shadow: inset 3px 0 0 var(--ai-green); }
+.class-tabs > button span { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; }
+.class-tabs > button small { padding-left: 22px; color: #8b9b97; font-size: 8px; }
+.class-detail { margin-top: 16px; padding: 17px; border: 1px solid rgba(24,60,55,.09); border-radius: 18px; background: #fff; }
+.class-rename-form { padding-bottom: 15px; border-bottom: 1px solid #edf1ef; display: flex; align-items: end; gap: 9px; }
+.class-rename-form button { min-height: 40px; padding: 0 13px; border: 1px solid #bcd0ca; border-radius: 10px; color: var(--ai-green); background: var(--ai-mint-light); cursor: pointer; font-size: 9px; font-weight: 800; }
+.student-batch-form { padding: 16px 0; border-bottom: 1px solid #edf1ef; }
+.student-batch-form textarea { min-height: 88px; padding: 10px 11px; resize: vertical; line-height: 1.7; }
+.student-batch-form > div { margin-top: 9px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.student-batch-form > div small { color: #8b9b97; font-size: 8px; line-height: 1.5; }
+.student-roster-heading { padding: 16px 0 10px; display: flex; align-items: center; justify-content: space-between; }
+.student-roster-heading strong { color: #345650; font-size: 11px; }
+.student-roster-heading span { color: #8a9b96; font-size: 8px; }
+.student-roster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.student-roster > div { min-width: 0; padding: 10px; border: 1px solid #e2eae7; border-radius: 11px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 7px; background: #fbfcfb; }
+.student-roster > div > span { overflow: hidden; color: var(--ai-green); font-size: 10px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.student-roster > div > small { grid-column: 1; color: #91a09c; font-size: 7px; }
+.student-roster > div > button { grid-column: 2; grid-row: 1 / span 2; padding: 4px 6px; border: 0; border-radius: 7px; color: #9c5a50; background: #fff0ed; cursor: pointer; font-size: 7px; }
+.roster-message { position: sticky; bottom: 0; margin-top: 14px; padding: 11px 12px; border-radius: 11px; display: flex; align-items: center; gap: 7px; font-size: 9px; box-shadow: 0 8px 25px rgba(24,60,55,.1); }
+.roster-message.is-success { color: var(--ai-green); background: #e8f5ef; }
+.roster-message.is-error { color: #9c483d; background: #fff0ed; }
 
 .diagnosis-grid, .evaluation-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); gap: 22px; }
 .workspace-card { padding: 24px; border: 1px solid rgba(24,60,55,.09); border-radius: 24px; background: var(--ai-card); box-shadow: var(--ai-shadow); }
@@ -376,8 +412,12 @@ button { color: inherit; }
   .workflow-copy strong { font-size: 11px; }
   .assistant-main { margin-left: 0; }
   .assistant-topbar { position: static; min-height: auto; padding: 14px 20px; }
-  .teacher-profile { display: none; }
+  .teacher-profile { display: flex; }
+  .teacher-profile > span { display: none; }
   .curriculum-selector { max-width: none; }
+  .diagnosis-view .section-heading { align-items: flex-start; flex-direction: column; }
+  .student-selection { width: 100%; flex-wrap: wrap; }
+  .student-selection label { flex: 1; }
   .diagnosis-grid, .evaluation-grid { grid-template-columns: 1fr; }
   .layer-cards { grid-template-columns: 1fr; }
   .layer-card h3 { min-height: auto; }
@@ -391,6 +431,13 @@ button { color: inherit; }
   .login-panel { padding: 30px 14px 50px; }
   .login-card { padding: 27px 22px; border-radius: 22px; }
   .login-card h2 { font-size: 28px; }
+  .class-drawer { padding: 20px 15px; }
+  .class-create-form, .class-rename-form { align-items: stretch; flex-direction: column; }
+  .class-create-form > button, .class-rename-form button { width: 100%; }
+  .class-tabs { grid-template-columns: 1fr; }
+  .student-roster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .student-selection label, .student-selection label:nth-child(2) { min-width: calc(50% - 4px); }
+  .student-selection > button { width: 100%; min-height: 38px; }
   .math-sidebar { align-items: stretch; flex-direction: column; gap: 10px; padding: 14px 16px 12px; }
   .assistant-brand .brand-copy small { display: none; }
   .brand-mark { width: 38px; height: 38px; }
@@ -399,6 +446,8 @@ button { color: inherit; }
   .workflow-copy { justify-items: center; }
   .workflow-copy strong { font-size: 10px; white-space: nowrap; }
   .assistant-topbar { padding: 12px 14px; overflow: visible; }
+  .assistant-topbar { flex-wrap: wrap; }
+  .teacher-profile { width: 100%; justify-content: flex-end; }
   .curriculum-selector { width: 100%; min-width: 0; padding: 8px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 7px; }
   .curriculum-field { min-width: 0; padding: 6px 4px; border-radius: 9px; background: #f7f9f7; }
   .curriculum-field:last-of-type { grid-column: 1 / -1; }

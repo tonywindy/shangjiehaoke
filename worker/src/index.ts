@@ -30,6 +30,12 @@ type Teacher = {
   displayName: string;
 };
 
+type DiagnosisStudent = {
+  id: string;
+  classId: string;
+  studentCode: string;
+};
+
 const KNOWLEDGE_POINTS: Record<string, string> = {
   'perimeter-concept': '周长的认识',
   rectangle: '长方形周长',
@@ -188,10 +194,61 @@ async function authenticate(request: Request, env: AppEnv): Promise<Teacher | nu
   return { id: record.id, username: session.username, displayName: record.display_name };
 }
 
+async function ensureDefaultClass(env: AppEnv, teacher: Teacher): Promise<string> {
+  const classId = `${teacher.id}:default-class`;
+  await env.DB.prepare(`
+    INSERT INTO classes (id, teacher_id, name, grade, school_year, updated_at)
+    VALUES (?, ?, '默认班级', 'grade-3', '2026-2027', CURRENT_TIMESTAMP)
+    ON CONFLICT (id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+  `).bind(classId, teacher.id).run();
+  return classId;
+}
+
+async function resolveDiagnosisStudent(
+  env: AppEnv,
+  teacher: Teacher,
+  input: { classId?: string; studentId?: string; studentCode?: string },
+): Promise<DiagnosisStudent | null> {
+  const classId = input.classId || await ensureDefaultClass(env, teacher);
+  const ownedClass = await env.DB.prepare(
+    'SELECT id FROM classes WHERE id = ? AND teacher_id = ?',
+  ).bind(classId, teacher.id).first<{ id: string }>();
+  if (!ownedClass) return null;
+
+  if (input.studentId) {
+    const student = await env.DB.prepare(`
+      SELECT id, anonymous_code
+      FROM students
+      WHERE id = ? AND class_id = ? AND status = 'active'
+    `).bind(input.studentId, classId).first<{ id: string; anonymous_code: string }>();
+    return student
+      ? { id: student.id, classId, studentCode: student.anonymous_code }
+      : null;
+  }
+
+  const studentCode = input.studentCode?.trim().slice(0, 32) || '';
+  if (!studentCode) return null;
+  await env.DB.prepare(`
+    INSERT INTO students (id, class_id, anonymous_code, status, updated_at)
+    VALUES (?, ?, ?, 'active', CURRENT_TIMESTAMP)
+    ON CONFLICT (class_id, anonymous_code) DO UPDATE SET
+      status = 'active',
+      updated_at = CURRENT_TIMESTAMP
+  `).bind(crypto.randomUUID(), classId, studentCode).run();
+  const student = await env.DB.prepare(`
+    SELECT id, anonymous_code
+    FROM students
+    WHERE class_id = ? AND anonymous_code = ? AND status = 'active'
+  `).bind(classId, studentCode).first<{ id: string; anonymous_code: string }>();
+  return student ? { id: student.id, classId, studentCode: student.anonymous_code } : null;
+}
+
 async function saveDiagnosisDraft(
   env: AppEnv,
   teacher: Teacher,
   input: {
+    studentId: string;
+    classId: string;
     studentCode: string;
     knowledgePoint: string;
     image: File;
@@ -207,31 +264,6 @@ async function saveDiagnosisDraft(
     model: string;
   },
 ): Promise<string> {
-  const classId = `${teacher.id}:default-class`;
-  const normalizedStudentCode = input.studentCode.trim().slice(0, 32) || '未编号';
-
-  await env.DB.prepare(`
-    INSERT INTO classes (id, teacher_id, name, grade, school_year, updated_at)
-    VALUES (?, ?, '默认班级', 'grade-3', '2026-2027', CURRENT_TIMESTAMP)
-    ON CONFLICT (id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
-  `).bind(classId, teacher.id).run();
-
-  let student = await env.DB.prepare(
-    'SELECT id FROM students WHERE class_id = ? AND anonymous_code = ?',
-  ).bind(classId, normalizedStudentCode).first<{ id: string }>();
-  if (!student) {
-    const studentId = crypto.randomUUID();
-    await env.DB.prepare(`
-      INSERT INTO students (id, class_id, anonymous_code)
-      VALUES (?, ?, ?)
-      ON CONFLICT (class_id, anonymous_code) DO NOTHING
-    `).bind(studentId, classId, normalizedStudentCode).run();
-    student = await env.DB.prepare(
-      'SELECT id FROM students WHERE class_id = ? AND anonymous_code = ?',
-    ).bind(classId, normalizedStudentCode).first<{ id: string }>();
-  }
-  if (!student) throw new Error('STUDENT_SAVE_FAILED');
-
   const evidenceId = crypto.randomUUID();
   const diagnosisId = crypto.randomUUID();
   await env.DB.batch([
@@ -242,7 +274,7 @@ async function saveDiagnosisDraft(
       ) VALUES (?, ?, 'wrong_answer', ?, ?, ?, ?, NULL, NULL)
     `).bind(
       evidenceId,
-      student.id,
+      input.studentId,
       input.knowledgePoint,
       input.image.name.slice(0, 180),
       input.image.type,
@@ -273,7 +305,11 @@ async function saveDiagnosisDraft(
       crypto.randomUUID(),
       teacher.id,
       diagnosisId,
-      JSON.stringify({ studentCode: normalizedStudentCode, imageStored: false }),
+      JSON.stringify({
+        classId: input.classId,
+        studentCode: input.studentCode,
+        imageStored: false,
+      }),
     ),
   ]);
   return diagnosisId;
@@ -361,6 +397,235 @@ export default {
       return json(request, { ok: true }, 200, { 'Set-Cookie': clearSessionCookie() });
     }
 
+    if (request.method === 'GET' && url.pathname === '/api/classes') {
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      await ensureDefaultClass(env, teacher);
+      const [classResults, studentResults] = await Promise.all([
+        env.DB.prepare(`
+          SELECT
+            c.id,
+            c.name,
+            c.grade,
+            c.school_year AS schoolYear,
+            c.created_at AS createdAt,
+            COUNT(DISTINCT d.id) AS diagnosisCount
+          FROM classes c
+          LEFT JOIN students s ON s.class_id = c.id
+          LEFT JOIN evidence e ON e.student_id = s.id
+          LEFT JOIN diagnoses d ON d.evidence_id = e.id
+          WHERE c.teacher_id = ?
+          GROUP BY c.id
+          ORDER BY c.created_at ASC
+        `).bind(teacher.id).all(),
+        env.DB.prepare(`
+          SELECT
+            s.id,
+            s.class_id AS classId,
+            s.anonymous_code AS anonymousCode,
+            s.created_at AS createdAt,
+            COUNT(DISTINCT d.id) AS diagnosisCount
+          FROM students s
+          JOIN classes c ON c.id = s.class_id
+          LEFT JOIN evidence e ON e.student_id = s.id
+          LEFT JOIN diagnoses d ON d.evidence_id = e.id
+          WHERE c.teacher_id = ? AND s.status = 'active'
+          GROUP BY s.id
+          ORDER BY s.created_at ASC
+        `).bind(teacher.id).all(),
+      ]);
+      const students = (studentResults.results || []) as Array<Record<string, unknown>>;
+      const classes = (classResults.results || []).map((classItem) => ({
+        ...classItem,
+        students: students.filter((student) => student.classId === classItem.id),
+      }));
+      return json(request, { ok: true, classes });
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/classes') {
+      if (!originAllowed(request)) {
+        return json(request, {
+          ok: false,
+          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
+        }, 403);
+      }
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      try {
+        const body = await request.json<{ name?: string; schoolYear?: string }>();
+        const name = body.name?.trim() || '';
+        const schoolYear = body.schoolYear?.trim() || '2026-2027';
+        if (name.length < 1 || name.length > 40 || schoolYear.length > 20) {
+          return json(request, {
+            ok: false,
+            error: { code: 'CLASS_INPUT_INVALID', message: '班级名称应为1至40个字符' },
+          }, 400);
+        }
+        const existing = await env.DB.prepare(
+          'SELECT id FROM classes WHERE teacher_id = ? AND name = ?',
+        ).bind(teacher.id, name).first<{ id: string }>();
+        if (existing) {
+          return json(request, {
+            ok: false,
+            error: { code: 'CLASS_ALREADY_EXISTS', message: '已经有同名班级了' },
+          }, 409);
+        }
+        const classId = crypto.randomUUID();
+        await env.DB.batch([
+          env.DB.prepare(`
+            INSERT INTO classes (id, teacher_id, name, grade, school_year)
+            VALUES (?, ?, ?, 'grade-3', ?)
+          `).bind(classId, teacher.id, name, schoolYear),
+          env.DB.prepare(`
+            INSERT INTO audit_logs (id, teacher_id, action, entity_type, entity_id, details)
+            VALUES (?, ?, 'create_class', 'class', ?, ?)
+          `).bind(crypto.randomUUID(), teacher.id, classId, JSON.stringify({ name })),
+        ]);
+        return json(request, { ok: true, classId }, 201);
+      } catch {
+        return json(request, {
+          ok: false,
+          error: { code: 'CLASS_CREATE_FAILED', message: '班级创建失败，请稍后重试' },
+        }, 400);
+      }
+    }
+
+    const classMatch = url.pathname.match(/^\/api\/classes\/([^/]+)$/);
+    if (request.method === 'PATCH' && classMatch) {
+      if (!originAllowed(request)) {
+        return json(request, {
+          ok: false,
+          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
+        }, 403);
+      }
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      try {
+        const classId = decodeURIComponent(classMatch[1]);
+        const body = await request.json<{ name?: string }>();
+        const name = body.name?.trim() || '';
+        if (name.length < 1 || name.length > 40) {
+          return json(request, {
+            ok: false,
+            error: { code: 'CLASS_NAME_INVALID', message: '班级名称应为1至40个字符' },
+          }, 400);
+        }
+        const result = await env.DB.prepare(`
+          UPDATE classes SET name = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ? AND teacher_id = ?
+        `).bind(name, classId, teacher.id).run();
+        if (!result.meta.changes) {
+          return json(request, {
+            ok: false,
+            error: { code: 'CLASS_NOT_FOUND', message: '没有找到这个班级' },
+          }, 404);
+        }
+        return json(request, { ok: true, classId, name });
+      } catch {
+        return json(request, {
+          ok: false,
+          error: { code: 'CLASS_UPDATE_FAILED', message: '班级修改失败，请稍后重试' },
+        }, 400);
+      }
+    }
+
+    const classStudentsMatch = url.pathname.match(/^\/api\/classes\/([^/]+)\/students$/);
+    if (request.method === 'POST' && classStudentsMatch) {
+      if (!originAllowed(request)) {
+        return json(request, {
+          ok: false,
+          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
+        }, 403);
+      }
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      try {
+        const classId = decodeURIComponent(classStudentsMatch[1]);
+        const ownedClass = await env.DB.prepare(
+          'SELECT id FROM classes WHERE id = ? AND teacher_id = ?',
+        ).bind(classId, teacher.id).first<{ id: string }>();
+        if (!ownedClass) {
+          return json(request, {
+            ok: false,
+            error: { code: 'CLASS_NOT_FOUND', message: '没有找到这个班级' },
+          }, 404);
+        }
+        const body = await request.json<{ codes?: unknown[] }>();
+        const codes = [...new Set((body.codes || [])
+          .filter((code): code is string => typeof code === 'string')
+          .map((code) => code.trim())
+          .filter(Boolean))];
+        if (codes.length < 1 || codes.length > 60 || codes.some((code) => code.length > 32)) {
+          return json(request, {
+            ok: false,
+            error: { code: 'STUDENT_CODES_INVALID', message: '每次可添加1至60个学生编号，每个编号不超过32个字符' },
+          }, 400);
+        }
+        await env.DB.batch(codes.map((code) => env.DB.prepare(`
+          INSERT INTO students (id, class_id, anonymous_code, status, updated_at)
+          VALUES (?, ?, ?, 'active', CURRENT_TIMESTAMP)
+          ON CONFLICT (class_id, anonymous_code) DO UPDATE SET
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP
+        `).bind(crypto.randomUUID(), classId, code)));
+        await env.DB.prepare(`
+          INSERT INTO audit_logs (id, teacher_id, action, entity_type, entity_id, details)
+          VALUES (?, ?, 'add_students', 'class', ?, ?)
+        `).bind(
+          crypto.randomUUID(),
+          teacher.id,
+          classId,
+          JSON.stringify({ count: codes.length }),
+        ).run();
+        return json(request, { ok: true, classId, added: codes.length });
+      } catch {
+        return json(request, {
+          ok: false,
+          error: { code: 'STUDENTS_ADD_FAILED', message: '学生编号添加失败，请稍后重试' },
+        }, 400);
+      }
+    }
+
+    const studentMatch = url.pathname.match(/^\/api\/students\/([^/]+)$/);
+    if (request.method === 'PATCH' && studentMatch) {
+      if (!originAllowed(request)) {
+        return json(request, {
+          ok: false,
+          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
+        }, 403);
+      }
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      try {
+        const studentId = decodeURIComponent(studentMatch[1]);
+        const body = await request.json<{ status?: string }>();
+        if (body.status !== 'active' && body.status !== 'archived') {
+          return json(request, {
+            ok: false,
+            error: { code: 'STUDENT_STATUS_INVALID', message: '学生状态无效' },
+          }, 400);
+        }
+        const result = await env.DB.prepare(`
+          UPDATE students SET status = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ? AND class_id IN (
+            SELECT id FROM classes WHERE teacher_id = ?
+          )
+        `).bind(body.status, studentId, teacher.id).run();
+        if (!result.meta.changes) {
+          return json(request, {
+            ok: false,
+            error: { code: 'STUDENT_NOT_FOUND', message: '没有找到这个学生编号' },
+          }, 404);
+        }
+        return json(request, { ok: true, studentId, status: body.status });
+      } catch {
+        return json(request, {
+          ok: false,
+          error: { code: 'STUDENT_UPDATE_FAILED', message: '学生状态修改失败，请稍后重试' },
+        }, 400);
+      }
+    }
+
     if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/api/health')) {
       return json(request, {
         ok: true,
@@ -431,6 +696,8 @@ export default {
         const image = form.get('image');
         const knowledgePoint = form.get('knowledgePoint');
         const studentCode = form.get('studentCode');
+        const classId = form.get('classId');
+        const studentId = form.get('studentId');
 
         if (!(image instanceof File)) {
           return json(request, {
@@ -450,10 +717,25 @@ export default {
             error: { code: 'KNOWLEDGE_POINT_INVALID', message: '请选择有效的周长知识点' },
           }, 400);
         }
-        if (typeof studentCode !== 'string' || studentCode.trim().length < 1 || studentCode.trim().length > 32) {
+        if (
+          (typeof studentId !== 'string' || !studentId)
+          && (typeof studentCode !== 'string' || studentCode.trim().length < 1 || studentCode.trim().length > 32)
+        ) {
           return json(request, {
             ok: false,
-            error: { code: 'STUDENT_CODE_INVALID', message: '请输入1至32个字符的学生编号' },
+            error: { code: 'STUDENT_CODE_INVALID', message: '请选择学生或输入有效的学生编号' },
+          }, 400);
+        }
+
+        const resolvedStudent = await resolveDiagnosisStudent(env, teacher, {
+          classId: typeof classId === 'string' && classId ? classId : undefined,
+          studentId: typeof studentId === 'string' && studentId ? studentId : undefined,
+          studentCode: typeof studentCode === 'string' ? studentCode : undefined,
+        });
+        if (!resolvedStudent) {
+          return json(request, {
+            ok: false,
+            error: { code: 'STUDENT_NOT_FOUND', message: '没有找到所选班级或学生，请重新选择' },
           }, 400);
         }
 
@@ -488,7 +770,9 @@ export default {
         });
 
         const diagnosisId = await saveDiagnosisDraft(env, teacher, {
-          studentCode,
+          studentId: resolvedStudent.id,
+          classId: resolvedStudent.classId,
+          studentCode: resolvedStudent.studentCode,
           knowledgePoint,
           image,
           diagnosis: result.diagnosis,
@@ -545,7 +829,9 @@ export default {
           d.teacher_confirmed_at AS teacherConfirmedAt,
           d.created_at AS createdAt,
           e.knowledge_point AS knowledgePoint,
-          s.anonymous_code AS studentCode
+          s.anonymous_code AS studentCode,
+          c.id AS classId,
+          c.name AS className
         FROM diagnoses d
         JOIN evidence e ON e.id = d.evidence_id
         JOIN students s ON s.id = e.student_id
