@@ -1,4 +1,9 @@
-import { analyzeMathEvidence, GlmApiError } from './ai/glm';
+import {
+  analyzeMathEvidence,
+  generateLayeringPlan,
+  GlmApiError,
+  type LearningLayer,
+} from './ai/glm';
 import {
   clearSessionCookie,
   issueSessionToken,
@@ -313,6 +318,65 @@ async function saveDiagnosisDraft(
     ),
   ]);
   return diagnosisId;
+}
+
+async function loadLayeringProfile(
+  env: AppEnv,
+  teacher: Teacher,
+  lookup: { diagnosisId?: string; profileId?: string },
+): Promise<Record<string, unknown> | null> {
+  const lookupColumn = lookup.profileId ? 'p.id' : 'p.diagnosis_id';
+  const lookupValue = lookup.profileId || lookup.diagnosisId;
+  if (!lookupValue) return null;
+  const profile = await env.DB.prepare(`
+    SELECT
+      p.id,
+      p.diagnosis_id AS diagnosisId,
+      p.student_id AS studentId,
+      p.knowledge_point AS knowledgePoint,
+      p.current_layer AS currentLayer,
+      p.teacher_confirmed_layer AS teacherConfirmedLayer,
+      p.strengths,
+      p.challenges,
+      p.learning_needs AS learningNeeds,
+      p.created_at AS createdAt,
+      s.anonymous_code AS studentCode,
+      c.id AS classId,
+      c.name AS className,
+      COALESCE(d.teacher_error_type, d.ai_error_type) AS errorType,
+      COALESCE(d.teacher_possible_cause, d.ai_possible_cause) AS possibleCause
+    FROM student_profiles p
+    JOIN students s ON s.id = p.student_id
+    JOIN classes c ON c.id = s.class_id
+    JOIN diagnoses d ON d.id = p.diagnosis_id
+    WHERE ${lookupColumn} = ? AND c.teacher_id = ?
+  `).bind(lookupValue, teacher.id).first<Record<string, unknown>>();
+  if (!profile) return null;
+  const taskResults = await env.DB.prepare(`
+    SELECT
+      id,
+      layer,
+      title,
+      task_content AS taskContent,
+      task_goal AS taskGoal,
+      estimated_minutes AS estimatedMinutes,
+      selected_by_teacher AS selectedByTeacher
+    FROM layered_tasks
+    WHERE profile_id = ?
+    ORDER BY CASE layer
+      WHEN 'support' THEN 1
+      WHEN 'consolidation' THEN 2
+      WHEN 'exploration' THEN 3
+      ELSE 4
+    END
+  `).bind(profile.id).all();
+  return {
+    ...profile,
+    tasks: (taskResults.results || []).map((task) => ({
+      ...task,
+      selectedByTeacher: Boolean(task.selectedByTeacher),
+    })),
+  };
 }
 
 function unauthorized(request: Request): Response {
@@ -843,6 +907,171 @@ export default {
       return json(request, { ok: true, diagnoses: results.results || [] });
     }
 
+    const layeringMatch = url.pathname.match(/^\/api\/diagnoses\/([^/]+)\/layering$/);
+    if (request.method === 'POST' && layeringMatch) {
+      if (!originAllowed(request)) {
+        return json(request, {
+          ok: false,
+          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
+        }, 403);
+      }
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      if (!env.GLM_API_KEY) {
+        return json(request, {
+          ok: false,
+          error: { code: 'AI_NOT_CONFIGURED', message: 'AI服务尚未完成配置' },
+        }, 503);
+      }
+
+      const diagnosisId = decodeURIComponent(layeringMatch[1]);
+      const existingProfile = await loadLayeringProfile(env, teacher, { diagnosisId });
+      if (existingProfile) {
+        return json(request, {
+          ok: true,
+          profile: existingProfile,
+          meta: { reused: true, provider: 'zhipu', model: 'glm-4.6v-flash' },
+        });
+      }
+
+      const diagnosis = await env.DB.prepare(`
+        SELECT
+          d.id,
+          d.status,
+          d.recognized_answer AS recognizedAnswer,
+          d.expected_answer AS expectedAnswer,
+          COALESCE(d.teacher_error_type, d.ai_error_type) AS errorType,
+          COALESCE(d.teacher_possible_cause, d.ai_possible_cause) AS possibleCause,
+          COALESCE(d.teacher_learning_need, d.ai_learning_need) AS learningNeed,
+          e.knowledge_point AS knowledgePoint,
+          s.id AS studentId
+        FROM diagnoses d
+        JOIN evidence e ON e.id = d.evidence_id
+        JOIN students s ON s.id = e.student_id
+        JOIN classes c ON c.id = s.class_id
+        WHERE d.id = ? AND c.teacher_id = ?
+      `).bind(diagnosisId, teacher.id).first<{
+        id: string;
+        status: string;
+        recognizedAnswer: string;
+        expectedAnswer: string;
+        errorType: string;
+        possibleCause: string;
+        learningNeed: string;
+        knowledgePoint: string;
+        studentId: string;
+      }>();
+      if (!diagnosis) {
+        return json(request, {
+          ok: false,
+          error: { code: 'DIAGNOSIS_NOT_FOUND', message: '没有找到这条诊断记录' },
+        }, 404);
+      }
+      if (diagnosis.status !== 'confirmed') {
+        return json(request, {
+          ok: false,
+          error: { code: 'DIAGNOSIS_NOT_CONFIRMED', message: '请先由教师确认诊断，再生成学习画像' },
+        }, 409);
+      }
+
+      const rateLimit = await checkRateLimit(request, env);
+      if (!rateLimit.allowed) {
+        return json(request, {
+          ok: false,
+          error: { code: 'DAILY_LIMIT_REACHED', message: '今天的AI生成次数已达到上限，请明天再试' },
+        }, 429, { 'Retry-After': String(rateLimit.retryAfter) });
+      }
+
+      try {
+        const result = await generateLayeringPlan({
+          apiKey: env.GLM_API_KEY,
+          diagnosis: {
+            recognizedAnswer: diagnosis.recognizedAnswer || '未发现作答',
+            expectedAnswer: diagnosis.expectedAnswer || '证据不足',
+            errorType: diagnosis.errorType || '证据不足',
+            possibleCause: diagnosis.possibleCause || '需要教师进一步判断',
+            learningNeed: diagnosis.learningNeed || '需要进一步巩固',
+            knowledgePoint: diagnosis.knowledgePoint,
+          },
+        });
+        const profileId = crypto.randomUUID();
+        const statements = [
+          env.DB.prepare(`
+            INSERT INTO student_profiles (
+              id, student_id, diagnosis_id, knowledge_point, current_layer,
+              strengths, challenges, learning_needs
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `).bind(
+            profileId,
+            diagnosis.studentId,
+            diagnosis.id,
+            diagnosis.knowledgePoint,
+            result.plan.currentLayer,
+            result.plan.strengths,
+            result.plan.challenges,
+            result.plan.learningNeeds,
+          ),
+          ...result.plan.tasks.map((task) => env.DB.prepare(`
+            INSERT INTO layered_tasks (
+              id, profile_id, layer, title, task_content, task_goal, estimated_minutes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+          `).bind(
+            crypto.randomUUID(),
+            profileId,
+            task.layer,
+            task.title,
+            task.taskContent,
+            task.taskGoal,
+            task.estimatedMinutes,
+          )),
+          env.DB.prepare(`
+            INSERT INTO audit_logs (id, teacher_id, action, entity_type, entity_id, details)
+            VALUES (?, ?, 'generate_layering_profile', 'student_profile', ?, ?)
+          `).bind(
+            crypto.randomUUID(),
+            teacher.id,
+            profileId,
+            JSON.stringify({ diagnosisId, currentLayer: result.plan.currentLayer }),
+          ),
+        ];
+        try {
+          await env.DB.batch(statements);
+        } catch (saveError) {
+          const racedProfile = await loadLayeringProfile(env, teacher, { diagnosisId });
+          if (racedProfile) {
+            return json(request, {
+              ok: true,
+              profile: racedProfile,
+              meta: { reused: true, provider: 'zhipu', model: result.model },
+            });
+          }
+          throw saveError;
+        }
+        const profile = await loadLayeringProfile(env, teacher, { profileId });
+        return json(request, {
+          ok: true,
+          profile,
+          meta: {
+            reused: false,
+            provider: 'zhipu',
+            model: result.model,
+            usage: result.usage,
+          },
+        }, 201);
+      } catch (error) {
+        if (error instanceof GlmApiError) {
+          return json(request, {
+            ok: false,
+            error: { code: error.providerCode || 'AI_PROVIDER_ERROR', message: error.message },
+          }, error.status);
+        }
+        return json(request, {
+          ok: false,
+          error: { code: 'LAYERING_GENERATION_FAILED', message: '学习画像生成失败，请稍后重试' },
+        }, 500);
+      }
+    }
+
     const diagnosisMatch = url.pathname.match(/^\/api\/diagnoses\/([^/]+)$/);
     if (request.method === 'PATCH' && diagnosisMatch) {
       if (!originAllowed(request)) {
@@ -916,6 +1145,64 @@ export default {
         return json(request, {
           ok: false,
           error: { code: 'DIAGNOSIS_UPDATE_FAILED', message: '诊断记录更新失败，请稍后重试' },
+        }, 500);
+      }
+    }
+
+    const profileMatch = url.pathname.match(/^\/api\/profiles\/([^/]+)$/);
+    if (request.method === 'PATCH' && profileMatch) {
+      if (!originAllowed(request)) {
+        return json(request, {
+          ok: false,
+          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
+        }, 403);
+      }
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      try {
+        const profileId = decodeURIComponent(profileMatch[1]);
+        const body = await request.json<{ layer?: string }>();
+        const layers: LearningLayer[] = ['support', 'consolidation', 'exploration'];
+        if (!layers.includes(body.layer as LearningLayer)) {
+          return json(request, {
+            ok: false,
+            error: { code: 'LAYER_INVALID', message: '请选择有效的学习层级' },
+          }, 400);
+        }
+        const ownedProfile = await loadLayeringProfile(env, teacher, { profileId });
+        if (!ownedProfile) {
+          return json(request, {
+            ok: false,
+            error: { code: 'PROFILE_NOT_FOUND', message: '没有找到这份学习画像' },
+          }, 404);
+        }
+        await env.DB.batch([
+          env.DB.prepare(`
+            UPDATE student_profiles
+            SET teacher_confirmed_layer = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).bind(body.layer, profileId),
+          env.DB.prepare(`
+            UPDATE layered_tasks
+            SET selected_by_teacher = CASE WHEN layer = ? THEN 1 ELSE 0 END
+            WHERE profile_id = ?
+          `).bind(body.layer, profileId),
+          env.DB.prepare(`
+            INSERT INTO audit_logs (id, teacher_id, action, entity_type, entity_id, details)
+            VALUES (?, ?, 'confirm_layering_task', 'student_profile', ?, ?)
+          `).bind(
+            crypto.randomUUID(),
+            teacher.id,
+            profileId,
+            JSON.stringify({ layer: body.layer }),
+          ),
+        ]);
+        const profile = await loadLayeringProfile(env, teacher, { profileId });
+        return json(request, { ok: true, profile });
+      } catch {
+        return json(request, {
+          ok: false,
+          error: { code: 'PROFILE_UPDATE_FAILED', message: '教师分层选择保存失败，请稍后重试' },
         }, 500);
       }
     }

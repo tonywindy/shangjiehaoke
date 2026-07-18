@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const KNOWLEDGE_OPTIONS = [
   { value: 'perimeter-concept', label: '周长的认识' },
@@ -151,10 +151,33 @@ const LoginScreen = ({ onLogin }) => {
   );
 };
 
-const HistoryDrawer = ({ open, onClose, onAuthExpired }) => {
+const HistoryDrawer = ({ open, onClose, onAuthExpired, onOpenProfile }) => {
   const [status, setStatus] = useState('idle');
   const [diagnoses, setDiagnoses] = useState([]);
   const [error, setError] = useState('');
+  const [openingId, setOpeningId] = useState('');
+
+  const handleOpenProfile = async (diagnosisId) => {
+    setOpeningId(diagnosisId);
+    setError('');
+    try {
+      const response = await apiFetch(`/api/diagnoses/${encodeURIComponent(diagnosisId)}/layering`, { method: 'POST' });
+      const payload = await response.json();
+      if (response.status === 401) {
+        onAuthExpired();
+        throw new Error('登录状态已失效');
+      }
+      if (!response.ok || !payload.ok || !payload.profile) {
+        throw new Error(payload.error?.message || '学习画像打开失败');
+      }
+      onOpenProfile(payload.profile);
+    } catch (profileError) {
+      setError(profileError.message || '学习画像打开失败');
+      setStatus('error');
+    } finally {
+      setOpeningId('');
+    }
+  };
 
   useEffect(() => {
     if (!open) return undefined;
@@ -201,7 +224,7 @@ const HistoryDrawer = ({ open, onClose, onAuthExpired }) => {
                 </div>
                 <h3>{item.errorType || '等待诊断'}</h3>
                 <p>{item.possibleCause || '暂无原因说明'}</p>
-                <div><span>{item.className || '默认班级'} · {KNOWLEDGE_OPTIONS.find((option) => option.value === item.knowledgePoint)?.label || item.knowledgePoint}</span><time>{new Date(`${item.createdAt.replace(' ', 'T')}Z`).toLocaleString('zh-CN', { hour12: false })}</time></div>
+                <div className="history-item-footer"><span>{item.className || '默认班级'} · {KNOWLEDGE_OPTIONS.find((option) => option.value === item.knowledgePoint)?.label || item.knowledgePoint}</span><time>{new Date(`${item.createdAt.replace(' ', 'T')}Z`).toLocaleString('zh-CN', { hour12: false })}</time>{item.status === 'confirmed' && <button onClick={() => handleOpenProfile(item.id)} disabled={Boolean(openingId)}>{openingId === item.id ? '生成中…' : '生成 / 查看画像'}</button>}</div>
               </article>
             ))}
           </div>
@@ -510,6 +533,7 @@ const DiagnosisView = ({
   onStudentChange,
   rosterStatus,
   onManageRoster,
+  onAnalysisStarted,
 }) => {
   const inputRef = useRef(null);
   const abortRef = useRef(null);
@@ -522,12 +546,14 @@ const DiagnosisView = ({
   const [analysisError, setAnalysisError] = useState('');
   const [diagnosisId, setDiagnosisId] = useState('');
   const [confirmationStatus, setConfirmationStatus] = useState('idle');
+  const [layeringStatus, setLayeringStatus] = useState('idle');
   const selectedClass = classes.find((item) => item.id === selectedClassId);
   const selectedStudent = selectedClass?.students.find((item) => item.id === selectedStudentId);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
   const analyzeFile = async (file) => {
+    onAnalysisStarted();
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -536,6 +562,7 @@ const DiagnosisView = ({
     setConfirmed(false);
     setDiagnosisId('');
     setConfirmationStatus('idle');
+    setLayeringStatus('idle');
     setIsEditing(false);
 
     try {
@@ -617,6 +644,30 @@ const DiagnosisView = ({
     } catch (confirmationError) {
       setConfirmationStatus('error');
       setAnalysisError(confirmationError.message || '诊断保存失败，请稍后重试');
+    }
+  };
+
+  const handleGenerateProfile = async () => {
+    if (!confirmed || !diagnosisId || layeringStatus === 'loading') return;
+    setLayeringStatus('loading');
+    setAnalysisError('');
+    try {
+      const response = await apiFetch(`/api/diagnoses/${encodeURIComponent(diagnosisId)}/layering`, {
+        method: 'POST',
+      });
+      const payload = await response.json();
+      if (response.status === 401) {
+        onAuthExpired();
+        throw new Error('登录状态已失效，请重新登录');
+      }
+      if (!response.ok || !payload.ok || !payload.profile) {
+        throw new Error(payload.error?.message || '学习画像生成失败');
+      }
+      setLayeringStatus('ready');
+      onContinue(payload.profile);
+    } catch (profileError) {
+      setLayeringStatus('error');
+      setAnalysisError(profileError.message || '学习画像生成失败，请稍后重试');
     }
   };
 
@@ -715,19 +766,64 @@ const DiagnosisView = ({
 
       <div className="view-action-row">
         <div className="privacy-tip"><Icon name="shield" size={16} /> 图片只用于本次AI分析，Worker不留存原图；请先隐去学生姓名。</div>
-        <button className="primary-action" onClick={onContinue} disabled={!confirmed}>生成学习画像 <Icon name="arrow" size={18} /></button>
+        <button className="primary-action" onClick={handleGenerateProfile} disabled={!confirmed || layeringStatus === 'loading'}>{layeringStatus === 'loading' ? 'GLM 正在生成画像…' : '生成学习画像'} {layeringStatus !== 'loading' && <Icon name="arrow" size={18} />}</button>
       </div>
     </section>
   );
 };
 
-const LayeringView = ({ knowledgeLabel, onContinue }) => {
-  const [selectedLayer, setSelectedLayer] = useState('consolidation');
-  const layers = [
-    { id: 'support', index: 'A', title: '基础支持层', tone: 'mint', need: '借助实物建立周长表象', task: '用彩绳围出图形的一周，再把四条边逐一描出来并说出“周长在哪里”。', label: '操作理解' },
-    { id: 'consolidation', index: 'B', title: '巩固发展层', tone: 'gold', need: '理解四条边及算法意义', task: '比较“8+5+8+5”与“(8+5)×2”，向同伴解释为什么需要乘2。', label: '算理表达' },
-    { id: 'exploration', index: 'C', title: '迁移探究层', tone: 'coral', need: '在真实情境中灵活迁移', task: '设计一个周长为26米的长方形花圃，给出两种方案并说明你的选择。', label: '迁移探究' },
-  ];
+const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack }) => {
+  const layerMeta = {
+    support: { index: 'A', title: '基础支持层', tone: 'mint', label: '操作理解' },
+    consolidation: { index: 'B', title: '巩固发展层', tone: 'gold', label: '算理表达' },
+    exploration: { index: 'C', title: '迁移探究层', tone: 'coral', label: '迁移探究' },
+  };
+  const [selectedLayer, setSelectedLayer] = useState(profile?.teacherConfirmedLayer || profile?.currentLayer || 'consolidation');
+  const [saveStatus, setSaveStatus] = useState('idle');
+  const [saveMessage, setSaveMessage] = useState('');
+
+  if (!profile) {
+    return (
+      <section className="view-panel layering-view">
+        <div className="layering-empty">
+          <span><Icon name="layers" size={26} /></span>
+          <h2>还没有可用的学习画像</h2>
+          <p>请先上传学生作品、确认 AI 诊断，再生成真实的分层任务。</p>
+          <button onClick={onBack}>返回智能诊断</button>
+        </div>
+      </section>
+    );
+  }
+
+  const handleSaveLayer = async () => {
+    if (saveStatus === 'loading') return;
+    setSaveStatus('loading');
+    setSaveMessage('');
+    try {
+      const response = await apiFetch(`/api/profiles/${encodeURIComponent(profile.id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ layer: selectedLayer }),
+      });
+      const payload = await response.json();
+      if (response.status === 401) {
+        onAuthExpired();
+        throw new Error('登录状态已失效，请重新登录');
+      }
+      if (!response.ok || !payload.ok || !payload.profile) {
+        throw new Error(payload.error?.message || '教师选择保存失败');
+      }
+      onProfileChange(payload.profile);
+      setSaveStatus('saved');
+      setSaveMessage('教师最终层级和对应任务已经保存');
+    } catch (saveError) {
+      setSaveStatus('error');
+      setSaveMessage(saveError.message || '保存失败，请稍后重试');
+    }
+  };
+
+  const suggestedLayer = layerMeta[profile.currentLayer]?.title || '巩固发展层';
+  const knowledgeLabel = KNOWLEDGE_OPTIONS.find((item) => item.value === profile.knowledgePoint)?.label || profile.knowledgePoint;
 
   return (
     <section className="view-panel layering-view">
@@ -737,34 +833,39 @@ const LayeringView = ({ knowledgeLabel, onContinue }) => {
           <h2>让每个孩子，从合适的台阶出发</h2>
           <p>画像不是固定标签，而是基于本次学习证据生成的动态起点。</p>
         </div>
-        <button className="outline-button"><Icon name="spark" size={16} /> 重新生成任务</button>
+        <span className="case-pill"><Icon name="spark" size={15} /> 基于诊断生成</span>
       </div>
 
       <article className="profile-strip">
-        <div className="student-avatar">07</div>
-        <div className="profile-copy"><span>学生 07 · 当前画像</span><strong>能完成简单加法，但对“封闭图形一周”理解不完整</strong></div>
-        <div className="profile-meta"><span>当前建议层级</span><strong>巩固发展层</strong></div>
+        <div className="student-avatar">{profile.studentCode?.slice(0, 2) || '生'}</div>
+        <div className="profile-copy"><span>{profile.className} · 学生 {profile.studentCode}</span><strong>{profile.strengths}；{profile.challenges}</strong></div>
+        <div className="profile-meta"><span>AI 建议层级</span><strong>{suggestedLayer}</strong></div>
         <div className="profile-meta"><span>聚焦知识点</span><strong>{knowledgeLabel}</strong></div>
       </article>
 
+      <div className="learning-need-banner"><span>本次核心学习需求</span><strong>{profile.learningNeeds}</strong></div>
+
       <div className="layer-cards">
-        {layers.map((layer) => (
-          <button key={layer.id} className={`layer-card tone-${layer.tone} ${selectedLayer === layer.id ? 'is-selected' : ''}`} onClick={() => setSelectedLayer(layer.id)}>
-            <div className="layer-top"><span className="layer-index">{layer.index}</span><span className="layer-radio"><Icon name="check" size={14} /></span></div>
-            <span className="layer-label">{layer.title}</span>
-            <h3>{layer.need}</h3>
+        {profile.tasks.map((task) => {
+          const meta = layerMeta[task.layer] || layerMeta.consolidation;
+          return (
+          <button key={task.id || task.layer} className={`layer-card tone-${meta.tone} ${selectedLayer === task.layer ? 'is-selected' : ''}`} onClick={() => { setSelectedLayer(task.layer); setSaveStatus('idle'); setSaveMessage(''); }}>
+            <div className="layer-top"><span className="layer-index">{meta.index}</span><span className="layer-radio"><Icon name="check" size={14} /></span></div>
+            <span className="layer-label">{meta.title}</span>
+            <h3>{task.title}</h3>
             <div className="task-paper">
               <span>推荐任务</span>
-              <p>{layer.task}</p>
+              <p>{task.taskContent}</p>
             </div>
-            <div className="layer-footer"><span>{layer.label}</span><span>约 12 分钟</span></div>
+            <div className="layer-footer"><span>{task.taskGoal || meta.label}</span><span>约 {task.estimatedMinutes || 12} 分钟</span></div>
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div className="view-action-row">
-        <div className="privacy-tip"><Icon name="info" size={16} /> 点击卡片可以调整层级，系统会保留教师最终选择。</div>
-        <button className="primary-action" onClick={onContinue}>布置当前任务 <Icon name="arrow" size={18} /></button>
+        <div className={`privacy-tip ${saveStatus === 'error' ? 'is-error' : ''}`}><Icon name={saveStatus === 'saved' ? 'check' : 'info'} size={16} /> {saveMessage || '点击卡片可以调整层级，保存后以教师的最终选择为准。'}</div>
+        <button className="primary-action" onClick={handleSaveLayer} disabled={saveStatus === 'loading'}>{saveStatus === 'loading' ? '正在保存…' : (saveStatus === 'saved' ? '已保存教师选择' : '保存教师选择')} {saveStatus !== 'loading' && <Icon name="check" size={18} />}</button>
       </div>
     </section>
   );
@@ -843,11 +944,7 @@ const AIMathAssistantPage = () => {
   const [selectedClassId, setSelectedClassId] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [rosterStatus, setRosterStatus] = useState('idle');
-  const knowledgeLabel = useMemo(
-    () => KNOWLEDGE_OPTIONS.find((item) => item.value === knowledge)?.label,
-    [knowledge],
-  );
-
+  const [layeringProfile, setLayeringProfile] = useState(null);
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [activeView]);
@@ -857,6 +954,7 @@ const AIMathAssistantPage = () => {
     setHistoryOpen(false);
     setClassManagerOpen(false);
     setClasses([]);
+    setLayeringProfile(null);
     setAuthStatus('anonymous');
   }, []);
 
@@ -918,6 +1016,12 @@ const AIMathAssistantPage = () => {
     const nextClass = classes.find((item) => item.id === classId);
     setSelectedClassId(classId);
     setSelectedStudentId(nextClass?.students[0]?.id || '');
+    setLayeringProfile(null);
+  };
+
+  const handleStudentChange = (studentId) => {
+    setSelectedStudentId(studentId);
+    setLayeringProfile(null);
   };
 
   const handleLogin = (loggedInTeacher) => {
@@ -962,22 +1066,36 @@ const AIMathAssistantPage = () => {
           {activeView === 'diagnosis' && (
             <DiagnosisView
               knowledge={knowledge}
-              onContinue={() => setActiveView('layering')}
+              onContinue={(profile) => { setLayeringProfile(profile); setActiveView('layering'); }}
               onAuthExpired={handleAuthExpired}
               classes={classes}
               selectedClassId={selectedClassId}
               selectedStudentId={selectedStudentId}
               onClassChange={handleClassChange}
-              onStudentChange={setSelectedStudentId}
+              onStudentChange={handleStudentChange}
               rosterStatus={rosterStatus}
               onManageRoster={() => setClassManagerOpen(true)}
+              onAnalysisStarted={() => setLayeringProfile(null)}
             />
           )}
-          {activeView === 'layering' && <LayeringView knowledgeLabel={knowledgeLabel} onContinue={() => setActiveView('evaluation')} />}
+          {activeView === 'layering' && (
+            <LayeringView
+              key={layeringProfile?.id || 'empty-layering'}
+              profile={layeringProfile}
+              onProfileChange={setLayeringProfile}
+              onAuthExpired={handleAuthExpired}
+              onBack={() => setActiveView('diagnosis')}
+            />
+          )}
           {activeView === 'evaluation' && <EvaluationView />}
         </div>
       </main>
-      <HistoryDrawer open={historyOpen} onClose={() => setHistoryOpen(false)} onAuthExpired={handleAuthExpired} />
+      <HistoryDrawer
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        onAuthExpired={handleAuthExpired}
+        onOpenProfile={(profile) => { setLayeringProfile(profile); setHistoryOpen(false); setActiveView('layering'); }}
+      />
       <ClassManagerDrawer
         open={classManagerOpen}
         onClose={() => setClassManagerOpen(false)}
