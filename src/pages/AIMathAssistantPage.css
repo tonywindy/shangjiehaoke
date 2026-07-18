@@ -366,6 +366,19 @@ button { color: inherit; }
 .before-dot { background: #d8dedb; }
 .after-dot { background: var(--ai-green); }
 .dimension-chart { display: grid; gap: 20px; }
+.evaluation-score-form { display: grid; gap: 10px; }
+.evaluation-score-row { padding: 12px; border: 1px solid #e4ebe8; border-radius: 13px; display: grid; grid-template-columns: 1fr 90px 90px; align-items: center; gap: 10px; background: #fbfcfb; }
+.evaluation-score-row > strong { color: #49635d; font-size: 10px; }
+.evaluation-score-row label { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px; }
+.evaluation-score-row label span { color: #899a95; font-size: 8px; }
+.evaluation-score-row input { width: 100%; min-height: 34px; padding: 0 7px; border: 1px solid #d9e4e0; border-radius: 8px; outline: 0; color: var(--ai-green); background: #fff; font: inherit; font-size: 11px; font-weight: 800; }
+.evaluation-score-row input:focus { border-color: #70a99c; box-shadow: 0 0 0 3px rgba(33,111,96,.08); }
+.evaluation-help { margin: 14px 0 0; color: #879792; font-size: 8px; line-height: 1.6; }
+.evaluation-feedback-form { display: grid; gap: 11px; }
+.evaluation-feedback-form label { display: grid; gap: 6px; }
+.evaluation-feedback-form label span { color: #59706a; font-size: 9px; font-weight: 800; }
+.evaluation-feedback-form textarea { min-height: 76px; padding: 10px 11px; border: 1px solid #dce6e2; border-radius: 11px; outline: 0; resize: vertical; color: #435c56; background: #fbfcfb; font: inherit; font-size: 10px; line-height: 1.65; }
+.evaluation-feedback-form textarea:focus { border-color: #70a99c; box-shadow: 0 0 0 3px rgba(33,111,96,.08); background: #fff; }
 .dimension-row { display: grid; grid-template-columns: 68px 1fr; align-items: center; gap: 12px; }
 .dimension-row > span { color: #536b66; font-size: 10px; font-weight: 700; }
 .bars { display: grid; gap: 5px; }
@@ -478,6 +491,7 @@ button { color: inherit; }
   .profile-meta { grid-column: 1 / -1; padding: 10px 0 0; border-top: 1px solid var(--ai-line); border-left: 0; }
   .cycle-banner { grid-template-columns: 1fr; }
   .cycle-banner button { justify-content: center; }
+  .evaluation-score-row { grid-template-columns: 1fr 76px 76px; padding: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

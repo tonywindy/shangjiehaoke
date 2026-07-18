@@ -49,6 +49,13 @@ const WORKFLOW = [
   },
 ];
 
+const EVALUATION_DIMENSIONS = [
+  { label: '概念理解', beforeKey: 'conceptUnderstandingBefore', afterKey: 'conceptUnderstandingAfter' },
+  { label: '算理表达', beforeKey: 'reasoningExpressionBefore', afterKey: 'reasoningExpressionAfter' },
+  { label: '问题解决', beforeKey: 'problemSolvingBefore', afterKey: 'problemSolvingAfter' },
+  { label: '错因修正', beforeKey: 'errorCorrectionBefore', afterKey: 'errorCorrectionAfter' },
+];
+
 const Icon = ({ name, size = 20 }) => {
   const paths = {
     home: <><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-7h6v7"/></>,
@@ -772,15 +779,15 @@ const DiagnosisView = ({
   );
 };
 
-const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack }) => {
+const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack, onContinue }) => {
   const layerMeta = {
     support: { index: 'A', title: '基础支持层', tone: 'mint', label: '操作理解' },
     consolidation: { index: 'B', title: '巩固发展层', tone: 'gold', label: '算理表达' },
     exploration: { index: 'C', title: '迁移探究层', tone: 'coral', label: '迁移探究' },
   };
   const [selectedLayer, setSelectedLayer] = useState(profile?.teacherConfirmedLayer || profile?.currentLayer || 'consolidation');
-  const [saveStatus, setSaveStatus] = useState('idle');
-  const [saveMessage, setSaveMessage] = useState('');
+  const [saveStatus, setSaveStatus] = useState(profile?.teacherConfirmedLayer ? 'saved' : 'idle');
+  const [saveMessage, setSaveMessage] = useState(profile?.teacherConfirmedLayer ? '教师最终层级和对应任务已经保存' : '');
 
   if (!profile) {
     return (
@@ -865,19 +872,87 @@ const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack }) => {
 
       <div className="view-action-row">
         <div className={`privacy-tip ${saveStatus === 'error' ? 'is-error' : ''}`}><Icon name={saveStatus === 'saved' ? 'check' : 'info'} size={16} /> {saveMessage || '点击卡片可以调整层级，保存后以教师的最终选择为准。'}</div>
-        <button className="primary-action" onClick={handleSaveLayer} disabled={saveStatus === 'loading'}>{saveStatus === 'loading' ? '正在保存…' : (saveStatus === 'saved' ? '已保存教师选择' : '保存教师选择')} {saveStatus !== 'loading' && <Icon name="check" size={18} />}</button>
+        <button className="primary-action" onClick={saveStatus === 'saved' ? onContinue : handleSaveLayer} disabled={saveStatus === 'loading'}>{saveStatus === 'loading' ? '正在保存…' : (saveStatus === 'saved' ? '进入多元评价' : '保存教师选择')} {saveStatus !== 'loading' && <Icon name={saveStatus === 'saved' ? 'arrow' : 'check'} size={18} />}</button>
       </div>
     </section>
   );
 };
 
-const EvaluationView = () => {
-  const dimensions = [
-    { label: '概念理解', before: 42, after: 86 },
-    { label: '算理表达', before: 35, after: 78 },
-    { label: '问题解决', before: 58, after: 82 },
-    { label: '错因修正', before: 30, after: 91 },
-  ];
+const EvaluationView = ({ profile, onAuthExpired, onBack }) => {
+  const emptyScores = Object.fromEntries(EVALUATION_DIMENSIONS.flatMap((item) => [[item.beforeKey, ''], [item.afterKey, '']]));
+  const [scores, setScores] = useState(emptyScores);
+  const [feedback, setFeedback] = useState({ solvedSummary: '', remainingSummary: '', teachingSuggestions: '' });
+  const [status, setStatus] = useState('idle');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (!profile) return undefined;
+    const controller = new AbortController();
+    setStatus('loading');
+    apiFetch(`/api/profiles/${encodeURIComponent(profile.id)}/evaluation`, { signal: controller.signal })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (response.status === 401) {
+          onAuthExpired();
+          return;
+        }
+        if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '评价记录读取失败');
+        if (payload.evaluation) {
+          setScores(Object.fromEntries(EVALUATION_DIMENSIONS.flatMap((item) => [
+            [item.beforeKey, payload.evaluation[item.beforeKey]],
+            [item.afterKey, payload.evaluation[item.afterKey]],
+          ])));
+          setFeedback({
+            solvedSummary: payload.evaluation.solvedSummary || '',
+            remainingSummary: payload.evaluation.remainingSummary || '',
+            teachingSuggestions: payload.evaluation.teachingSuggestions || '',
+          });
+          setMessage('已读取教师保存的评价记录');
+        }
+        setStatus('idle');
+      })
+      .catch((loadError) => {
+        if (loadError.name === 'AbortError') return;
+        setStatus('error');
+        setMessage(loadError.message || '评价记录读取失败');
+      });
+    return () => controller.abort();
+  }, [profile, onAuthExpired]);
+
+  if (!profile) {
+    return (
+      <section className="view-panel evaluation-view"><div className="layering-empty"><span><Icon name="chart" size={26} /></span><h2>还没有可评价的学习任务</h2><p>请先完成诊断和分层任务，再记录前后测变化。</p><button onClick={onBack}>返回智能诊断</button></div></section>
+    );
+  }
+
+  const allScoresValid = EVALUATION_DIMENSIONS.every((item) => [scores[item.beforeKey], scores[item.afterKey]].every((value) => value !== '' && Number(value) >= 0 && Number(value) <= 100));
+  const average = (side) => Math.round(EVALUATION_DIMENSIONS.reduce((sum, item) => sum + Number(scores[item[`${side}Key`]] || 0), 0) / EVALUATION_DIMENSIONS.length);
+  const beforeAverage = average('before');
+  const afterAverage = average('after');
+
+  const handleSaveEvaluation = async () => {
+    if (!allScoresValid || status === 'saving') return;
+    setStatus('saving');
+    setMessage('');
+    try {
+      const response = await apiFetch(`/api/profiles/${encodeURIComponent(profile.id)}/evaluation`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...scores, ...feedback }),
+      });
+      const payload = await response.json();
+      if (response.status === 401) {
+        onAuthExpired();
+        throw new Error('登录状态已失效，请重新登录');
+      }
+      if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '评价保存失败');
+      setStatus('saved');
+      setMessage('多元评价已经保存，可以随时回来修改');
+    } catch (saveError) {
+      setStatus('error');
+      setMessage(saveError.message || '评价保存失败，请稍后重试');
+    }
+  };
 
   return (
     <section className="view-panel evaluation-view">
@@ -887,47 +962,38 @@ const EvaluationView = () => {
           <h2>记录变化，也照见下一步</h2>
           <p>比较前后测证据，让评价成为下一轮教学的起点。</p>
         </div>
-        <button className="outline-button"><Icon name="file" size={16} /> 导出学习报告</button>
+        <span className="case-pill"><Icon name="edit" size={15} /> 教师量表记录</span>
       </div>
 
       <div className="evaluation-grid">
         <article className="workspace-card growth-card">
-          <div className="card-title-row"><div><span className="step-kicker">05 / 多维评学</span><h3>学习变化</h3></div><span className="growth-badge">综合提升 +43%</span></div>
+          <div className="card-title-row"><div><span className="step-kicker">05 / 多维评学</span><h3>前后测评分</h3></div><span className="growth-badge">{allScoresValid ? `综合变化 ${afterAverage - beforeAverage >= 0 ? '+' : ''}${afterAverage - beforeAverage}` : '等待填写'}</span></div>
           <div className="legend"><span><i className="before-dot" />前测</span><span><i className="after-dot" />后测</span></div>
-          <div className="dimension-chart">
-            {dimensions.map((dimension) => (
-              <div className="dimension-row" key={dimension.label}>
-                <span>{dimension.label}</span>
-                <div className="bars">
-                  <i className="before-bar" style={{ width: `${dimension.before}%` }}><small>{dimension.before}</small></i>
-                  <i className="after-bar" style={{ width: `${dimension.after}%` }}><small>{dimension.after}</small></i>
-                </div>
+          <div className="evaluation-score-form">
+            {EVALUATION_DIMENSIONS.map((dimension) => (
+              <div className="evaluation-score-row" key={dimension.label}>
+                <strong>{dimension.label}</strong>
+                <label><span>前测</span><input type="number" min="0" max="100" value={scores[dimension.beforeKey]} onChange={(event) => setScores((current) => ({ ...current, [dimension.beforeKey]: event.target.value }))} /></label>
+                <label><span>后测</span><input type="number" min="0" max="100" value={scores[dimension.afterKey]} onChange={(event) => setScores((current) => ({ ...current, [dimension.afterKey]: event.target.value }))} /></label>
               </div>
             ))}
           </div>
+          <p className="evaluation-help">请根据真实作品、课堂观察或测验评分填写 0—100；没有证据时请暂不填写。</p>
         </article>
 
         <article className="workspace-card feedback-card">
-          <div className="card-title-row"><div><span className="step-kicker">06 / 反馈迭代</span><h3>教学反馈</h3></div><span className="ai-badge"><Icon name="spark" size={14} /> AI 归纳</span></div>
-          <div className="feedback-section is-solved">
-            <span className="feedback-symbol"><Icon name="check" size={16} /></span>
-            <div><small>已经解决</small><strong>能够指出封闭图形的一周，并完整计算四条边。</strong></div>
-          </div>
-          <div className="feedback-section is-pending">
-            <span className="feedback-symbol">→</span>
-            <div><small>仍需关注</small><strong>面对凹多边形时，偶尔遗漏内部转折边。</strong></div>
-          </div>
-          <div className="next-step-note">
-            <span>下一步教学建议</span>
-            <ol><li>增加组合图形边界描线活动</li><li>用“走一圈”的语言讲述边界顺序</li><li>两天后安排一道变式题再诊断</li></ol>
+          <div className="card-title-row"><div><span className="step-kicker">06 / 反馈迭代</span><h3>教学反馈</h3></div><span className="ai-badge"><Icon name="shield" size={14} /> 教师填写</span></div>
+          <div className="evaluation-feedback-form">
+            <label><span>已经解决</span><textarea value={feedback.solvedSummary} onChange={(event) => setFeedback((current) => ({ ...current, solvedSummary: event.target.value }))} placeholder="根据后测证据，学生已经解决了什么？" /></label>
+            <label><span>仍需关注</span><textarea value={feedback.remainingSummary} onChange={(event) => setFeedback((current) => ({ ...current, remainingSummary: event.target.value }))} placeholder="还有哪些具体困难需要继续观察？" /></label>
+            <label><span>下一步教学建议</span><textarea value={feedback.teachingSuggestions} onChange={(event) => setFeedback((current) => ({ ...current, teachingSuggestions: event.target.value }))} placeholder="准备采取什么教学调整？" /></label>
           </div>
         </article>
       </div>
 
-      <div className="cycle-banner">
-        <div className="cycle-icon"><span>评</span><i>→</i><span>调</span><i>→</i><span>诊</span></div>
-        <div><strong>评价不是终点</strong><p>本次结果将自动进入下一轮诊断，持续更新学生画像。</p></div>
-        <button>创建再诊断任务 <Icon name="arrow" size={17} /></button>
+      <div className="view-action-row">
+        <div className={`privacy-tip ${status === 'error' ? 'is-error' : ''}`}><Icon name={status === 'saved' ? 'check' : 'info'} size={16} /> {message || `${profile.className} · 学生 ${profile.studentCode} · 所有评分由教师依据真实证据填写`}</div>
+        <button className="primary-action" onClick={handleSaveEvaluation} disabled={!allScoresValid || status === 'saving' || status === 'loading'}>{status === 'saving' ? '正在保存…' : '保存多元评价'} <Icon name="check" size={18} /></button>
       </div>
     </section>
   );
@@ -1085,9 +1151,10 @@ const AIMathAssistantPage = () => {
               onProfileChange={setLayeringProfile}
               onAuthExpired={handleAuthExpired}
               onBack={() => setActiveView('diagnosis')}
+              onContinue={() => setActiveView('evaluation')}
             />
           )}
-          {activeView === 'evaluation' && <EvaluationView />}
+          {activeView === 'evaluation' && <EvaluationView profile={layeringProfile} onAuthExpired={handleAuthExpired} onBack={() => setActiveView('diagnosis')} />}
         </div>
       </main>
       <HistoryDrawer

@@ -74,7 +74,7 @@ function corsHeaders(request: Request): HeadersInit {
   return {
     'Access-Control-Allow-Origin': origin && isAllowedOrigin(origin) ? origin : 'https://shangjiehaoke.com',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
@@ -377,6 +377,36 @@ async function loadLayeringProfile(
       selectedByTeacher: Boolean(task.selectedByTeacher),
     })),
   };
+}
+
+async function loadEvaluation(
+  env: AppEnv,
+  teacher: Teacher,
+  profileId: string,
+): Promise<Record<string, unknown> | null> {
+  return env.DB.prepare(`
+    SELECT
+      ev.id,
+      ev.profile_id AS profileId,
+      ev.student_id AS studentId,
+      ev.concept_understanding_before AS conceptUnderstandingBefore,
+      ev.concept_understanding_after AS conceptUnderstandingAfter,
+      ev.reasoning_expression_before AS reasoningExpressionBefore,
+      ev.reasoning_expression_after AS reasoningExpressionAfter,
+      ev.problem_solving_before AS problemSolvingBefore,
+      ev.problem_solving_after AS problemSolvingAfter,
+      ev.error_correction_before AS errorCorrectionBefore,
+      ev.error_correction_after AS errorCorrectionAfter,
+      ev.solved_summary AS solvedSummary,
+      ev.remaining_summary AS remainingSummary,
+      ev.teaching_suggestions AS teachingSuggestions,
+      ev.created_at AS createdAt
+    FROM evaluations ev
+    JOIN student_profiles p ON p.id = ev.profile_id
+    JOIN students s ON s.id = p.student_id
+    JOIN classes c ON c.id = s.class_id
+    WHERE ev.profile_id = ? AND c.teacher_id = ?
+  `).bind(profileId, teacher.id).first<Record<string, unknown>>();
 }
 
 function unauthorized(request: Request): Response {
@@ -1145,6 +1175,109 @@ export default {
         return json(request, {
           ok: false,
           error: { code: 'DIAGNOSIS_UPDATE_FAILED', message: '诊断记录更新失败，请稍后重试' },
+        }, 500);
+      }
+    }
+
+    const profileEvaluationMatch = url.pathname.match(/^\/api\/profiles\/([^/]+)\/evaluation$/);
+    if ((request.method === 'GET' || request.method === 'PUT') && profileEvaluationMatch) {
+      if (request.method === 'PUT' && !originAllowed(request)) {
+        return json(request, {
+          ok: false,
+          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
+        }, 403);
+      }
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      const profileId = decodeURIComponent(profileEvaluationMatch[1]);
+      const profile = await loadLayeringProfile(env, teacher, { profileId });
+      if (!profile) {
+        return json(request, {
+          ok: false,
+          error: { code: 'PROFILE_NOT_FOUND', message: '没有找到这份学习画像' },
+        }, 404);
+      }
+      if (request.method === 'GET') {
+        const evaluation = await loadEvaluation(env, teacher, profileId);
+        return json(request, { ok: true, evaluation });
+      }
+
+      try {
+        const body = await request.json<Record<string, unknown>>();
+        const scoreFields = [
+          'conceptUnderstandingBefore',
+          'conceptUnderstandingAfter',
+          'reasoningExpressionBefore',
+          'reasoningExpressionAfter',
+          'problemSolvingBefore',
+          'problemSolvingAfter',
+          'errorCorrectionBefore',
+          'errorCorrectionAfter',
+        ] as const;
+        const scores = scoreFields.map((field) => Number(body[field]));
+        if (scores.some((score) => !Number.isFinite(score) || score < 0 || score > 100)) {
+          return json(request, {
+            ok: false,
+            error: { code: 'EVALUATION_SCORES_INVALID', message: '八项评分都必须填写0至100之间的数字' },
+          }, 400);
+        }
+        const solvedSummary = typeof body.solvedSummary === 'string' ? body.solvedSummary.trim() : '';
+        const remainingSummary = typeof body.remainingSummary === 'string' ? body.remainingSummary.trim() : '';
+        const teachingSuggestions = typeof body.teachingSuggestions === 'string' ? body.teachingSuggestions.trim() : '';
+        if ([solvedSummary, remainingSummary, teachingSuggestions].some((value) => value.length > 1000)) {
+          return json(request, {
+            ok: false,
+            error: { code: 'EVALUATION_TEXT_TOO_LONG', message: '每项教学反馈不能超过1000字' },
+          }, 400);
+        }
+        const evaluationId = crypto.randomUUID();
+        await env.DB.batch([
+          env.DB.prepare(`
+            INSERT INTO evaluations (
+              id, student_id, profile_id,
+              concept_understanding_before, concept_understanding_after,
+              reasoning_expression_before, reasoning_expression_after,
+              problem_solving_before, problem_solving_after,
+              error_correction_before, error_correction_after,
+              solved_summary, remaining_summary, teaching_suggestions
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (profile_id) DO UPDATE SET
+              concept_understanding_before = excluded.concept_understanding_before,
+              concept_understanding_after = excluded.concept_understanding_after,
+              reasoning_expression_before = excluded.reasoning_expression_before,
+              reasoning_expression_after = excluded.reasoning_expression_after,
+              problem_solving_before = excluded.problem_solving_before,
+              problem_solving_after = excluded.problem_solving_after,
+              error_correction_before = excluded.error_correction_before,
+              error_correction_after = excluded.error_correction_after,
+              solved_summary = excluded.solved_summary,
+              remaining_summary = excluded.remaining_summary,
+              teaching_suggestions = excluded.teaching_suggestions
+          `).bind(
+            evaluationId,
+            profile.studentId,
+            profileId,
+            ...scores,
+            solvedSummary || null,
+            remainingSummary || null,
+            teachingSuggestions || null,
+          ),
+          env.DB.prepare(`
+            INSERT INTO audit_logs (id, teacher_id, action, entity_type, entity_id, details)
+            VALUES (?, ?, 'save_evaluation', 'student_profile', ?, ?)
+          `).bind(
+            crypto.randomUUID(),
+            teacher.id,
+            profileId,
+            JSON.stringify({ source: 'teacher_rubric' }),
+          ),
+        ]);
+        const evaluation = await loadEvaluation(env, teacher, profileId);
+        return json(request, { ok: true, evaluation });
+      } catch {
+        return json(request, {
+          ok: false,
+          error: { code: 'EVALUATION_SAVE_FAILED', message: '多元评价保存失败，请稍后重试' },
         }, 500);
       }
     }
