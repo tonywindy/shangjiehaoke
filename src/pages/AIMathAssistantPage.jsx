@@ -8,7 +8,7 @@ const KNOWLEDGE_OPTIONS = [
   { value: 'application', label: '周长实际问题' },
 ];
 
-const AI_API_BASE_URL = import.meta.env.VITE_AI_API_BASE_URL || 'https://shangjiehaoke-ai-api.renardwind.workers.dev';
+const AI_API_BASE_URL = import.meta.env.VITE_AI_API_BASE_URL || 'https://api.shangjiehaoke.com';
 
 const DEMO_DIAGNOSIS = {
   recognizedAnswer: '8 + 5 = 13',

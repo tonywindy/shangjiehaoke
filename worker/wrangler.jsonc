@@ -4,6 +4,12 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-07-18",
 	"workers_dev": true,
+	"routes": [
+		{
+			"pattern": "api.shangjiehaoke.com",
+			"custom_domain": true
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
