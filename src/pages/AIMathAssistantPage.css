@@ -512,6 +512,7 @@ button { color: inherit; }
   .student-selection { width: 100%; flex-wrap: wrap; }
   .student-selection label { flex: 1; }
   .diagnosis-grid, .evaluation-grid, .layering-step-grid { grid-template-columns: 1fr; }
+  .evaluation-view .evaluation-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 620px) {
