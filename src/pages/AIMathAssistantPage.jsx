@@ -843,31 +843,79 @@ const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack, onConti
         <span className="case-pill"><Icon name="spark" size={15} /> 基于诊断生成</span>
       </div>
 
-      <article className="profile-strip">
-        <div className="student-avatar">{profile.studentCode?.slice(0, 2) || '生'}</div>
-        <div className="profile-copy"><span>{profile.className} · 学生 {profile.studentCode}</span><strong>{profile.strengths}；{profile.challenges}</strong></div>
-        <div className="profile-meta"><span>AI 建议层级</span><strong>{suggestedLayer}</strong></div>
-        <div className="profile-meta"><span>聚焦知识点</span><strong>{knowledgeLabel}</strong></div>
-      </article>
-
-      <div className="learning-need-banner"><span>本次核心学习需求</span><strong>{profile.learningNeeds}</strong></div>
-
-      <div className="layer-cards">
-        {profile.tasks.map((task) => {
-          const meta = layerMeta[task.layer] || layerMeta.consolidation;
-          return (
-          <button key={task.id || task.layer} className={`layer-card tone-${meta.tone} ${selectedLayer === task.layer ? 'is-selected' : ''}`} onClick={() => { setSelectedLayer(task.layer); setSaveStatus('idle'); setSaveMessage(''); }}>
-            <div className="layer-top"><span className="layer-index">{meta.index}</span><span className="layer-radio"><Icon name="check" size={14} /></span></div>
-            <span className="layer-label">{meta.title}</span>
-            <h3>{task.title}</h3>
-            <div className="task-paper">
-              <span>推荐任务</span>
-              <p>{task.taskContent}</p>
+      <div className="layering-step-grid">
+        <article className="workspace-card portrait-card">
+          <div className="card-title-row">
+            <div>
+              <span className="step-kicker">03 / 画像分层</span>
+              <h3>学生学习画像</h3>
             </div>
-            <div className="layer-footer"><span>{task.taskGoal || meta.label}</span><span>约 {task.estimatedMinutes || 12} 分钟</span></div>
-          </button>
-          );
-        })}
+            <span className="ai-badge is-live"><Icon name="spark" size={14} /> 本次证据</span>
+          </div>
+
+          <div className="portrait-student">
+            <div className="student-avatar">{profile.studentCode?.slice(0, 2) || '生'}</div>
+            <div>
+              <span>当前分析对象</span>
+              <strong>{profile.className} · 学生 {profile.studentCode}</strong>
+              <small>{knowledgeLabel}</small>
+            </div>
+          </div>
+
+          <div className="portrait-points">
+            <div className="portrait-point is-strength">
+              <span className="portrait-symbol">优</span>
+              <div><small>已有基础</small><strong>{profile.strengths}</strong></div>
+            </div>
+            <div className="portrait-point is-challenge">
+              <span className="portrait-symbol">难</span>
+              <div><small>当前困难</small><strong>{profile.challenges}</strong></div>
+            </div>
+            <div className="portrait-point is-need">
+              <span className="portrait-symbol">需</span>
+              <div><small>核心学习需求</small><strong>{profile.learningNeeds}</strong></div>
+            </div>
+          </div>
+
+          <div className="portrait-layer-summary">
+            <div><span>AI 建议层级</span><strong>{suggestedLayer}</strong></div>
+            <p><Icon name="history" size={14} /> 画像只代表本次学习起点；有新的诊断证据后会重新生成。</p>
+          </div>
+        </article>
+
+        <article className="workspace-card intervention-card">
+          <div className="card-title-row">
+            <div>
+              <span className="step-kicker">04 / 精准干预</span>
+              <h3>分层任务推荐</h3>
+            </div>
+            <span className="growth-badge">教师最终选择</span>
+          </div>
+
+          <div className="intervention-intro">
+            <span>当前选中</span>
+            <strong>{layerMeta[selectedLayer]?.title || suggestedLayer}</strong>
+            <small>AI同时生成三档任务，教师可根据课堂观察调整。</small>
+          </div>
+
+          <div className="intervention-options">
+            {profile.tasks.map((task) => {
+              const meta = layerMeta[task.layer] || layerMeta.consolidation;
+              return (
+                <button key={task.id || task.layer} className={`intervention-option tone-${meta.tone} ${selectedLayer === task.layer ? 'is-selected' : ''}`} onClick={() => { setSelectedLayer(task.layer); setSaveStatus('idle'); setSaveMessage(''); }}>
+                  <span className="layer-index">{meta.index}</span>
+                  <span className="intervention-copy">
+                    <span className="layer-label">{meta.title}</span>
+                    <strong>{task.title}</strong>
+                    <span className="task-description">{task.taskContent}</span>
+                    <small>{task.taskGoal || meta.label} · 约 {task.estimatedMinutes || 12} 分钟</small>
+                  </span>
+                  <span className="layer-radio"><Icon name="check" size={14} /></span>
+                </button>
+              );
+            })}
+          </div>
+        </article>
       </div>
 
       <div className="view-action-row">
