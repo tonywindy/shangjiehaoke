@@ -329,23 +329,23 @@ button { color: inherit; }
 .student-avatar { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; color: #fff; background: var(--ai-green); font-family: Georgia, serif; font-size: 16px; }
 .portrait-student { padding: 14px; border: 1px solid #e1e9e6; border-radius: 16px; display: flex; align-items: center; gap: 12px; background: #f8fbf9; }
 .portrait-student > div:last-child { min-width: 0; display: grid; gap: 3px; }
-.portrait-student span { color: #8a9b96; font-size: 8px; font-weight: 700; letter-spacing: .08em; }
-.portrait-student strong { overflow: hidden; color: var(--ai-ink); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.portrait-student small { color: var(--ai-green); font-size: 9px; }
+.portrait-student span { color: #8a9b96; font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+.portrait-student strong { overflow: hidden; color: var(--ai-ink); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.portrait-student small { color: var(--ai-green); font-size: 11px; }
 .portrait-points { margin-top: 14px; display: grid; border-top: 1px solid #edf1ef; }
-.portrait-point { padding: 14px 2px; border-bottom: 1px solid #edf1ef; display: grid; grid-template-columns: 34px 1fr; align-items: start; gap: 11px; }
-.portrait-symbol { width: 31px; height: 31px; border-radius: 10px; display: grid; place-items: center; font-family: 'Noto Serif SC', serif; font-size: 11px; font-weight: 700; }
+.portrait-point { padding: 18px 2px; border-bottom: 1px solid #edf1ef; display: grid; grid-template-columns: 42px 1fr; align-items: start; gap: 13px; }
+.portrait-symbol { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-family: 'Noto Serif SC', serif; font-size: 13px; font-weight: 700; }
 .portrait-point.is-strength .portrait-symbol { color: var(--ai-green); background: var(--ai-mint); }
 .portrait-point.is-challenge .portrait-symbol { color: #9f4637; background: var(--ai-coral-light); }
 .portrait-point.is-need .portrait-symbol { color: #89651f; background: var(--ai-gold-light); }
 .portrait-point > div { min-width: 0; display: grid; gap: 5px; }
-.portrait-point small { color: #879792; font-size: 9px; }
-.portrait-point strong { color: #2f4e49; font-size: 11px; font-weight: 600; line-height: 1.65; }
+.portrait-point small { color: #879792; font-size: 11px; }
+.portrait-point strong { color: #2f4e49; font-size: 14px; font-weight: 600; line-height: 1.7; }
 .portrait-layer-summary { margin-top: auto; padding-top: 16px; display: grid; gap: 11px; }
 .portrait-layer-summary > div { padding: 13px 14px; border: 1px solid #bcd6ce; border-radius: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--ai-mint-light); }
-.portrait-layer-summary span { color: #668079; font-size: 9px; font-weight: 700; }
-.portrait-layer-summary strong { color: var(--ai-green); font-family: 'Noto Serif SC', serif; font-size: 14px; }
-.portrait-layer-summary p { margin: 0; display: flex; align-items: flex-start; gap: 6px; color: #81938e; font-size: 8px; line-height: 1.6; }
+.portrait-layer-summary span { color: #668079; font-size: 11px; font-weight: 700; }
+.portrait-layer-summary strong { color: var(--ai-green); font-family: 'Noto Serif SC', serif; font-size: 17px; }
+.portrait-layer-summary p { margin: 0; display: flex; align-items: flex-start; gap: 6px; color: #81938e; font-size: 10px; line-height: 1.65; }
 .portrait-layer-summary p svg { flex: 0 0 auto; margin-top: 1px; color: var(--ai-green); }
 .layering-empty { min-height: 480px; padding: 50px 20px; display: grid; place-content: center; justify-items: center; text-align: center; }
 .layering-empty > span { width: 58px; height: 58px; border-radius: 18px; display: grid; place-items: center; color: var(--ai-green); background: var(--ai-mint-light); }
