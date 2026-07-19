@@ -80,7 +80,7 @@ const Icon = ({ name, size = 20 }) => {
 };
 
 const LoginScreen = ({ onLogin }) => {
-  const [username, setUsername] = useState('yuanlaoshi');
+  const [username, setUsername] = useState('ganlaoshi');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
