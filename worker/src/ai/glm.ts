@@ -1,7 +1,9 @@
 const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
 const GLM_MODEL = 'glm-4.6v-flash';
 const GLM_TIMEOUT_MS = 45_000;
-const GLM_MAX_ATTEMPTS = 3;
+const GLM_MAX_ATTEMPTS = 4;
+const GLM_RETRY_BASE_DELAY_MS = 1_500;
+const GLM_RETRY_MAX_DELAY_MS = 8_000;
 
 export type DiagnosisResult = {
   questionText: string;
@@ -47,7 +49,7 @@ type GlmResponse = {
     total_tokens?: number;
   };
   error?: {
-    code?: string;
+    code?: string | number;
     message?: string;
   };
 };
@@ -61,6 +63,35 @@ export class GlmApiError extends Error {
     super(message);
     this.name = 'GlmApiError';
   }
+}
+
+function getProviderCode(payload: GlmResponse): string | undefined {
+  return payload.error?.code === undefined ? undefined : String(payload.error.code);
+}
+
+function isTemporarilyBusy(response: Response, payload: GlmResponse): boolean {
+  const providerCode = getProviderCode(payload);
+  return response.status === 429
+    || response.status >= 500
+    || providerCode === '1302'
+    || providerCode === '1305';
+}
+
+function retryDelayMs(response: Response, attempt: number): number {
+  const retryAfter = response.headers.get('Retry-After');
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    const retryAt = Number.isFinite(seconds)
+      ? seconds * 1_000
+      : Date.parse(retryAfter) - Date.now();
+    if (Number.isFinite(retryAt) && retryAt > 0) {
+      return Math.min(GLM_RETRY_MAX_DELAY_MS, Math.max(GLM_RETRY_BASE_DELAY_MS, retryAt));
+    }
+  }
+
+  const exponentialDelay = GLM_RETRY_BASE_DELAY_MS * (2 ** (attempt - 1));
+  const jitter = Math.floor(Math.random() * 400);
+  return Math.min(GLM_RETRY_MAX_DELAY_MS, exponentialDelay) + jitter;
 }
 
 function buildPrompt(knowledgePoint: string): string {
@@ -237,19 +268,18 @@ export async function analyzeMathEvidence(options: {
       });
       payload = await response.json<GlmResponse>().catch(() => ({}));
 
-      const isTemporarilyBusy = response.status === 429
-        || response.status >= 500
-        || payload.error?.code === '1305';
-      if (response.ok || !isTemporarilyBusy || attempt === GLM_MAX_ATTEMPTS) break;
-      await new Promise((resolve) => setTimeout(resolve, attempt * 700));
+      if (response.ok || !isTemporarilyBusy(response, payload) || attempt === GLM_MAX_ATTEMPTS) break;
+      const delayMs = retryDelayMs(response, attempt);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
 
     if (!response?.ok) {
-      const isBusy = response?.status === 429 || response?.status === 503 || payload.error?.code === '1305';
+      const providerCode = getProviderCode(payload);
+      const isBusy = response ? isTemporarilyBusy(response, payload) : false;
       throw new GlmApiError(
-        isBusy ? '免费AI当前使用人数较多，请稍后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
+        isBusy ? '免费AI当前较繁忙，系统已自动重试，请30秒后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
         isBusy ? 503 : 502,
-        payload.error?.code,
+        providerCode,
       );
     }
 
@@ -336,19 +366,18 @@ JSON 字段：
         signal: controller.signal,
       });
       payload = await response.json<GlmResponse>().catch(() => ({}));
-      const isTemporarilyBusy = response.status === 429
-        || response.status >= 500
-        || payload.error?.code === '1305';
-      if (response.ok || !isTemporarilyBusy || attempt === GLM_MAX_ATTEMPTS) break;
-      await new Promise((resolve) => setTimeout(resolve, attempt * 700));
+      if (response.ok || !isTemporarilyBusy(response, payload) || attempt === GLM_MAX_ATTEMPTS) break;
+      const delayMs = retryDelayMs(response, attempt);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
 
     if (!response?.ok) {
-      const isBusy = response?.status === 429 || response?.status === 503 || payload.error?.code === '1305';
+      const providerCode = getProviderCode(payload);
+      const isBusy = response ? isTemporarilyBusy(response, payload) : false;
       throw new GlmApiError(
-        isBusy ? '免费AI当前使用人数较多，请稍后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
+        isBusy ? '免费AI当前较繁忙，系统已自动重试，请30秒后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
         isBusy ? 503 : 502,
-        payload.error?.code,
+        providerCode,
       );
     }
     const content = payload.choices?.[0]?.message?.content;
