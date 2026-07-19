@@ -1,0 +1,10 @@
+ALTER TABLE evaluations ADD COLUMN task_source TEXT CHECK (task_source IN ('ai_ladder', 'teacher_authored'));
+ALTER TABLE evaluations ADD COLUMN post_question_text TEXT;
+ALTER TABLE evaluations ADD COLUMN post_recognized_answer TEXT;
+ALTER TABLE evaluations ADD COLUMN post_expected_answer TEXT;
+ALTER TABLE evaluations ADD COLUMN post_is_correct INTEGER CHECK (post_is_correct IN (0, 1));
+ALTER TABLE evaluations ADD COLUMN post_error_type TEXT;
+ALTER TABLE evaluations ADD COLUMN post_confidence REAL;
+ALTER TABLE evaluations ADD COLUMN post_warnings TEXT;
+ALTER TABLE evaluations ADD COLUMN ai_feedback_json TEXT;
+ALTER TABLE evaluations ADD COLUMN updated_at TEXT;

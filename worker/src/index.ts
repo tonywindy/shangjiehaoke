@@ -1,5 +1,6 @@
 import {
   analyzeMathEvidence,
+  analyzePostTestEvidence,
   generateLayeringPlan,
   GlmApiError,
   type LearningLayer,
@@ -344,7 +345,10 @@ async function loadLayeringProfile(
       c.id AS classId,
       c.name AS className,
       COALESCE(d.teacher_error_type, d.ai_error_type) AS errorType,
-      COALESCE(d.teacher_possible_cause, d.ai_possible_cause) AS possibleCause
+      COALESCE(d.teacher_possible_cause, d.ai_possible_cause) AS possibleCause,
+      d.recognized_answer AS recognizedAnswer,
+      d.expected_answer AS expectedAnswer,
+      COALESCE(d.teacher_learning_need, d.ai_learning_need) AS diagnosisLearningNeed
     FROM student_profiles p
     JOIN students s ON s.id = p.student_id
     JOIN classes c ON c.id = s.class_id
@@ -384,11 +388,21 @@ async function loadEvaluation(
   teacher: Teacher,
   profileId: string,
 ): Promise<Record<string, unknown> | null> {
-  return env.DB.prepare(`
+  const evaluation = await env.DB.prepare(`
     SELECT
       ev.id,
       ev.profile_id AS profileId,
       ev.student_id AS studentId,
+      ev.post_evidence_id AS postEvidenceId,
+      ev.task_source AS taskSource,
+      ev.post_question_text AS postQuestionText,
+      ev.post_recognized_answer AS postRecognizedAnswer,
+      ev.post_expected_answer AS postExpectedAnswer,
+      ev.post_is_correct AS postIsCorrect,
+      ev.post_error_type AS postErrorType,
+      ev.post_confidence AS postConfidence,
+      ev.post_warnings AS postWarnings,
+      ev.ai_feedback_json AS aiFeedbackJson,
       ev.concept_understanding_before AS conceptUnderstandingBefore,
       ev.concept_understanding_after AS conceptUnderstandingAfter,
       ev.reasoning_expression_before AS reasoningExpressionBefore,
@@ -400,13 +414,46 @@ async function loadEvaluation(
       ev.solved_summary AS solvedSummary,
       ev.remaining_summary AS remainingSummary,
       ev.teaching_suggestions AS teachingSuggestions,
-      ev.created_at AS createdAt
+      ev.created_at AS createdAt,
+      ev.updated_at AS updatedAt
     FROM evaluations ev
     JOIN student_profiles p ON p.id = ev.profile_id
     JOIN students s ON s.id = p.student_id
     JOIN classes c ON c.id = s.class_id
     WHERE ev.profile_id = ? AND c.teacher_id = ?
   `).bind(profileId, teacher.id).first<Record<string, unknown>>();
+  if (!evaluation) return null;
+
+  let comparison: Record<string, unknown> = {};
+  let warnings: string[] = [];
+  try {
+    comparison = typeof evaluation.aiFeedbackJson === 'string'
+      ? JSON.parse(evaluation.aiFeedbackJson) as Record<string, unknown>
+      : {};
+  } catch {
+    comparison = {};
+  }
+  try {
+    warnings = typeof evaluation.postWarnings === 'string'
+      ? JSON.parse(evaluation.postWarnings) as string[]
+      : [];
+  } catch {
+    warnings = [];
+  }
+
+  return {
+    ...evaluation,
+    postTest: evaluation.postEvidenceId ? {
+      questionText: evaluation.postQuestionText,
+      recognizedAnswer: evaluation.postRecognizedAnswer,
+      expectedAnswer: evaluation.postExpectedAnswer,
+      isCorrect: evaluation.postIsCorrect === null ? null : Boolean(evaluation.postIsCorrect),
+      errorType: evaluation.postErrorType,
+      confidence: evaluation.postConfidence,
+      warnings,
+    } : null,
+    comparison,
+  };
 }
 
 function unauthorized(request: Request): Response {
@@ -1175,6 +1222,188 @@ export default {
         return json(request, {
           ok: false,
           error: { code: 'DIAGNOSIS_UPDATE_FAILED', message: '诊断记录更新失败，请稍后重试' },
+        }, 500);
+      }
+    }
+
+    const postTestAnalysisMatch = url.pathname.match(/^\/api\/profiles\/([^/]+)\/evaluation\/analyze$/);
+    if (request.method === 'POST' && postTestAnalysisMatch) {
+      if (!originAllowed(request)) {
+        return json(request, {
+          ok: false,
+          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
+        }, 403);
+      }
+      const teacher = await authenticate(request, env);
+      if (!teacher) return unauthorized(request);
+      if (!env.GLM_API_KEY) {
+        return json(request, {
+          ok: false,
+          error: { code: 'AI_NOT_CONFIGURED', message: 'AI服务尚未完成配置' },
+        }, 503);
+      }
+
+      try {
+        const profileId = decodeURIComponent(postTestAnalysisMatch[1]);
+        const profile = await loadLayeringProfile(env, teacher, { profileId });
+        if (!profile) {
+          return json(request, {
+            ok: false,
+            error: { code: 'PROFILE_NOT_FOUND', message: '没有找到这份学习画像' },
+          }, 404);
+        }
+
+        const form = await request.formData();
+        const image = form.get('image');
+        const taskSource = form.get('taskSource');
+        if (!(image instanceof File)) {
+          return json(request, {
+            ok: false,
+            error: { code: 'IMAGE_REQUIRED', message: '请选择一张学生后测作品图片' },
+          }, 400);
+        }
+        if (image.size <= 0 || image.size > MAX_IMAGE_BYTES) {
+          return json(request, {
+            ok: false,
+            error: { code: 'IMAGE_SIZE_INVALID', message: '图片大小必须在5MB以内' },
+          }, 413);
+        }
+        if (taskSource !== 'ai_ladder' && taskSource !== 'teacher_authored') {
+          return json(request, {
+            ok: false,
+            error: { code: 'TASK_SOURCE_INVALID', message: '请选择后测题目来源' },
+          }, 400);
+        }
+
+        const imageBuffer = await image.arrayBuffer();
+        if (!isSupportedImage(new Uint8Array(imageBuffer), image.type)) {
+          return json(request, {
+            ok: false,
+            error: { code: 'IMAGE_TYPE_INVALID', message: '仅支持真实的JPG、PNG或WEBP图片' },
+          }, 415);
+        }
+        const rateLimit = await checkRateLimit(request, env);
+        if (!rateLimit.allowed) {
+          return json(request, {
+            ok: false,
+            error: { code: 'DAILY_LIMIT_REACHED', message: '今天的AI评价次数已达到上限，请明天再试' },
+          }, 429, { 'Retry-After': String(rateLimit.retryAfter) });
+        }
+
+        const knowledgePoint = String(profile.knowledgePoint || 'rectangle');
+        const result = await analyzePostTestEvidence({
+          apiKey: env.GLM_API_KEY,
+          imageBase64: arrayBufferToBase64(imageBuffer),
+          knowledgePoint: KNOWLEDGE_POINTS[knowledgePoint] || knowledgePoint,
+          taskSource,
+          baseline: {
+            preTest: {
+              recognizedAnswer: profile.recognizedAnswer,
+              expectedAnswer: profile.expectedAnswer,
+              errorType: profile.errorType,
+              possibleCause: profile.possibleCause,
+              learningNeed: profile.diagnosisLearningNeed,
+            },
+            learningProfile: {
+              strengths: profile.strengths,
+              challenges: profile.challenges,
+              learningNeeds: profile.learningNeeds,
+              startingLayer: profile.currentLayer,
+            },
+            interventionTasks: profile.tasks,
+          },
+        });
+
+        const evidenceId = crypto.randomUUID();
+        const evaluationId = crypto.randomUUID();
+        const postTest = result.evaluation.postTest;
+        const comparison = result.evaluation.comparison;
+        await env.DB.batch([
+          env.DB.prepare(`
+            INSERT INTO evidence (
+              id, student_id, evidence_type, knowledge_point, original_filename,
+              mime_type, file_size, object_key, retention_until
+            ) VALUES (?, ?, 'post_test', ?, ?, ?, ?, NULL, NULL)
+          `).bind(
+            evidenceId,
+            profile.studentId,
+            knowledgePoint,
+            image.name.slice(0, 180),
+            image.type,
+            image.size,
+          ),
+          env.DB.prepare(`
+            INSERT INTO evaluations (
+              id, student_id, profile_id, post_evidence_id, task_source,
+              post_question_text, post_recognized_answer, post_expected_answer, post_is_correct,
+              post_error_type, post_confidence, post_warnings, ai_feedback_json,
+              solved_summary, remaining_summary, teaching_suggestions, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT (profile_id) DO UPDATE SET
+              post_evidence_id = excluded.post_evidence_id,
+              task_source = excluded.task_source,
+              post_question_text = excluded.post_question_text,
+              post_recognized_answer = excluded.post_recognized_answer,
+              post_expected_answer = excluded.post_expected_answer,
+              post_is_correct = excluded.post_is_correct,
+              post_error_type = excluded.post_error_type,
+              post_confidence = excluded.post_confidence,
+              post_warnings = excluded.post_warnings,
+              ai_feedback_json = excluded.ai_feedback_json,
+              solved_summary = excluded.solved_summary,
+              remaining_summary = excluded.remaining_summary,
+              teaching_suggestions = excluded.teaching_suggestions,
+              updated_at = CURRENT_TIMESTAMP
+          `).bind(
+            evaluationId,
+            profile.studentId,
+            profileId,
+            evidenceId,
+            taskSource,
+            postTest.questionText,
+            postTest.recognizedAnswer,
+            postTest.expectedAnswer,
+            postTest.isCorrect === null ? null : (postTest.isCorrect ? 1 : 0),
+            postTest.errorType,
+            postTest.confidence,
+            JSON.stringify(postTest.warnings),
+            JSON.stringify(comparison),
+            comparison.solvedSummary,
+            comparison.remainingSummary,
+            comparison.teachingSuggestions.join('\n'),
+          ),
+          env.DB.prepare(`
+            INSERT INTO audit_logs (id, teacher_id, action, entity_type, entity_id, details)
+            VALUES (?, ?, 'analyze_post_test', 'student_profile', ?, ?)
+          `).bind(
+            crypto.randomUUID(),
+            teacher.id,
+            profileId,
+            JSON.stringify({ taskSource, imageStored: false, model: result.model }),
+          ),
+        ]);
+
+        const evaluation = await loadEvaluation(env, teacher, profileId);
+        return json(request, {
+          ok: true,
+          evaluation,
+          meta: {
+            provider: 'zhipu',
+            model: result.model,
+            imageStored: false,
+            usage: result.usage,
+          },
+        });
+      } catch (error) {
+        if (error instanceof GlmApiError) {
+          return json(request, {
+            ok: false,
+            error: { code: error.providerCode || 'AI_PROVIDER_ERROR', message: error.message },
+          }, error.status);
+        }
+        return json(request, {
+          ok: false,
+          error: { code: 'POST_TEST_ANALYSIS_FAILED', message: '后测作品分析失败，请稍后重试' },
         }, 500);
       }
     }

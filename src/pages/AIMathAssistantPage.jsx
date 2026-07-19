@@ -49,13 +49,6 @@ const WORKFLOW = [
   },
 ];
 
-const EVALUATION_DIMENSIONS = [
-  { label: '概念理解', beforeKey: 'conceptUnderstandingBefore', afterKey: 'conceptUnderstandingAfter' },
-  { label: '算理表达', beforeKey: 'reasoningExpressionBefore', afterKey: 'reasoningExpressionAfter' },
-  { label: '问题解决', beforeKey: 'problemSolvingBefore', afterKey: 'problemSolvingAfter' },
-  { label: '错因修正', beforeKey: 'errorCorrectionBefore', afterKey: 'errorCorrectionAfter' },
-];
-
 const Icon = ({ name, size = 20 }) => {
   const paths = {
     home: <><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-7h6v7"/></>,
@@ -779,15 +772,12 @@ const DiagnosisView = ({
   );
 };
 
-const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack, onContinue }) => {
+const LayeringView = ({ profile, onBack, onContinue }) => {
   const layerMeta = {
-    support: { index: 'A', title: '基础支持层', tone: 'mint', label: '操作理解' },
-    consolidation: { index: 'B', title: '巩固发展层', tone: 'gold', label: '算理表达' },
-    exploration: { index: 'C', title: '迁移探究层', tone: 'coral', label: '迁移探究' },
+    support: { index: '01', title: '基础理解', tone: 'mint', label: '看懂概念，修正直接错因' },
+    consolidation: { index: '02', title: '巩固应用', tone: 'gold', label: '运用方法，讲清计算道理' },
+    exploration: { index: '03', title: '迁移探究', tone: 'coral', label: '进入变式，检验真正理解' },
   };
-  const [selectedLayer, setSelectedLayer] = useState(profile?.teacherConfirmedLayer || profile?.currentLayer || 'consolidation');
-  const [saveStatus, setSaveStatus] = useState(profile?.teacherConfirmedLayer ? 'saved' : 'idle');
-  const [saveMessage, setSaveMessage] = useState(profile?.teacherConfirmedLayer ? '教师最终层级和对应任务已经保存' : '');
 
   if (!profile) {
     return (
@@ -802,34 +792,7 @@ const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack, onConti
     );
   }
 
-  const handleSaveLayer = async () => {
-    if (saveStatus === 'loading') return;
-    setSaveStatus('loading');
-    setSaveMessage('');
-    try {
-      const response = await apiFetch(`/api/profiles/${encodeURIComponent(profile.id)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ layer: selectedLayer }),
-      });
-      const payload = await response.json();
-      if (response.status === 401) {
-        onAuthExpired();
-        throw new Error('登录状态已失效，请重新登录');
-      }
-      if (!response.ok || !payload.ok || !payload.profile) {
-        throw new Error(payload.error?.message || '教师选择保存失败');
-      }
-      onProfileChange(payload.profile);
-      setSaveStatus('saved');
-      setSaveMessage('教师最终层级和对应任务已经保存');
-    } catch (saveError) {
-      setSaveStatus('error');
-      setSaveMessage(saveError.message || '保存失败，请稍后重试');
-    }
-  };
-
-  const suggestedLayer = layerMeta[profile.currentLayer]?.title || '巩固发展层';
+  const suggestedLayer = layerMeta[profile.currentLayer]?.title || '巩固应用';
   const knowledgeLabel = KNOWLEDGE_OPTIONS.find((item) => item.value === profile.knowledgePoint)?.label || profile.knowledgePoint;
 
   return (
@@ -887,31 +850,32 @@ const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack, onConti
           <div className="card-title-row">
             <div>
               <span className="step-kicker">04 / 精准干预</span>
-              <h3>分层任务推荐</h3>
+              <h3>分层阶梯式题目</h3>
             </div>
-            <span className="growth-badge">教师最终选择</span>
+            <span className="growth-badge">按顺序完成</span>
           </div>
 
           <div className="intervention-intro">
-            <span>当前选中</span>
-            <strong>{layerMeta[selectedLayer]?.title || suggestedLayer}</strong>
-            <small>AI同时生成三档任务，教师可根据课堂观察调整。</small>
+            <span>AI制定依据</span>
+            <strong>{profile.errorType || '本次错因'}＋学生画像</strong>
+            <small>不是三选一：三个台阶前后衔接，由浅入深依次学习。</small>
           </div>
 
-          <div className="intervention-options">
-            {profile.tasks.map((task) => {
+          <div className="intervention-ladder">
+            {(profile.tasks || []).map((task, index) => {
               const meta = layerMeta[task.layer] || layerMeta.consolidation;
               return (
-                <button key={task.id || task.layer} className={`intervention-option tone-${meta.tone} ${selectedLayer === task.layer ? 'is-selected' : ''}`} onClick={() => { setSelectedLayer(task.layer); setSaveStatus('idle'); setSaveMessage(''); }}>
+                <div key={task.id || task.layer} className={`intervention-step tone-${meta.tone}`}>
                   <span className="layer-index">{meta.index}</span>
                   <span className="intervention-copy">
-                    <span className="layer-label">{meta.title}</span>
+                    <span className="layer-label">第 {index + 1} 阶 · {meta.title}</span>
                     <strong>{task.title}</strong>
                     <span className="task-description">{task.taskContent}</span>
-                    <small>{task.taskGoal || meta.label} · 约 {task.estimatedMinutes || 12} 分钟</small>
+                    <span className="task-meta"><b>学习目标</b>{task.taskGoal || meta.label}<i>约 {task.estimatedMinutes || 12} 分钟</i></span>
                   </span>
-                  <span className="layer-radio"><Icon name="check" size={14} /></span>
-                </button>
+                  <span className="step-complete-mark"><Icon name="check" size={16} /></span>
+                  {index < (profile.tasks || []).length - 1 && <span className="ladder-connector"><Icon name="arrow" size={17} /></span>}
+                </div>
               );
             })}
           </div>
@@ -919,17 +883,18 @@ const LayeringView = ({ profile, onProfileChange, onAuthExpired, onBack, onConti
       </div>
 
       <div className="view-action-row">
-        <div className={`privacy-tip ${saveStatus === 'error' ? 'is-error' : ''}`}><Icon name={saveStatus === 'saved' ? 'check' : 'info'} size={16} /> {saveMessage || '点击卡片可以调整层级，保存后以教师的最终选择为准。'}</div>
-        <button className="primary-action" onClick={saveStatus === 'saved' ? onContinue : handleSaveLayer} disabled={saveStatus === 'loading'}>{saveStatus === 'loading' ? '正在保存…' : (saveStatus === 'saved' ? '进入多元评价' : '保存教师选择')} {saveStatus !== 'loading' && <Icon name={saveStatus === 'saved' ? 'arrow' : 'check'} size={18} />}</button>
+        <div className="privacy-tip"><Icon name="info" size={16} /> 教师可直接使用这组阶梯题，也可以据此自行调整或出题。</div>
+        <button className="primary-action" onClick={onContinue}>完成干预，上传后测作品 <Icon name="arrow" size={18} /></button>
       </div>
     </section>
   );
 };
 
 const EvaluationView = ({ profile, onAuthExpired, onBack }) => {
-  const emptyScores = Object.fromEntries(EVALUATION_DIMENSIONS.flatMap((item) => [[item.beforeKey, ''], [item.afterKey, '']]));
-  const [scores, setScores] = useState(emptyScores);
-  const [feedback, setFeedback] = useState({ solvedSummary: '', remainingSummary: '', teachingSuggestions: '' });
+  const inputRef = useRef(null);
+  const [postImage, setPostImage] = useState('');
+  const [taskSource, setTaskSource] = useState('ai_ladder');
+  const [evaluation, setEvaluation] = useState(null);
   const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
 
@@ -945,17 +910,10 @@ const EvaluationView = ({ profile, onAuthExpired, onBack }) => {
           return;
         }
         if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '评价记录读取失败');
-        if (payload.evaluation) {
-          setScores(Object.fromEntries(EVALUATION_DIMENSIONS.flatMap((item) => [
-            [item.beforeKey, payload.evaluation[item.beforeKey]],
-            [item.afterKey, payload.evaluation[item.afterKey]],
-          ])));
-          setFeedback({
-            solvedSummary: payload.evaluation.solvedSummary || '',
-            remainingSummary: payload.evaluation.remainingSummary || '',
-            teachingSuggestions: payload.evaluation.teachingSuggestions || '',
-          });
-          setMessage('已读取教师保存的评价记录');
+        if (payload.evaluation?.postTest) {
+          setEvaluation(payload.evaluation);
+          setTaskSource(payload.evaluation.taskSource || 'ai_ladder');
+          setMessage('已读取AI生成的前后测反馈');
         }
         setStatus('idle');
       })
@@ -973,75 +931,118 @@ const EvaluationView = ({ profile, onAuthExpired, onBack }) => {
     );
   }
 
-  const allScoresValid = EVALUATION_DIMENSIONS.every((item) => [scores[item.beforeKey], scores[item.afterKey]].every((value) => value !== '' && Number(value) >= 0 && Number(value) <= 100));
-  const average = (side) => Math.round(EVALUATION_DIMENSIONS.reduce((sum, item) => sum + Number(scores[item[`${side}Key`]] || 0), 0) / EVALUATION_DIMENSIONS.length);
-  const beforeAverage = average('before');
-  const afterAverage = average('after');
-
-  const handleSaveEvaluation = async () => {
-    if (!allScoresValid || status === 'saving') return;
-    setStatus('saving');
+  const handlePostFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file || status === 'analyzing') return;
+    if (file.size > 5 * 1024 * 1024) {
+      setStatus('error');
+      setMessage('图片不能超过5MB，请压缩后重新上传');
+      return;
+    }
+    if (postImage) URL.revokeObjectURL(postImage);
+    setPostImage(URL.createObjectURL(file));
+    setStatus('analyzing');
     setMessage('');
     try {
-      const response = await apiFetch(`/api/profiles/${encodeURIComponent(profile.id)}/evaluation`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...scores, ...feedback }),
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('taskSource', taskSource);
+      const response = await apiFetch(`/api/profiles/${encodeURIComponent(profile.id)}/evaluation/analyze`, {
+        method: 'POST',
+        body: formData,
       });
       const payload = await response.json();
       if (response.status === 401) {
         onAuthExpired();
         throw new Error('登录状态已失效，请重新登录');
       }
-      if (!response.ok || !payload.ok) throw new Error(payload.error?.message || '评价保存失败');
-      setStatus('saved');
-      setMessage('多元评价已经保存，可以随时回来修改');
-    } catch (saveError) {
+      if (!response.ok || !payload.ok || !payload.evaluation) throw new Error(payload.error?.message || '后测作品分析失败');
+      setEvaluation(payload.evaluation);
+      setStatus('ready');
+      setMessage('AI已完成前测与后测证据对比，结果已保存');
+    } catch (analysisError) {
       setStatus('error');
-      setMessage(saveError.message || '评价保存失败，请稍后重试');
+      setMessage(analysisError.message || '后测作品分析失败，请稍后重试');
     }
   };
+
+  const comparison = evaluation?.comparison || {};
+  const postTest = evaluation?.postTest;
 
   return (
     <section className="view-panel evaluation-view">
       <div className="section-heading">
         <div>
           <span className="eyebrow"><Icon name="chart" size={15} /> 第三阶 · 多元评价</span>
-          <h2>记录变化，也照见下一步</h2>
-          <p>比较前后测证据，让评价成为下一轮教学的起点。</p>
+          <h2>用第二份作品，看见真实变化</h2>
+          <p>上传学生后测作品，AI对比前测诊断与后测证据，形成下一轮教学反馈。</p>
         </div>
-        <span className="case-pill"><Icon name="edit" size={15} /> 教师量表记录</span>
+        <span className="case-pill"><Icon name="spark" size={15} /> AI前后测对比</span>
       </div>
 
       <div className="evaluation-grid">
-        <article className="workspace-card growth-card">
-          <div className="card-title-row"><div><span className="step-kicker">05 / 多维评学</span><h3>前后测评分</h3></div><span className="growth-badge">{allScoresValid ? `综合变化 ${afterAverage - beforeAverage >= 0 ? '+' : ''}${afterAverage - beforeAverage}` : '等待填写'}</span></div>
-          <div className="legend"><span><i className="before-dot" />前测</span><span><i className="after-dot" />后测</span></div>
-          <div className="evaluation-score-form">
-            {EVALUATION_DIMENSIONS.map((dimension) => (
-              <div className="evaluation-score-row" key={dimension.label}>
-                <strong>{dimension.label}</strong>
-                <label><span>前测</span><input type="number" min="0" max="100" value={scores[dimension.beforeKey]} onChange={(event) => setScores((current) => ({ ...current, [dimension.beforeKey]: event.target.value }))} /></label>
-                <label><span>后测</span><input type="number" min="0" max="100" value={scores[dimension.afterKey]} onChange={(event) => setScores((current) => ({ ...current, [dimension.afterKey]: event.target.value }))} /></label>
-              </div>
-            ))}
+        <article className="workspace-card post-test-card">
+          <div className="card-title-row">
+            <div><span className="step-kicker">05 / 多维评学</span><h3>上传后测作品</h3></div>
+            <span className="growth-badge">第二份学习证据</span>
           </div>
-          <p className="evaluation-help">请根据真实作品、课堂观察或测验评分填写 0—100；没有证据时请暂不填写。</p>
+
+          <div className="task-source-field">
+            <span>后测题目来源</span>
+            <div>
+              <button className={taskSource === 'ai_ladder' ? 'is-active' : ''} onClick={() => setTaskSource('ai_ladder')} disabled={status === 'analyzing'}><Icon name="layers" size={16} /> 使用第4步阶梯题</button>
+              <button className={taskSource === 'teacher_authored' ? 'is-active' : ''} onClick={() => setTaskSource('teacher_authored')} disabled={status === 'analyzing'}><Icon name="edit" size={16} /> 教师自拟题</button>
+            </div>
+            <small>两种方式都可以，AI会结合第一次上传的诊断证据进行比较。</small>
+          </div>
+
+          <input ref={inputRef} className="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp" onChange={handlePostFile} />
+          <button className={`post-test-upload ${postImage ? 'has-image' : ''}`} onClick={() => inputRef.current?.click()} disabled={status === 'analyzing'}>
+            {postImage ? <img src={postImage} alt="学生后测作品预览" /> : <span className="post-upload-icon"><Icon name="upload" size={25} /></span>}
+            <span className="post-upload-copy">
+              <strong>{status === 'analyzing' ? 'GLM正在分析后测作品…' : (postImage ? '点击更换后测作品' : '点击上传学生后测作品')}</strong>
+              <small>支持 JPG、PNG、WEBP · 最大5MB · 请隐去学生姓名</small>
+            </span>
+          </button>
+
+          {postTest && (
+            <div className="post-recognition">
+              <span>AI识别到的后测作答</span>
+              <strong>{postTest.recognizedAnswer}</strong>
+              <small>参考答案：{postTest.expectedAnswer} · 置信度 {Math.round((postTest.confidence || 0) * 100)}%</small>
+            </div>
+          )}
         </article>
 
-        <article className="workspace-card feedback-card">
-          <div className="card-title-row"><div><span className="step-kicker">06 / 反馈迭代</span><h3>教学反馈</h3></div><span className="ai-badge"><Icon name="shield" size={14} /> 教师填写</span></div>
-          <div className="evaluation-feedback-form">
-            <label><span>已经解决</span><textarea value={feedback.solvedSummary} onChange={(event) => setFeedback((current) => ({ ...current, solvedSummary: event.target.value }))} placeholder="根据后测证据，学生已经解决了什么？" /></label>
-            <label><span>仍需关注</span><textarea value={feedback.remainingSummary} onChange={(event) => setFeedback((current) => ({ ...current, remainingSummary: event.target.value }))} placeholder="还有哪些具体困难需要继续观察？" /></label>
-            <label><span>下一步教学建议</span><textarea value={feedback.teachingSuggestions} onChange={(event) => setFeedback((current) => ({ ...current, teachingSuggestions: event.target.value }))} placeholder="准备采取什么教学调整？" /></label>
-          </div>
+        <article className="workspace-card feedback-card ai-feedback-card">
+          <div className="card-title-row"><div><span className="step-kicker">06 / 反馈迭代</span><h3>AI最终反馈</h3></div><span className="ai-badge is-live"><Icon name="spark" size={14} /> 两次作品对比</span></div>
+
+          {!evaluation && status !== 'analyzing' && (
+            <div className="feedback-waiting"><span><Icon name="chart" size={25} /></span><strong>等待后测作品</strong><p>上传后，AI将自动比较前测错因、学习画像和后测表现。</p></div>
+          )}
+          {status === 'analyzing' && (
+            <div className="feedback-waiting is-analyzing"><span><Icon name="spark" size={25} /></span><strong>正在形成反馈</strong><p>AI正在识别后测，并对比两次学习证据，请稍候。</p></div>
+          )}
+          {evaluation && status !== 'analyzing' && (
+            <div className="ai-feedback-content">
+              <div className="change-analysis">
+                <span className="feedback-block-title">变化分析</span>
+                <div><small>概念理解</small><strong>{comparison.conceptChange || '证据不足'}</strong></div>
+                <div><small>方法与算理</small><strong>{comparison.methodChange || '证据不足'}</strong></div>
+                <div><small>变式迁移</small><strong>{comparison.transferChange || '证据不足'}</strong></div>
+              </div>
+              <div className="feedback-section is-solved"><span className="feedback-symbol"><Icon name="check" size={15} /></span><div><small>已经解决或明显改善</small><strong>{comparison.solvedSummary || '暂未发现足够证据'}</strong></div></div>
+              <div className="feedback-section is-pending"><span className="feedback-symbol">!</span><div><small>仍需关注</small><strong>{comparison.remainingSummary || '需要教师继续观察'}</strong></div></div>
+              <div className="next-step-note"><span>下一轮教学建议</span><ol>{(comparison.teachingSuggestions || []).map((item) => <li key={item}>{item}</li>)}</ol></div>
+            </div>
+          )}
         </article>
       </div>
 
       <div className="view-action-row">
-        <div className={`privacy-tip ${status === 'error' ? 'is-error' : ''}`}><Icon name={status === 'saved' ? 'check' : 'info'} size={16} /> {message || `${profile.className} · 学生 ${profile.studentCode} · 所有评分由教师依据真实证据填写`}</div>
-        <button className="primary-action" onClick={handleSaveEvaluation} disabled={!allScoresValid || status === 'saving' || status === 'loading'}>{status === 'saving' ? '正在保存…' : '保存多元评价'} <Icon name="check" size={18} /></button>
+        <div className={`privacy-tip ${status === 'error' ? 'is-error' : ''}`}><Icon name={evaluation ? 'check' : 'info'} size={16} /> {message || `${profile.className} · 学生 ${profile.studentCode} · 原始后测图片不长期保存`}</div>
+        {evaluation && <button className="primary-action" onClick={() => inputRef.current?.click()} disabled={status === 'analyzing'}>重新上传后测 <Icon name="upload" size={18} /></button>}
       </div>
     </section>
   );
