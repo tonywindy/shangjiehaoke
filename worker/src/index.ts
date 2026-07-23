@@ -3,6 +3,7 @@ import {
   analyzePostTestEvidence,
   generateLayeringPlan,
   GlmApiError,
+  GLM_MODEL,
   type LearningLayer,
 } from './ai/glm';
 import {
@@ -809,7 +810,7 @@ export default {
       return json(request, {
         ok: Boolean(env.GLM_API_KEY),
         provider: 'zhipu',
-        model: 'glm-4.6v-flash',
+        model: GLM_MODEL,
         configured: Boolean(env.GLM_API_KEY),
       }, env.GLM_API_KEY ? 200 : 503);
     }
@@ -1007,7 +1008,7 @@ export default {
         return json(request, {
           ok: true,
           profile: existingProfile,
-          meta: { reused: true, provider: 'zhipu', model: 'glm-4.6v-flash' },
+          meta: { reused: true, provider: 'zhipu', model: GLM_MODEL },
         });
       }
 

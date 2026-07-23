@@ -1,5 +1,5 @@
 const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
-const GLM_MODEL = 'glm-4.6v-flash';
+export const GLM_MODEL = 'glm-4.6v-flashx';
 const GLM_TIMEOUT_MS = 45_000;
 const GLM_MAX_ATTEMPTS = 4;
 const GLM_RETRY_BASE_DELAY_MS = 1_500;
@@ -333,7 +333,7 @@ export async function analyzeMathEvidence(options: {
       const providerCode = getProviderCode(payload);
       const isBusy = response ? isTemporarilyBusy(response, payload) : false;
       throw new GlmApiError(
-        isBusy ? '免费AI当前较繁忙，系统已自动重试，请30秒后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
+        isBusy ? 'AI服务当前较繁忙，系统已自动重试，请30秒后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
         isBusy ? 503 : 502,
         providerCode,
       );
@@ -432,7 +432,7 @@ JSON 字段：
       const providerCode = getProviderCode(payload);
       const isBusy = response ? isTemporarilyBusy(response, payload) : false;
       throw new GlmApiError(
-        isBusy ? '免费AI当前较繁忙，系统已自动重试，请30秒后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
+        isBusy ? 'AI服务当前较繁忙，系统已自动重试，请30秒后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
         isBusy ? 503 : 502,
         providerCode,
       );
@@ -541,7 +541,7 @@ JSON字段必须完整：
       const providerCode = getProviderCode(payload);
       const isBusy = response ? isTemporarilyBusy(response, payload) : false;
       throw new GlmApiError(
-        isBusy ? '免费AI当前较繁忙，系统已自动重试，请30秒后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
+        isBusy ? 'AI服务当前较繁忙，系统已自动重试，请30秒后再试' : (payload.error?.message || 'GLM服务暂时不可用'),
         isBusy ? 503 : 502,
         providerCode,
       );

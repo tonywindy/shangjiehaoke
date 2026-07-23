@@ -8,7 +8,7 @@ AI小学数学精准教学助手的 Cloudflare Worker 后端。
 - `GET /api/config`：V1 年级、单元与知识点配置
 - `GET /api/db/health`：D1 数据库连接检查
 - `GET /api/ai/health`：GLM配置状态检查（不会暴露密钥）
-- `POST /api/diagnoses/analyze`：上传作品图片并调用 GLM-4.6V-Flash 生成初步诊断
+- `POST /api/diagnoses/analyze`：上传作品图片并调用 GLM-4.6V-FlashX 生成初步诊断
 
 ## 本地开发
 

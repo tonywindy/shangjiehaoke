@@ -1177,7 +1177,7 @@ const AIMathAssistantPage = () => {
         </header>
 
         <div className="assistant-content">
-          <div className="prototype-banner"><span>GLM 联调版</span><p>已接入 GLM-4.6V-Flash；AI诊断仅作建议，须由教师确认。</p></div>
+          <div className="prototype-banner"><span>GLM 联调版</span><p>已接入 GLM-4.6V-FlashX；AI诊断仅作建议，须由教师确认。</p></div>
           {activeView === 'diagnosis' && (
             <DiagnosisView
               knowledge={knowledge}
