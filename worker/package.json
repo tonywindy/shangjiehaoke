@@ -15,5 +15,8 @@
   "devDependencies": {
     "typescript": "^5.9.3",
     "wrangler": "^4.112.0"
+  },
+  "dependencies": {
+    "jsonrepair": "^3.13.1"
   }
 }

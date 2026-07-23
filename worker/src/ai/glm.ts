@@ -1,3 +1,5 @@
+import { jsonrepair } from 'jsonrepair';
+
 const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
 export const GLM_MODEL = 'glm-4.6v-flashx';
 const GLM_TIMEOUT_MS = 45_000;
@@ -154,7 +156,16 @@ function extractJson(content: string): unknown {
     const start = trimmed.indexOf('{');
     const end = trimmed.lastIndexOf('}');
     if (start === -1 || end <= start) throw new GlmApiError('AI返回了无法解析的诊断结果');
-    return JSON.parse(trimmed.slice(start, end + 1));
+    const candidate = trimmed.slice(start, end + 1);
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      try {
+        return JSON.parse(jsonrepair(candidate));
+      } catch {
+        throw new GlmApiError('AI返回了无法解析的诊断结果');
+      }
+    }
   }
 }
 
@@ -193,9 +204,13 @@ function normalizeDiagnosis(value: unknown): DiagnosisResult {
   };
 }
 
-function normalizeLayeringPlan(value: unknown, learningNeed: string): LayeringPlanResult {
+function normalizeLayeringPlan(value: unknown, diagnosis: {
+  learningNeed: string;
+  errorType: string;
+}): LayeringPlanResult {
   if (!value || typeof value !== 'object') throw new GlmApiError('AI学习画像格式不正确');
   const result = value as Record<string, unknown>;
+  const learningNeed = diagnosis.learningNeed;
   const layers: LearningLayer[] = ['support', 'consolidation', 'exploration'];
   const currentLayer = layers.includes(result.currentLayer as LearningLayer)
     ? result.currentLayer as LearningLayer
@@ -203,40 +218,77 @@ function normalizeLayeringPlan(value: unknown, learningNeed: string): LayeringPl
   const rawTasks = Array.isArray(result.tasks)
     ? result.tasks.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')
     : [];
-  const fallbackTasks: Record<LearningLayer, LayeredTaskResult> = {
+  const formulaConfusion = /公式|面积/.test(`${diagnosis.errorType}${learningNeed}`);
+  const formulaFallbackTasks: Record<LearningLayer, LayeredTaskResult> = {
     support: {
       layer: 'support',
-      title: '借助操作理解周长',
-      taskContent: `用描边、摆一摆或逐边标记的方式完成一道同类题，并说清楚：${learningNeed}`,
-      taskGoal: '建立清晰的周长表象',
-      estimatedMinutes: 10,
+      title: '辨析周长与面积',
+      taskContent: '一个长方形长8厘米、宽5厘米。判断“8×5”和“（8+5）×2”分别求什么量，写出结果和单位，并说明理由。',
+      taskGoal: '区分周长与面积的意义、公式和单位',
+      estimatedMinutes: 12,
     },
     consolidation: {
       layer: 'consolidation',
-      title: '比较算法并解释算理',
-      taskContent: `完成两道同类题，比较不同算法，再用一句话解释怎样避免本次错误：${learningNeed}`,
-      taskGoal: '巩固算理并修正错因',
-      estimatedMinutes: 12,
+      title: '在完整围合情境中求周长',
+      taskContent: '一个长方形花坛长9米、宽4米，四周都要围护栏。至少需要多少米护栏？请列式计算，并解释为什么要把四条边都算进去。',
+      taskGoal: '正确应用长方形周长公式并解释算理',
+      estimatedMinutes: 15,
     },
     exploration: {
       layer: 'exploration',
-      title: '在变式情境中迁移',
-      taskContent: `设计或解决一道条件发生变化的周长问题，并说明自己的检验方法：${learningNeed}`,
-      taskGoal: '迁移方法并发展表达',
+      title: '在条件变化中迁移',
+      taskContent: '一个长方形菜地长10米、宽4米，一条长边靠墙，只给其余三边围篱笆。至少需要多少米篱笆？请列式并画简图标出需要围的三条边。',
+      taskGoal: '根据实际边界变化选择并调整周长算法',
+      estimatedMinutes: 18,
+    },
+  };
+  const conceptFallbackTasks: Record<LearningLayer, LayeredTaskResult> = {
+    support: {
+      layer: 'support',
+      title: '辨认封闭图形的一周',
+      taskContent: '画一个长方形，用红笔沿四条边连续描一圈；再用蓝笔在图形内部轻轻涂色。分别说明红线和蓝色区域表示什么。',
+      taskGoal: '区分边界一周与图形内部',
+      estimatedMinutes: 12,
+    },
+    consolidation: {
+      layer: 'consolidation',
+      title: '逐边相加求周长',
+      taskContent: '一个长方形长8厘米、宽5厘米。先标出四条边的长度，再用逐边相加和“（长+宽）×2”两种方法求周长，并说明两种方法为什么结果相同。',
+      taskGoal: '理解长方形周长算法的算理',
       estimatedMinutes: 15,
     },
+    exploration: {
+      layer: 'exploration',
+      title: '在变式边界中迁移',
+      taskContent: '用两个边长3厘米的正方形拼成一个长方形。先画出拼图，再只数大长方形最外面一圈的边，求它的周长，并说明中间重合的边为什么不计算。',
+      taskGoal: '把周长概念迁移到组合图形边界',
+      estimatedMinutes: 18,
+    },
+  };
+  const fallbackTasks = formulaConfusion ? formulaFallbackTasks : conceptFallbackTasks;
+  const normalizedRawContents = rawTasks.map((item) => asString(item.taskContent, '').replace(/\s+/g, ''));
+  const sourceNeedsFallback = (source: Record<string, unknown> | undefined) => {
+    if (!source) return true;
+    const content = asString(source.taskContent, '').trim();
+    if (!content) return true;
+    const normalized = content.replace(/\s+/g, '');
+    const duplicated = normalizedRawContents.filter((item) => item === normalized).length > 1;
+    const missingArtifact = /下图|下表/.test(content);
+    const invalidQuantityComparison = /大小关系|周长相同|面积相同|周长与面积[^。；]{0,30}(?:大小|相等)|面积与周长[^。；]{0,30}(?:大小|相等)/.test(content);
+    return duplicated || missingArtifact || invalidQuantityComparison;
   };
   const tasks = layers.map((layer) => {
     const source = rawTasks.find((item) => item.layer === layer);
     const fallback = fallbackTasks[layer];
-    const minutes = typeof source?.estimatedMinutes === 'number' && Number.isFinite(source.estimatedMinutes)
-      ? Math.round(Math.min(40, Math.max(5, source.estimatedMinutes)))
+    const safeSource = sourceNeedsFallback(source) ? undefined : source;
+    const minutes = typeof safeSource?.estimatedMinutes === 'number' && Number.isFinite(safeSource.estimatedMinutes)
+      ? Math.round(Math.min(40, Math.max(5, safeSource.estimatedMinutes)))
       : fallback.estimatedMinutes;
     return {
       layer,
-      title: asString(source?.title, fallback.title).slice(0, 80),
-      taskContent: asString(source?.taskContent, fallback.taskContent).slice(0, 600),
-      taskGoal: asString(source?.taskGoal, fallback.taskGoal).slice(0, 120),
+      title: asString(safeSource?.title, fallback.title).slice(0, 80),
+      taskContent: asString(safeSource?.taskContent, fallback.taskContent).slice(0, 600),
+      taskGoal: asString(safeSource?.taskGoal, fallback.taskGoal).slice(0, 120),
       estimatedMinutes: minutes,
     };
   });
@@ -262,6 +314,13 @@ function normalizePostTestEvaluation(value: unknown): PostTestEvaluationResult {
   const confidence = typeof postTest.confidence === 'number' && Number.isFinite(postTest.confidence)
     ? Math.min(1, Math.max(0, postTest.confidence))
     : 0;
+  const softenEvidenceClaim = (input: unknown, fallback: string, maxLength: number) => asString(input, fallback)
+    .replace(/学生已能/g, '本次证据显示学生能够')
+    .replace(/学生已掌握|已经掌握|已完全掌握|完全掌握/g, '本次证据显示学生能够正确应用')
+    .replace(/显著提升/g, '在本题中表现出改善')
+    .replace(/彻底解决|完全解决/g, '在本题中未再出现')
+    .replace(/形成稳定能力/g, '本次作答表现正确')
+    .slice(0, maxLength);
 
   return {
     postTest: {
@@ -275,10 +334,10 @@ function normalizePostTestEvaluation(value: unknown): PostTestEvaluationResult {
       warnings: asStringArray(postTest.warnings),
     },
     comparison: {
-      conceptChange: asString(comparison.conceptChange, '需要结合后测作品进一步判断').slice(0, 240),
-      methodChange: asString(comparison.methodChange, '需要结合后测作品进一步判断').slice(0, 240),
-      transferChange: asString(comparison.transferChange, '需要更多变式证据判断迁移情况').slice(0, 240),
-      solvedSummary: asString(comparison.solvedSummary, '暂未发现足够证据').slice(0, 300),
+      conceptChange: softenEvidenceClaim(comparison.conceptChange, '需要结合后测作品进一步判断', 240),
+      methodChange: softenEvidenceClaim(comparison.methodChange, '需要结合后测作品进一步判断', 240),
+      transferChange: softenEvidenceClaim(comparison.transferChange, '需要更多变式证据判断迁移情况', 240),
+      solvedSummary: softenEvidenceClaim(comparison.solvedSummary, '暂未发现足够证据', 300),
       remainingSummary: asString(comparison.remainingSummary, '需要教师继续观察').slice(0, 300),
       teachingSuggestions: asStringArray(comparison.teachingSuggestions).slice(0, 5),
     },
@@ -352,6 +411,10 @@ export async function analyzeMathEvidence(options: {
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw new GlmApiError('AI分析超时，请稍后重试', 504);
     }
+    console.error('GLM diagnosis request failed', {
+      name: error instanceof Error ? error.name : typeof error,
+      message: error instanceof Error ? error.message : String(error),
+    });
     throw new GlmApiError('暂时无法连接GLM服务，请稍后重试');
   } finally {
     clearTimeout(timeout);
@@ -383,7 +446,12 @@ export async function generateLayeringPlan(options: {
 3. 必须生成三个前后衔接、由浅入深、需要依次完成的阶梯任务：support 是第1级“基础理解”，consolidation 是第2级“巩固应用”，exploration 是第3级“迁移探究”。
 4. 每一级都要包含一道清晰、完整、可直接给学生作答的周长题目；后一级必须建立在前一级上，并逐步提高认知要求。
 5. 任务必须直接针对本次错因和学习需求，能在普通小学数学课堂执行，不依赖昂贵器材；每项预计 5 至 40 分钟。
-6. 仅输出 JSON 对象，不要输出 Markdown 或额外解释。
+6. 任务中的指令、颜色、操作与学习目标必须前后一致，不得出现“既要求涂色又要求不涂色”等矛盾表述。
+7. 不得引用题目中未实际提供的“下图”“下表”或未说明尺寸的图形；如需学生画图、制表、测量或比较，必须把图形、表格栏目、尺寸和操作方法直接写在题干中。
+8. 输出前必须逐项复算题目中的所有数值关系。只有实际计算结果相等时，才可以使用“周长相同”“面积相同”等表述；发现不相等时必须修改尺寸或修改问题。
+9. 每道题必须信息充分、只有明确的数学任务，并能仅凭题干作答。迁移题优先设计一个条件变化但计算关系正确的问题，不要为了制造对比而写未经验证的数值结论。
+10. 周长与面积属于不同的量，单位分别是长度单位和面积单位，禁止要求学生直接比较二者数值的大小或相等关系。若要辨析周长与面积，只能比较概念、计算方法、所用条件和单位。
+11. 仅输出 JSON 对象，不要输出 Markdown 或额外解释。
 
 JSON 字段：
 {
@@ -440,7 +508,10 @@ JSON 字段：
     const content = payload.choices?.[0]?.message?.content;
     if (!content) throw new GlmApiError('GLM没有返回学习画像');
     return {
-      plan: normalizeLayeringPlan(extractJson(content), options.diagnosis.learningNeed),
+      plan: normalizeLayeringPlan(extractJson(content), {
+        learningNeed: options.diagnosis.learningNeed,
+        errorType: options.diagnosis.errorType,
+      }),
       usage: payload.usage,
       model: GLM_MODEL,
     };
@@ -479,7 +550,11 @@ export async function analyzePostTestEvidence(options: {
 3. solvedSummary 只写已经解决或明显改善的问题；remainingSummary 写仍存在或新暴露的问题。
 4. teachingSuggestions 给出1至5条下一轮可执行建议，不能给学生贴固定标签。
 5. confidence 必须是0到1之间的小数。
-6. 仅输出一个JSON对象，不要使用Markdown代码块。
+6. 前后测作品只能证明学生作答表现发生了变化，不能单凭作品断言变化是由某项干预造成的。除非 <baseline_data> 中有明确的任务完成证据，否则禁止使用“通过干预任务掌握”“经过训练后学会”等因果表述。
+7. 当后测题目来源为“教师自拟题”时，不得把 <baseline_data> 中的建议任务写成学生已经完成的任务；只能描述前测与后测中实际可见的证据变化。
+8. 每个评价维度都必须与前后测中可比的题目证据对应；某维度只有单侧证据或题目不可比时，明确写“证据不足”，不要用其他维度的正确作答替代。
+9. 单道后测题只能支持“在本题中表现为……”“本次证据显示……”等有限结论，不能概括为“已掌握”“完全解决”“形成稳定能力”；只有多道可比题都提供一致证据时才能使用较强结论。
+10. 仅输出一个JSON对象，不要使用Markdown代码块。
 
 JSON字段必须完整：
 {
