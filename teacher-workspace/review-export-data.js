@@ -101,7 +101,7 @@ async function readWorkspace() {
   ]);
   const activeClassId = meta.find((item) => item.id === 'active-class-id')?.value
     || workspaceContext?.activeClassId
-    || DEFAULT_CLASS_ID;
+    || '';
   return {
     classes,
     meta,
@@ -147,17 +147,20 @@ function renderCounts(counts) {
 
 async function renderBackupPanel() {
   const workspace = await readWorkspace();
-  const currentClass = workspace.classes.find((item) => item.id === workspace.activeClassId)
-    || { id: workspace.activeClassId, name: '当前班级' };
+  const currentClass = workspace.classes.find((item) => item.id === workspace.activeClassId);
   const currentRecords = recordsForClass(workspace.records, workspace.activeClassId);
   const allCounts = backupCounts(workspace.records, workspace.classes.length);
-  const currentCounts = backupCounts(currentRecords, 1);
-  $('#backupCurrentClass').textContent = currentClass.name;
+  const currentCounts = backupCounts(currentRecords, currentClass ? 1 : 0);
+  $('#backupCurrentClass').textContent = currentClass?.name || '尚未创建班级';
   if (backupScope === 'current') {
-    $('#backupScopeCopy').innerHTML = `备份 <b>${escapeText(currentClass.name)}</b> 的学生、座位、学情、作业和任务记录。`;
-    $('#exportWorkspaceLabel').textContent = '导出当前班级备份';
+    $('#backupScopeCopy').innerHTML = currentClass
+      ? `备份 <b>${escapeText(currentClass.name)}</b> 的学生、座位、学情、作业和任务记录。`
+      : '创建班级后，才会有可以导出的班级数据。';
+    $('#exportWorkspaceLabel').textContent = currentClass ? '导出当前班级备份' : '暂无班级可导出';
+    $('#exportWorkspaceBackup').disabled = !currentClass;
     renderCounts(currentCounts);
   } else {
+    $('#exportWorkspaceBackup').disabled = !workspace.classes.length;
     const archived = workspace.classes.filter((item) => item.status === 'archived').length;
     $('#backupScopeCopy').innerHTML = `备份全部 <b>${workspace.classes.length}</b> 个班级${archived ? `（含 ${archived} 个已归档班级）` : ''}及各自的完整数据。`;
     $('#exportWorkspaceLabel').textContent = '导出全部班级备份';
@@ -178,9 +181,12 @@ function downloadJson(data, filename) {
 
 async function exportWorkspaceBackup() {
   const workspace = await readWorkspace();
-  const activeClass = workspace.classes.find((item) => item.id === workspace.activeClassId)
-    || { id: workspace.activeClassId, name: '当前班级', status: 'active' };
+  const activeClass = workspace.classes.find((item) => item.id === workspace.activeClassId);
   if (backupScope === 'current') {
+    if (!activeClass) {
+      notify('请先创建班级');
+      return;
+    }
     const records = recordsForClass(workspace.records, workspace.activeClassId);
     const meta = classMeta(workspace.meta, workspace.activeClassId);
     const backup = {
@@ -669,14 +675,19 @@ function renderRealStudentEvaluation(student, records) {
 
 async function initializeRealReports() {
   const workspace = await readWorkspace();
-  const classRecord = workspace.classes.find((item) => item.id === workspace.activeClassId)
-    || { id: workspace.activeClassId, name: '当前班级' };
+  const classRecord = workspace.classes.find((item) => item.id === workspace.activeClassId);
   const records = recordsForClass(workspace.records, workspace.activeClassId);
   const select = $('#stuSel');
   select.innerHTML = records.students.length
     ? records.students.sort((a, b) => a.sortOrder - b.sortOrder).map((student) => `<option value="${escapeText(student.id)}">${escapeText(student.name)}</option>`).join('')
-    : '<option value="">当前班级还没有学生</option>';
-  $('#genReview').onclick = () => renderRealReview(classRecord, records);
+    : `<option value="">${classRecord ? '当前班级还没有学生' : '尚未创建班级'}</option>`;
+  $('#genReview').onclick = () => {
+    if (!classRecord) {
+      notify('请先创建班级并导入学生');
+      return;
+    }
+    renderRealReview(classRecord, records);
+  };
   $('#genStu').onclick = () => {
     const student = records.students.find((item) => item.id === select.value);
     if (!student) {

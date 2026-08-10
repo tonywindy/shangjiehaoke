@@ -32,7 +32,7 @@ const state = {
   homeworks: [],
   homeworkEntries: [],
   followupTasks: [],
-  activeClassId: 'class-local',
+  activeClassId: '',
   activeView: 'matrix',
   activeUnit: '',
   selectedStudentId: null,
@@ -110,7 +110,7 @@ function dbDelete(storeName, id) {
 }
 
 function belongsToActiveClass(item) {
-  return (item.classId || 'class-local') === state.activeClassId;
+  return Boolean(state.activeClassId) && (item.classId || 'class-local') === state.activeClassId;
 }
 
 function dbReplaceForActiveClass(storeName, values) {
@@ -157,7 +157,7 @@ async function refreshState() {
   ]);
 
   const meta = await dbGetAll('meta');
-  state.activeClassId = meta.find((item) => item.id === 'active-class-id')?.value || 'class-local';
+  state.activeClassId = meta.find((item) => item.id === 'active-class-id')?.value || '';
   [
     state.students,
     state.kps,
@@ -1574,6 +1574,10 @@ async function init() {
     bindEvents();
     await refreshState();
     const params = new URLSearchParams(location.search);
+    if (!state.activeClassId) {
+      location.replace('../class.html?onboarding=students');
+      return;
+    }
     const requestedUnit = params.get('unit');
     if (requestedUnit && getUnits().includes(requestedUnit)) state.activeUnit = requestedUnit;
     const requestedKpId = params.get('kp');
@@ -1591,6 +1595,11 @@ async function init() {
             ? $('#studentImportSection')?.nextElementSibling
             : $('#seatEditorSection');
         target?.scrollIntoView({ block: 'start' });
+        if (params.get('onboarding') === '1') {
+          toast(requestedFocus === 'seats'
+            ? '第2步：拖动名牌安排座位；没想好可点“按名单自动填充”'
+            : '第3步：导入知识点清单，完成后即可开始学情记录');
+        }
       });
     }
     const requestedStudentId = params.get('student');

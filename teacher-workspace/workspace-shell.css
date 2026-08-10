@@ -275,6 +275,7 @@ button,input,textarea,select{font:inherit}
 }
 .class-switch-list button:hover{background:#f7f6f1}.class-switch-list button.active{background:var(--green-l2);color:var(--green-d);font-weight:600}
 .class-switch-list button span{flex:1}.class-switch-list button i{font-style:normal;color:var(--green);font-size:10.5px}
+.class-switch-empty{margin:0;padding:13px 10px;color:var(--text-3);font-size:12px;text-align:center}
 .class-switch-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px;padding-top:7px;border-top:1px solid var(--line-2)}
 .class-switch-actions button,.class-manager-create{
   min-height:34px;padding:0 8px;border:0;border-radius:8px;background:#f5f3ed;color:var(--text-2);font-size:12px;cursor:pointer
@@ -294,6 +295,10 @@ button,input,textarea,select{font:inherit}
   width:100%;height:42px;padding:0 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);outline:none
 }
 .class-modal-card input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(30,148,85,.1)}
+.class-onboarding-card{width:min(620px,calc(100vw - 32px))}.class-onboarding-card .class-onboarding-kicker{margin:0;color:var(--green);font-weight:700;letter-spacing:.08em}
+.class-onboarding-card textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font:inherit;line-height:1.7;outline:none;resize:vertical}
+.class-onboarding-card textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(30,148,85,.1)}
+.class-onboarding-card label+label{margin-top:13px}.class-onboarding-file{display:flex;align-items:center;gap:10px;margin-top:10px}.class-onboarding-file label{position:relative;display:inline-flex}.class-onboarding-file input{position:absolute;inset:0;opacity:0;cursor:pointer}.class-onboarding-file span{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:#f7f6f1;color:var(--text-2);font-weight:600;cursor:pointer}.class-onboarding-file i{color:var(--text-3);font-size:12px;font-style:normal}.class-onboarding-error{min-height:20px!important;margin:8px 0 0!important;color:#df4d43!important}
 .class-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .class-modal-actions button,.class-manager-head button,.class-manager-list button{
   min-height:35px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--text-2);cursor:pointer

@@ -13,18 +13,24 @@
 @media(max-width:900px){.grid{grid-template-columns:1fr}.output,.backup-pane{grid-column:1}.paper .stats{grid-template-columns:repeat(2,1fr)}.vs{grid-template-columns:1fr}}
 @media print{.side,.top,.intro,.grid>.pane:not(.output){display:none!important}.body{padding:0}.paper{max-width:none;margin:0;border:0;box-shadow:none}}
 </style>
-<script src="access-control.js?v=20260807"></script>
+<script src="access-control.js?v=20260810"></script>
 <script type="module" src="workspace-shell.js"></script>
 </head>
 <body>
 <div class="app">
   <aside class="side">
     <a class="brand" href="today.html"><svg class="leaf" viewBox="0 0 40 40" fill="none"><path d="M33 7C33 7 12 5 8 18c-3.4 11 6 17 6 17s2-13 9.5-19C17 22 15 33 15 33s16 1 18-14c.6-4.6 0-12 0-12Z" fill="#1e9455"/><path d="M14 35s1.6-13 9.6-19.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg><span><b>上节好课</b><small>教师工作台</small></span></a>
-    <nav class="nav"><a href="today.html"><span>⌂</span>今日</a><a href="tasks.html"><span>✓</span>任务</a><a href="class.html"><span>♙</span>班级</a><a href="v07/index.html#matrix"><span>▥</span>学情</a><a href="profile.html"><span>人</span>我的</a></nav>
-    <div class="grow"></div><a class="navmini on" href="review-export.html"><span>▤</span>回顾与导出</a><button class="kbtn" type="button" data-kopen><span>⌕</span>搜索<span class="kk">⌘K</span></button>
+    <nav class="nav">
+      <a href="today.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10.4 9-7 9 7"/><path d="M5.5 9.2V20h13V9.2"/><path d="M9.8 20v-5.6h4.4V20"/></svg>今日</a>
+      <a href="tasks.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12 2.6 2.6L16.4 9"/></svg>任务</a>
+      <a href="class.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M16.6 5.4a3.2 3.2 0 0 1 0 6.2"/><path d="M19.8 19.5a5.6 5.6 0 0 0-2.7-4.8"/></svg>班级</a>
+      <a href="v07/index.html#matrix"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M5 19V10.5"/><path d="M12 19V5"/><path d="M19 19v-6"/></svg>学情</a>
+      <a href="profile.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>我的</a>
+    </nav>
+    <div class="grow"></div><a class="navmini" href="review-export.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H13l6 6v8.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 18.5Z"/><path d="M13 4v6h6"/></svg>回顾与导出</a><button class="kbtn" type="button" data-kopen><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>搜索<span class="kk">⌘K</span></button>
   </aside>
   <main class="main">
-    <header class="top"><div class="title">上节好课 · 教师工作台</div><div class="grow"></div><div class="date"><span>▣</span><span id="dT"></span><span id="dW"></span></div><button class="picker">四年级1班 <span>⌄</span></button><label class="search"><span>⌕</span><input placeholder="搜索学生、内容、知识点"></label></header>
+    <header class="top"><div class="title">上节好课 · 教师工作台</div><div class="grow"></div><div class="date"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.5h17M8 3v3.6M16 3v3.6"/></svg><span id="dT"></span><span id="dW"></span></div><button class="picker">尚未创建班级 <span>⌄</span></button><label class="search"><span>⌕</span><input placeholder="搜索学生、内容、知识点"></label></header>
     <div class="body">
       <section class="intro"><span class="ic">✓</span><div><h1>回顾与导出</h1><p>只用已经保存的真实记录生成班级回顾和学生评价；没有数据的内容不会被编造。</p></div></section>
       <div class="grid">

@@ -7,6 +7,8 @@
   <title>我的 · 上节好课教师工作台</title>
   <link rel="stylesheet" href="workspace-shell.css">
   <link rel="stylesheet" href="profile.css">
+  <script src="access-control.js?v=20260810"></script>
+  <script type="module" src="workspace-shell.js"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -16,14 +18,15 @@
       <div><div class="bt">上节好课</div><div class="bs">教师工作台</div></div>
     </a>
     <nav class="nav" aria-label="工作台导航">
-      <a href="today.html"><span>⌂</span>今日</a>
-      <a href="tasks.html"><span>✓</span>任务</a>
-      <a href="class.html"><span>♙</span>班级</a>
-      <a href="v07/index.html#matrix"><span>▥</span>学情</a>
-      <a class="on" href="profile.html" aria-current="page"><span>人</span>我的</a>
+      <a href="today.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10.4 9-7 9 7"/><path d="M5.5 9.2V20h13V9.2"/><path d="M9.8 20v-5.6h4.4V20"/></svg>今日</a>
+      <a href="tasks.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12 2.6 2.6L16.4 9"/></svg>任务</a>
+      <a href="class.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M16.6 5.4a3.2 3.2 0 0 1 0 6.2"/><path d="M19.8 19.5a5.6 5.6 0 0 0-2.7-4.8"/></svg>班级</a>
+      <a href="v07/index.html#matrix"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 19V10.5"/><path d="M12 19V5"/><path d="M19 19v-6"/></svg>学情</a>
+      <a class="on" href="profile.html" aria-current="page"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>我的</a>
     </nav>
     <div class="grow"></div>
-    <a class="navmini" href="review-export.html"><span>▤</span>回顾与导出</a>
+    <a class="navmini" href="review-export.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H13l6 6v8.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 18.5Z"/><path d="M13 4v6h6"/></svg>回顾与导出</a>
+    <button class="kbtn" type="button" data-kopen><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>搜索<span class="kk">⌘K</span></button>
   </aside>
   <main class="main">
     <header class="top"><div class="title">上节好课 · 教师工作台</div><div class="grow"></div><a class="profile-back" href="today.html">返回今日</a></header>
@@ -56,6 +59,15 @@
             <button class="profile-button primary" type="submit">保存个人信息</button>
           </form>
           <div class="data-note"><b>数据说明</b><p>账号称呼和会员状态会随账号保存；学生、座位、作业和学情仍保存在当前电脑，不会因此自动云同步。</p></div>
+        </section>
+
+        <section class="profile-card onboarding-card" id="onboardingCard" hidden>
+          <div class="onboarding-heading"><div><p>GET STARTED</p><h2>首次使用向导</h2><span>按顺序完成三步，工作台才会显示你的真实班级数据。</span></div><strong id="onboardingProgress">0/3</strong></div>
+          <div class="onboarding-steps">
+            <article data-onboarding-step="class"><i>1</i><div><b>创建班级并导入学生</b><span>填写班级名称，粘贴或选择 Excel 学生名单。</span></div><a href="class.html?onboarding=students">开始设置</a></article>
+            <article data-onboarding-step="seats"><i>2</i><div><b>编辑座位</b><span>可以拖动学生名牌；没想好时可以按名单一键自动填充。</span></div><a href="v07/index.html?focus=seats&onboarding=1#class">编辑座位</a></article>
+            <article data-onboarding-step="kps"><i>3</i><div><b>导入知识点</b><span>导入 Excel / CSV，或一键套用现有教材知识点清单。</span></div><a href="v07/index.html?focus=kps&onboarding=1#class">导入知识点</a></article>
+          </div>
         </section>
       </div>
     </div>
