@@ -2,6 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import { copyFileSync, mkdirSync } from 'fs';
+import { fileURLToPath } from 'url';
+
+const projectRoot = fileURLToPath(new URL('.', import.meta.url));
 
 function copyStaticGameScripts() {
   return {
@@ -10,9 +13,10 @@ function copyStaticGameScripts() {
       [
         ['caiqi/script.js', 'dist/caiqi/script.js'],
         ['miwen/script.js', 'dist/miwen/script.js'],
+        ['teacher-workspace/access-control.js', 'dist/teacher-workspace/access-control.js'],
       ].forEach(([from, to]) => {
-        mkdirSync(resolve(__dirname, to, '..'), { recursive: true });
-        copyFileSync(resolve(__dirname, from), resolve(__dirname, to));
+        mkdirSync(resolve(projectRoot, to, '..'), { recursive: true });
+        copyFileSync(resolve(projectRoot, from), resolve(projectRoot, to));
       });
     },
   };
@@ -22,31 +26,46 @@ export default defineConfig({
   plugins: [react(), copyStaticGameScripts()],
   base: '/',
   publicDir: 'public',
+  server: {
+    proxy: {
+      '/api': 'http://127.0.0.1:8787',
+    },
+  },
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        contact: resolve(__dirname, 'contact.html'),
-        works: resolve(__dirname, 'works.html'),
-        chufa: resolve(__dirname, 'chufa/index.html'),
-        caiqi: resolve(__dirname, 'caiqi/index.html'),
-        miwen: resolve(__dirname, 'miwen/index.html'),
-        climb: resolve(__dirname, 'climb.html'),
-        zhouchang: resolve(__dirname, 'zhouchang.html'),
-        shuxueyouxi: resolve(__dirname, 'shuxueyouxi.html'),
-        mubiaoqiang: resolve(__dirname, 'mubiaoqiang.html'),
-        danweihuansuan: resolve(__dirname, 'danweihuansuan.html'),
-        renshixiaoshu: resolve(__dirname, 'renshixiaoshu.html'),
-        santitg: resolve(__dirname, 'santitg.html'),
-        shudui: resolve(__dirname, 'shudui.html'),
-        zuoweibiao: resolve(__dirname, 'zuoweibiao.html'),
-        recite: resolve(__dirname, 'recite/index.html'),
-        yingbi: resolve(__dirname, 'yingbi.html'),
-        shizhen: resolve(__dirname, 'shizhen.html'),
-        lucheng: resolve(__dirname, 'lucheng/index.html'),
-        duichen: resolve(__dirname, 'duichen.html'),
-        zhouchangpingyi: resolve(__dirname, 'zhouchangpingyi.html'),
-        aiMathAssistant: resolve(__dirname, 'ai-math-assistant/index.html'),
+        main: resolve(projectRoot, 'index.html'),
+        contact: resolve(projectRoot, 'contact.html'),
+        works: resolve(projectRoot, 'works.html'),
+        chufa: resolve(projectRoot, 'chufa/index.html'),
+        caiqi: resolve(projectRoot, 'caiqi/index.html'),
+        miwen: resolve(projectRoot, 'miwen/index.html'),
+        climb: resolve(projectRoot, 'climb.html'),
+        zhouchang: resolve(projectRoot, 'zhouchang.html'),
+        shuxueyouxi: resolve(projectRoot, 'shuxueyouxi.html'),
+        mubiaoqiang: resolve(projectRoot, 'mubiaoqiang.html'),
+        danweihuansuan: resolve(projectRoot, 'danweihuansuan.html'),
+        renshixiaoshu: resolve(projectRoot, 'renshixiaoshu.html'),
+        santitg: resolve(projectRoot, 'santitg.html'),
+        shudui: resolve(projectRoot, 'shudui.html'),
+        zuoweibiao: resolve(projectRoot, 'zuoweibiao.html'),
+        recite: resolve(projectRoot, 'recite/index.html'),
+        yingbi: resolve(projectRoot, 'yingbi.html'),
+        shizhen: resolve(projectRoot, 'shizhen.html'),
+        lucheng: resolve(projectRoot, 'lucheng/index.html'),
+        duichen: resolve(projectRoot, 'duichen.html'),
+        zhouchangpingyi: resolve(projectRoot, 'zhouchangpingyi.html'),
+        aiMathAssistant: resolve(projectRoot, 'ai-math-assistant/index.html'),
+        teacherWorkspace: resolve(projectRoot, 'teacher-workspace/index.html'),
+        teacherWorkspaceAccount: resolve(projectRoot, 'teacher-workspace/account.html'),
+        teacherWorkspaceAdmin: resolve(projectRoot, 'teacher-workspace/admin.html'),
+        teacherWorkspaceTerms: resolve(projectRoot, 'teacher-workspace/terms.html'),
+        teacherWorkspaceToday: resolve(projectRoot, 'teacher-workspace/today.html'),
+        teacherWorkspaceTasks: resolve(projectRoot, 'teacher-workspace/tasks.html'),
+        teacherWorkspaceClass: resolve(projectRoot, 'teacher-workspace/class.html'),
+        teacherWorkspaceLearning: resolve(projectRoot, 'teacher-workspace/learning.html'),
+        teacherWorkspaceReview: resolve(projectRoot, 'teacher-workspace/review-export.html'),
+        teacherWorkspaceV07: resolve(projectRoot, 'teacher-workspace/v07/index.html'),
       },
     },
   },

@@ -1,0 +1,18 @@
+/teacher-workspace/access-control.js
+  Cache-Control: no-store, max-age=0
+
+/teacher-workspace/account.html
+  Cache-Control: no-store, max-age=0
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/admin.html
+  Cache-Control: no-store, max-age=0
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+
+/teacher-workspace/terms.html
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff

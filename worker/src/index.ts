@@ -14,6 +14,7 @@ import {
   verifyPassword,
   verifySessionToken,
 } from './auth';
+import { handleWorkspaceRequest, type WorkspaceAuthEnv } from './workspace-auth';
 
 const SERVICE_NAME = '上节好课 · AI小学数学精准教学助手 API';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -22,7 +23,7 @@ const DAILY_GLOBAL_LIMIT = 500;
 const DAILY_LOGIN_ATTEMPT_LIMIT = 30;
 const PRIMARY_TEACHER_ID = 'teacher-primary';
 
-type AppEnv = Env & {
+type AppEnv = Env & WorkspaceAuthEnv & {
   GLM_API_KEY?: string;
   RATE_LIMIT_SALT?: string;
   SESSION_SECRET?: string;
@@ -467,6 +468,9 @@ function unauthorized(request: Request): Response {
 export default {
   async fetch(request: Request, env: AppEnv): Promise<Response> {
     const url = new URL(request.url);
+
+    const workspaceResponse = await handleWorkspaceRequest(request, env, url);
+    if (workspaceResponse) return workspaceResponse;
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders(request) });

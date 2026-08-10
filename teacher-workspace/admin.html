@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f6f1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>授权管理后台 · 上节好课</title>
+  <link rel="stylesheet" href="./auth.css">
+</head>
+<body class="admin-body">
+  <section class="admin-login" id="adminLogin" hidden>
+    <p class="auth-kicker">授权管理后台</p>
+    <h1>管理员登录</h1><p>登录后可以生成授权码、停用授权和管理账号。</p>
+    <form id="adminLoginForm">
+      <label class="field"><span>管理员用户名</span><input name="username" autocomplete="username" required></label>
+      <label class="field"><span>密码</span><input name="password" type="password" autocomplete="current-password" required></label>
+      <p class="login-message" id="loginMessage"></p>
+      <button class="button button-primary" type="submit">进入管理后台</button>
+      <a class="button button-secondary" href="./index.html">返回介绍页</a>
+    </form>
+  </section>
+
+  <div class="admin-shell" id="adminShell" hidden>
+    <header class="auth-header">
+      <div class="auth-header-inner">
+        <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 44 44" aria-hidden="true"><path d="M36 7S13 5 8.5 20C5 32 15 38 15 38s2.2-14.2 10.6-21C18.2 24 16 36 16 36s17.6 1.1 20-15.5C36.7 15.3 36 7 36 7Z" fill="currentColor"/><path d="M15 38s1.8-14.5 10.7-21.6" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg><span class="brand-copy"><strong>上节好课</strong><small>授权管理</small></span></a>
+        <div class="header-links"><a href="./today.html">教师工作台</a><button class="button button-secondary button-small" id="adminLogout" type="button">退出登录</button></div>
+      </div>
+    </header>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="admin-name"><small>TEACHER WORKSPACE</small><strong>授权控制台</strong></div>
+        <nav class="admin-nav">
+          <button class="active" type="button" data-panel="overview"><i>⌂</i>总览</button>
+          <button type="button" data-panel="licenses"><i>钥</i>授权码</button>
+          <button type="button" data-panel="users"><i>人</i>账号</button>
+        </nav>
+        <div class="sidebar-note">这里只保存账号和授权状态。学生名单、课堂、作业及学情记录不会显示在后台。</div>
+      </aside>
+      <main class="admin-main">
+        <header class="admin-top"><div><h1 id="panelTitle">授权总览</h1><p id="panelSubtitle">查看授权使用和账号情况。</p></div><div class="admin-user"><b id="adminAvatar">管</b><span id="adminUsername">管理员</span></div></header>
+
+        <section class="admin-panel" id="panel-overview">
+          <div class="stat-grid">
+            <article class="stat-card"><strong id="statUsers">0</strong><span>注册账号</span></article>
+            <article class="stat-card green"><strong id="statActiveUsers">0</strong><span>正常账号</span></article>
+            <article class="stat-card amber"><strong id="statAvailable">0</strong><span>待使用授权码</span></article>
+            <article class="stat-card green"><strong id="statRedeemed">0</strong><span>已兑换授权码</span></article>
+          </div>
+          <div class="admin-grid">
+            <section class="admin-card"><div class="admin-card-head"><div><h2>生成授权码</h2><p>完整授权码只会在生成这一次显示，请立即保存。</p></div></div><div class="card-content">
+              <form class="generate-form" id="generateForm">
+                <label class="field"><span>生成数量</span><input name="count" type="number" min="1" max="100" value="1" required></label>
+                <label class="field"><span>授权类型</span><select name="plan"><option value="authorized">标准授权</option><option value="yearly">年度授权</option><option value="permanent">长期授权</option></select></label>
+                <label class="field"><span>授权有效天数</span><input name="durationDays" type="number" min="0" max="3650" value="365"><small>从用户注册当天起算；0 表示长期有效</small></label>
+                <label class="field"><span>授权码注册期限</span><input name="redeemBeforeDays" type="number" min="0" max="3650" value="30"><small>生成后多少天内必须注册；0 表示不限期</small></label>
+                <button class="button button-primary" type="submit">生成授权码</button>
+              </form>
+              <div class="code-result" id="codeResult" hidden><div class="code-result-head"><h3>请立即复制保存</h3><button class="button button-secondary button-small" id="copyCodes" type="button">复制全部</button></div><p>刷新或关闭页面后，后台只能看到授权码前缀。</p><div class="code-list" id="generatedCodes"></div></div>
+            </div></section>
+            <section class="admin-card"><div class="admin-card-head"><div><h2>最近操作</h2><p>授权生成、兑换和账号状态变化。</p></div></div><div class="card-content"><ul class="event-list" id="eventList"></ul></div></section>
+          </div>
+        </section>
+
+        <section class="admin-panel" id="panel-licenses" hidden>
+          <div class="toolbar"><div class="toolbar-group"><select id="licenseStatus"><option value="all">全部状态</option><option value="available">待使用</option><option value="redeemed">已兑换</option><option value="revoked">已停用</option><option value="expired">已过期</option></select><button class="button button-secondary button-small" id="refreshLicenses" type="button">刷新</button></div></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>授权码前缀</th><th>类型</th><th>状态</th><th>兑换账号</th><th>生成时间</th><th>注册期限</th><th>授权到期</th><th>操作</th></tr></thead><tbody id="licenseRows"></tbody></table></div>
+        </section>
+
+        <section class="admin-panel" id="panel-users" hidden>
+          <div class="toolbar"><input id="userSearch" placeholder="搜索用户名"><button class="button button-secondary button-small" id="refreshUsers" type="button">刷新</button></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>用户名</th><th>角色</th><th>账号状态</th><th>授权状态</th><th>注册时间</th><th>最近登录</th><th>操作</th></tr></thead><tbody id="userRows"></tbody></table></div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <dialog class="admin-dialog" id="resetPasswordDialog">
+    <form id="resetPasswordForm">
+      <div class="admin-dialog-head"><div><p>账号售后</p><h2>设置临时密码</h2></div><button type="button" class="dialog-close" id="cancelResetPassword" aria-label="关闭">×</button></div>
+      <p>临时密码至少8位，并同时包含字母和数字。保存后该用户的旧会话会退出，下次登录必须修改密码。</p>
+      <label class="field"><span>临时密码</span><input name="newPassword" type="password" autocomplete="new-password" maxlength="72" required></label>
+      <label class="field"><span>确认临时密码</span><input name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" required></label>
+      <div class="admin-dialog-actions"><button class="button button-secondary" id="cancelResetPasswordBottom" type="button">取消</button><button class="button button-primary" type="submit">确认重置</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast"></div>
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>

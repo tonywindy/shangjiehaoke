@@ -53,6 +53,7 @@ export const NAV_LINKS = [
   { path: '/', label: '初见之页', key: 'home' },
   { path: '/works.html', label: '些许尝试', key: 'works' },
   { path: '/contact', label: '一点想法', key: 'quotes' },
+  { path: '/teacher-workspace/index.html', label: '教师工作台', key: 'teacherWorkspace' },
 ];
 
 // 页面标题

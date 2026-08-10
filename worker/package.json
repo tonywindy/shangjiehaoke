@@ -9,6 +9,8 @@
     "check": "tsc --noEmit",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "db:auth:migrate:local": "wrangler d1 migrations apply AUTH_DB --local",
+    "db:auth:migrate:remote": "wrangler d1 migrations apply AUTH_DB --remote",
     "auth:hash": "node scripts/hash-password.mjs",
     "types": "wrangler types"
   },

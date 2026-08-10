@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f3ea">
+  <meta name="robots" content="noindex,nofollow">
+  <title>账号与授权 · 上节好课教师工作台</title>
+  <link rel="stylesheet" href="./auth.css">
+</head>
+<body>
+  <header class="auth-header">
+    <div class="auth-header-inner">
+      <a class="brand" href="./index.html">
+        <svg class="brand-mark" viewBox="0 0 44 44" aria-hidden="true"><path d="M36 7S13 5 8.5 20C5 32 15 38 15 38s2.2-14.2 10.6-21C18.2 24 16 36 16 36s17.6 1.1 20-15.5C36.7 15.3 36 7 36 7Z" fill="currentColor"/><path d="M15 38s1.8-14.5 10.7-21.6" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span class="brand-copy"><strong>上节好课</strong><small>教师工作台</small></span>
+      </a>
+      <div class="header-links"><a href="./index.html#plans">版本说明</a><a href="./today.html">进入工作台</a></div>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <section class="auth-intro">
+      <p class="auth-kicker">账号与授权</p>
+      <h1>一枚授权码，<br>开始管理自己的班级。</h1>
+      <p>先私信作者获得授权码，再完成账号注册。账号用于确认使用资格，不会把你的学生名单和教学记录上传到服务器。</p>
+      <div class="privacy-card">
+        <span class="privacy-icon">✓</span>
+        <div><strong>教学数据仍在你的电脑里</strong><p>登录账号只恢复授权资格。换电脑后，班级和作业数据需要通过“导出备份—恢复备份”迁移，不会自动同步。</p></div>
+      </div>
+    </section>
+
+    <section class="auth-card" aria-live="polite">
+      <p class="form-alert" id="authAlert" hidden></p>
+      <div id="signedOutView">
+        <div class="auth-card-head"><h2>欢迎使用教师工作台</h2><p>已有账号直接登录，首次使用请凭授权码注册。</p></div>
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab active" type="button" data-tab="login">账号登录</button>
+          <button class="auth-tab" type="button" data-tab="register">授权码注册</button>
+        </div>
+        <form class="auth-form" id="loginForm">
+          <label class="field"><span>用户名</span><input name="username" autocomplete="username" maxlength="24" required placeholder="请输入用户名"></label>
+          <label class="field"><span>密码</span><input name="password" type="password" autocomplete="current-password" maxlength="72" required placeholder="请输入密码"></label>
+          <button class="button button-primary" type="submit">登录并进入工作台</button>
+          <p class="auth-footnote">账号仅用于授权验证，不等于云端班级账号。</p>
+        </form>
+        <form class="auth-form" id="registerForm" hidden>
+          <label class="field"><span>用户名</span><input name="username" autocomplete="username" maxlength="24" required placeholder="3至24位中文、字母或数字"><small>建议使用容易记住、但不包含学生信息的名称。</small></label>
+          <label class="field"><span>设置密码</span><input name="password" type="password" autocomplete="new-password" maxlength="72" required placeholder="至少8位，包含字母和数字"></label>
+          <label class="field"><span>确认密码</span><input name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" required placeholder="再次输入密码"></label>
+          <label class="field"><span>授权码</span><input class="license-input" name="licenseCode" autocomplete="off" maxlength="29" required placeholder="SJHK-XXXX-XXXX-XXXX-XXXX"></label>
+          <label class="agreement-field"><input name="agreement" type="checkbox" required><span>我已阅读并同意<a href="./terms.html" target="_blank" rel="noopener">《使用协议与隐私说明》</a>，理解教学数据保存在当前浏览器，账号登录不会自动同步班级数据。</span></label>
+          <button class="button button-primary" type="submit">验证授权码并注册</button>
+          <p class="auth-footnote">每枚授权码仅能注册一次。没有授权码时，请先私信作者获取。</p>
+        </form>
+      </div>
+
+      <div class="account-state" id="signedInView" hidden>
+        <div class="account-avatar" id="accountAvatar">师</div>
+        <h2 id="accountName">已登录</h2>
+        <p>你的使用资格已经连接到这台浏览器。</p>
+        <div class="account-meta">
+          <div><span>账号类型</span><strong id="accountRole">授权用户</strong></div>
+          <div><span>当前状态</span><strong class="authorized" id="accountStatus">已授权</strong></div>
+          <div><span>授权期限</span><strong id="accountExpiry">长期有效</strong></div>
+        </div>
+        <div class="account-actions">
+          <a class="button button-primary" href="./today.html">进入教师工作台</a>
+          <a class="button button-secondary" id="adminEntry" href="./admin.html" hidden>授权管理后台</a>
+          <button class="button button-secondary" id="logoutButton" type="button">退出账号</button>
+        </div>
+        <details class="account-tool" id="renewalSection">
+          <summary>续费或重新授权</summary>
+          <form id="renewalForm">
+            <p>输入新授权码后，会从当前到期日继续顺延；长期授权无需续费。</p>
+            <label class="field"><span>新授权码</span><input class="license-input" name="licenseCode" autocomplete="off" maxlength="29" required placeholder="SJHK-XXXX-XXXX-XXXX-XXXX"></label>
+            <button class="button button-primary" type="submit">兑换并续费</button>
+          </form>
+        </details>
+        <details class="account-tool" id="passwordSection" hidden>
+          <summary>修改登录密码</summary>
+          <p class="password-notice" id="passwordNotice" hidden></p>
+          <form id="passwordForm">
+            <label class="field"><span>当前密码</span><input name="currentPassword" type="password" autocomplete="current-password" maxlength="72" required></label>
+            <label class="field"><span>新密码</span><input name="newPassword" type="password" autocomplete="new-password" maxlength="72" required placeholder="至少8位，包含字母和数字"></label>
+            <label class="field"><span>确认新密码</span><input name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" required></label>
+            <button class="button button-primary" type="submit">确认修改</button>
+          </form>
+        </details>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./account.js"></script>
+</body>
+</html>

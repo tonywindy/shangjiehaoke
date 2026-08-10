@@ -15,13 +15,21 @@
 	},
 	"vars": {
 		"TEACHER_USERNAME": "ganlaoshi",
-		"TEACHER_DISPLAY_NAME": "甘老师"
+		"TEACHER_DISPLAY_NAME": "甘老师",
+		"WORKSPACE_ADMIN_USERNAME": "raymond"
 	},
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "shangjiehaoke-ai-db",
 			"database_id": "d02d1339-b537-4b35-b511-f32f8571d254"
+		},
+		{
+			"binding": "AUTH_DB",
+			"database_name": "shangjiehaoke-workspace-auth-db",
+			"database_id": "df653c21-b385-4a01-9f93-11a6ee166edf",
+			"migrations_dir": "migrations-auth",
+			"migrations_table": "d1_migrations_workspace_auth"
 		}
 	],
 	"r2_buckets": [
