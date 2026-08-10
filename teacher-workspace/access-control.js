@@ -392,6 +392,17 @@
     accessControl.isAuthorized = authorized;
     accessControl.databaseName = databaseName;
     accessControl.session = accountSession;
+    try {
+      if (accountSession && accountSession.authenticated && accountSession.user && accountSession.user.displayName) {
+        var displayName = String(accountSession.user.displayName).trim();
+        if (displayName) {
+          localStorage.setItem('sjhk-workspace-display-name', displayName);
+          localStorage.setItem('sjhk-workspace-display-name:' + accountSession.user.id, displayName);
+        }
+      }
+    } catch (error) {
+      console.warn('教师称呼缓存失败', error);
+    }
   }
 
   function workspaceSessionUrl() {

@@ -1,3 +1,5 @@
+import { readSheet } from 'read-excel-file/browser';
+
 const ACCESS_CONTROL = window.TeacherWorkspaceAccess;
 let CLASS_DB_NAME = 'shangjiehaoke-teacher-workspace-v07';
 const CLASS_DB_VERSION = 5;
@@ -60,29 +62,26 @@ function storePut(db, storeName, value) {
   });
 }
 
+function storeDelete(db, storeName, id) {
+  return new Promise((resolve, reject) => {
+    const request = db.transaction(storeName, 'readwrite').objectStore(storeName).delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function classHasRealData(db, classId) {
+  for (const storeName of CLASS_SCOPED_STORES) {
+    const values = await storeAll(db, storeName);
+    if (values.some((item) => (item.classId || DEFAULT_CLASS_ID) === classId)) return true;
+  }
+  return false;
+}
+
 async function ensureClassStructure() {
   const db = await openClassManagerDb();
   let classes = await storeAll(db, 'classes');
-  const meta = await storeAll(db, 'meta');
-  let defaultClass = classes.find((item) => item.id === DEFAULT_CLASS_ID);
-  if (!defaultClass) {
-    const timestamp = Date.now();
-    defaultClass = {
-      id: DEFAULT_CLASS_ID,
-      name: DEFAULT_CLASS_NAME,
-      status: 'active',
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    };
-    await storePut(db, 'classes', defaultClass);
-    classes.push(defaultClass);
-  }
-  const activeClasses = classes.filter((item) => item.status !== 'archived');
-  const requestedActiveId = meta.find((item) => item.id === 'active-class-id')?.value;
-  const activeClassId = activeClasses.some((item) => item.id === requestedActiveId)
-    ? requestedActiveId
-    : (activeClasses[0]?.id || DEFAULT_CLASS_ID);
-  await storePut(db, 'meta', { id: 'active-class-id', value: activeClassId });
+  let meta = await storeAll(db, 'meta');
 
   for (const storeName of CLASS_SCOPED_STORES) {
     const values = await storeAll(db, storeName);
@@ -92,17 +91,41 @@ async function ensureClassStructure() {
     }
   }
 
+  const defaultClass = classes.find((item) => item.id === DEFAULT_CLASS_ID);
+  if (ACCESS_CONTROL?.isAuthorized && defaultClass?.name === DEFAULT_CLASS_NAME
+    && !(await classHasRealData(db, DEFAULT_CLASS_ID))) {
+    const cleanup = [
+      storeDelete(db, 'classes', DEFAULT_CLASS_ID),
+      storeDelete(db, 'meta', `seat-config:${DEFAULT_CLASS_ID}`),
+      storeDelete(db, 'meta', `seat-assignments:${DEFAULT_CLASS_ID}`),
+      storeDelete(db, 'meta', `initialized:${DEFAULT_CLASS_ID}`),
+    ];
+    if (meta.find((item) => item.id === 'active-class-id')?.value === DEFAULT_CLASS_ID) {
+      cleanup.push(storeDelete(db, 'meta', 'active-class-id'));
+    }
+    await Promise.all(cleanup);
+    classes = await storeAll(db, 'classes');
+    meta = await storeAll(db, 'meta');
+  }
+
+  const activeClasses = classes.filter((item) => item.status !== 'archived');
+  const requestedActiveId = meta.find((item) => item.id === 'active-class-id')?.value;
+  const activeClassId = activeClasses.some((item) => item.id === requestedActiveId)
+    ? requestedActiveId
+    : (activeClasses[0]?.id || '');
+  await storePut(db, 'meta', { id: 'active-class-id', value: activeClassId });
+
   const legacyConfig = meta.find((item) => item.id === 'seat-config');
   const legacyAssignments = meta.find((item) => item.id === 'seat-assignments');
   const legacyInitialized = meta.find((item) => item.id === 'initialized');
   const activeMetaIds = new Set((await storeAll(db, 'meta')).map((item) => item.id));
-  if (!activeMetaIds.has(`seat-config:${DEFAULT_CLASS_ID}`) && legacyConfig) {
+  if (classes.some((item) => item.id === DEFAULT_CLASS_ID) && !activeMetaIds.has(`seat-config:${DEFAULT_CLASS_ID}`) && legacyConfig) {
     await storePut(db, 'meta', { id: `seat-config:${DEFAULT_CLASS_ID}`, value: legacyConfig.value });
   }
-  if (!activeMetaIds.has(`seat-assignments:${DEFAULT_CLASS_ID}`) && legacyAssignments) {
+  if (classes.some((item) => item.id === DEFAULT_CLASS_ID) && !activeMetaIds.has(`seat-assignments:${DEFAULT_CLASS_ID}`) && legacyAssignments) {
     await storePut(db, 'meta', { id: `seat-assignments:${DEFAULT_CLASS_ID}`, value: legacyAssignments.value });
   }
-  if (!activeMetaIds.has(`initialized:${DEFAULT_CLASS_ID}`) && legacyInitialized) {
+  if (classes.some((item) => item.id === DEFAULT_CLASS_ID) && !activeMetaIds.has(`initialized:${DEFAULT_CLASS_ID}`) && legacyInitialized) {
     await storePut(db, 'meta', { id: `initialized:${DEFAULT_CLASS_ID}`, value: legacyInitialized.value });
   }
   classes = await storeAll(db, 'classes');
@@ -122,7 +145,7 @@ window.TeacherClassManager = {
     const context = await managerReady;
     context.classes = await storeAll(context.db, 'classes');
     const meta = await storeAll(context.db, 'meta');
-    context.activeClassId = meta.find((item) => item.id === 'active-class-id')?.value || DEFAULT_CLASS_ID;
+    context.activeClassId = meta.find((item) => item.id === 'active-class-id')?.value || '';
     return context;
   },
 };
@@ -159,7 +182,7 @@ function activeClass() {
 }
 
 function updatePickerLabels() {
-  const name = activeClass()?.name || DEFAULT_CLASS_NAME;
+  const name = activeClass()?.name || '尚未创建班级';
   document.querySelectorAll('.picker,.shell-picker').forEach((button) => {
     button.dataset.classPicker = 'true';
     const textNode = [...button.childNodes].find((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
@@ -190,13 +213,13 @@ async function loadGlobalSearchRecords() {
     storeAll(classContext.db, 'notes'),
   ]);
   const classId = classContext.activeClassId;
-  const scoped = (item) => (item.classId || DEFAULT_CLASS_ID) === classId;
+  const scoped = (item) => Boolean(classId) && (item.classId || DEFAULT_CLASS_ID) === classId;
   const prefix = location.pathname.includes('/v07/') ? '../' : '';
   globalSearchRecords = [
     ...students.filter(scoped).map((student) => ({
       group: '学生',
       title: student.name,
-      subtitle: `学号 ${student.seatNo || student.sortOrder + 1 || '—'} · ${activeClass()?.name || DEFAULT_CLASS_NAME}`,
+      subtitle: `学号 ${student.seatNo || student.sortOrder + 1 || '—'} · ${activeClass()?.name || '尚未创建班级'}`,
       icon: student.name.trim().charAt(0) || '生',
       color: '#7aa5dd',
       url: `${prefix}class.html?student=${encodeURIComponent(student.id)}`,
@@ -220,7 +243,7 @@ async function loadGlobalSearchRecords() {
     ...notes.filter(scoped).map((note) => ({
       group: '班级记录',
       title: note.body || note.title || '班级记录',
-      subtitle: note.studentNames?.length ? `关联学生：${note.studentNames.join('、')}` : (activeClass()?.name || DEFAULT_CLASS_NAME),
+      subtitle: note.studentNames?.length ? `关联学生：${note.studentNames.join('、')}` : (activeClass()?.name || '尚未创建班级'),
       icon: '记',
       color: '#c99ad0',
       url: `${prefix}class.html?note=${encodeURIComponent(note.id)}`,
@@ -378,15 +401,113 @@ function renderClassPopover(anchor) {
   classPopover.style.top = `${Math.min(window.innerHeight - 280, rect.bottom + 8)}px`;
   classPopover.style.left = `${Math.max(12, Math.min(window.innerWidth - 250, rect.right - 238))}px`;
   classPopover.innerHTML = `<div class="class-switch-title">切换班级</div>
-    <div class="class-switch-list">${activeClasses.map((item) => `
+    <div class="class-switch-list">${activeClasses.length ? activeClasses.map((item) => `
       <button type="button" class="${item.id === classContext.activeClassId ? 'active' : ''}" data-switch-class="${item.id}">
         <span>${escapeClassText(item.name)}</span>${item.id === classContext.activeClassId ? '<i>当前</i>' : ''}
-      </button>`).join('')}</div>
+      </button>`).join('') : '<p class="class-switch-empty">还没有班级，请先创建。</p>'}</div>
     <div class="class-switch-actions">
       <button type="button" data-create-class>＋ 新建班级</button>
       <button type="button" data-manage-classes>管理班级</button>
     </div>`;
   document.body.append(classPopover);
+}
+
+function parseStudentText(text) {
+  return String(text || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line, index) => {
+    const cells = line.split(/[\t,，]/).map((cell) => cell.trim()).filter(Boolean);
+    if (!cells.length || cells.some((cell) => cell === '姓名')) return null;
+    const numeric = /^\d+$/.test(cells[0]);
+    const name = numeric ? cells[1] : cells[0];
+    return name ? { seatNo: numeric ? Number(cells[0]) : index + 1, name } : null;
+  }).filter(Boolean);
+}
+
+function studentRowsFromSheet(rows) {
+  const clean = rows.map((row) => row.map((cell) => String(cell ?? '').trim()));
+  const headerIndex = clean.findIndex((row) => row.some((cell) => cell === '姓名'));
+  const nameIndex = headerIndex >= 0 ? clean[headerIndex].findIndex((cell) => cell === '姓名') : 0;
+  const numberIndex = headerIndex >= 0 ? clean[headerIndex].findIndex((cell) => /^(学号|序号|编号)$/.test(cell)) : -1;
+  return clean.slice(headerIndex >= 0 ? headerIndex + 1 : 0).map((row, index) => ({
+    name: row[nameIndex],
+    seatNo: numberIndex >= 0 && /^\d+$/.test(row[numberIndex]) ? Number(row[numberIndex]) : index + 1,
+  })).filter((item) => item.name);
+}
+
+async function saveClassOnboarding(form) {
+  const values = new FormData(form);
+  const name = String(values.get('className') || '').trim();
+  const imported = parseStudentText(values.get('studentPaste'));
+  if (!name || !imported.length) {
+    form.querySelector('[data-onboarding-error]').textContent = !name ? '请填写班级名称。' : '请至少导入1名学生。';
+    return;
+  }
+  if (ACCESS_CONTROL && !ACCESS_CONTROL.requireFeature('studentImport')) return;
+  const current = activeClass();
+  const classId = current?.id || `class-${crypto.randomUUID?.() || Date.now()}`;
+  const existing = (await storeAll(classContext.db, 'students')).filter((item) => (item.classId || DEFAULT_CLASS_ID) === classId);
+  const available = new Set(existing.map((item) => item.id));
+  const timestamp = Date.now();
+  const students = imported.map((item, index) => {
+    const match = existing.find((record) => available.has(record.id) && record.name === item.name && Number(record.seatNo) === Number(item.seatNo))
+      || existing.find((record) => available.has(record.id) && record.name === item.name);
+    if (match) available.delete(match.id);
+    return {
+      id: match?.id || `student-${crypto.randomUUID?.() || `${timestamp}-${index}`}`,
+      classId,
+      name: item.name,
+      seatNo: item.seatNo || index + 1,
+      sortOrder: index,
+      createdAt: match?.createdAt || timestamp + index,
+    };
+  });
+  await new Promise((resolve, reject) => {
+    const transaction = classContext.db.transaction(['classes', 'students', 'meta'], 'readwrite');
+    transaction.objectStore('classes').put({
+      ...(current || {}), id: classId, name, status: 'active', createdAt: current?.createdAt || timestamp, updatedAt: timestamp,
+    });
+    const studentStore = transaction.objectStore('students');
+    existing.forEach((item) => studentStore.delete(item.id));
+    students.forEach((item) => studentStore.put(item));
+    const metaStore = transaction.objectStore('meta');
+    metaStore.put({ id: 'active-class-id', value: classId });
+    metaStore.put({ id: `seat-config:${classId}`, value: { rows: Math.max(1, Math.ceil(students.length / 6)), desks: 3, seatsPerDesk: 2 } });
+    metaStore.put({ id: `seat-assignments:${classId}`, value: {} });
+    metaStore.put({ id: `onboarding-class-confirmed:${classId}`, value: true });
+    transaction.oncomplete = resolve;
+    transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error || new Error('班级导入已取消'));
+  });
+  location.href = 'v07/index.html?focus=seats&onboarding=1#class';
+}
+
+function openClassOnboarding() {
+  closeClassPopover();
+  closeClassModal();
+  const current = activeClass();
+  classModal = document.createElement('div');
+  classModal.className = 'class-modal-backdrop';
+  classModal.innerHTML = `<form class="class-modal-card class-onboarding-card" data-class-onboarding>
+    <div><p class="class-onboarding-kicker">第1步 · 建立真实班级</p><h2>${current ? '导入学生名单' : '创建班级并导入学生'}</h2><p>一次完成班级名称和学生名单，下一步会带你进入座位编辑。</p></div>
+    <label>班级名称<input name="className" maxlength="24" required value="${escapeClassText(current?.name || '')}" placeholder="例如：四年级1班"></label>
+    <label>学生名单<textarea name="studentPaste" rows="9" placeholder="1, 王小明&#10;2, 李小雨"></textarea></label>
+    <div class="class-onboarding-file"><label><input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" data-onboarding-excel><span>选择 Excel 名单</span></label><i data-onboarding-file-name>也可以直接在上方粘贴。</i></div>
+    <p class="class-onboarding-error" data-onboarding-error></p>
+    <div class="class-modal-actions"><button type="button" data-close-class-modal>稍后再说</button><button class="primary" type="submit">创建并继续编辑座位</button></div>
+  </form>`;
+  document.body.append(classModal);
+  classModal.querySelector('[data-onboarding-excel]').addEventListener('change', async (event) => {
+    const [file] = event.target.files;
+    if (!file) return;
+    try {
+      const students = studentRowsFromSheet(await readSheet(file));
+      classModal.querySelector('[name="studentPaste"]').value = students.map((item) => `${item.seatNo}\t${item.name}`).join('\n');
+      classModal.querySelector('[data-onboarding-file-name]').textContent = `${file.name} · ${students.length} 人`;
+      classModal.querySelector('[data-onboarding-error]').textContent = students.length ? '' : '没有识别到“姓名”列。';
+    } catch {
+      classModal.querySelector('[data-onboarding-error]').textContent = 'Excel 读取失败，请确认文件格式。';
+    }
+  });
+  setTimeout(() => classModal.querySelector('input[name="className"]')?.focus(), 20);
 }
 
 function closeClassModal() {
@@ -532,11 +653,21 @@ async function initializeClassShell() {
     if (classPopover && !event.target.closest('.class-switch-popover')) closeClassPopover();
   });
   document.addEventListener('submit', async (event) => {
+    const onboardingForm = event.target.closest('[data-class-onboarding]');
+    if (onboardingForm) {
+      event.preventDefault();
+      await saveClassOnboarding(onboardingForm);
+      return;
+    }
     const form = event.target.closest('[data-class-editor]');
     if (!form) return;
     event.preventDefault();
     await saveClassEditor(form);
   });
+  const params = new URLSearchParams(location.search);
+  if (params.get('onboarding') === 'students' || params.get('action') === 'import') {
+    openClassOnboarding();
+  }
 }
 
 if (document.readyState === 'loading') {

@@ -8,8 +8,8 @@ const STORES = [
 
 const state = {
   db: null,
-  classId: 'class-local',
-  className: '四年级1班',
+  classId: '',
+  className: '尚未创建班级',
   students: [],
   tasks: [],
   filter: '今天',
@@ -243,6 +243,11 @@ async function addTaskFromQuickInput() {
   const input = $('#qi');
   const value = input?.value.trim();
   if (!value) return;
+  if (!state.classId) {
+    notify('请先创建班级并导入学生');
+    location.href = 'class.html?onboarding=students';
+    return;
+  }
   const access = window.TeacherWorkspaceAccess;
   const manualTaskCount = state.tasks.filter((task) => task.type !== 'homework_followup' && task.type !== 'demo').length;
   if (access?.isExperience && manualTaskCount >= access.limits.manualTasks) {
@@ -429,9 +434,9 @@ async function init() {
   const [meta, classes, students, tasks] = await Promise.all([
     getAll('meta'), getAll('classes'), getAll('students'), getAll('followupTasks'),
   ]);
-  state.classId = meta.find((item) => item.id === 'active-class-id')?.value || 'class-local';
-  state.className = classes.find((item) => item.id === state.classId)?.name || '四年级1班';
-  const scoped = (item) => (item.classId || 'class-local') === state.classId;
+  state.classId = meta.find((item) => item.id === 'active-class-id')?.value || '';
+  state.className = classes.find((item) => item.id === state.classId)?.name || '尚未创建班级';
+  const scoped = (item) => Boolean(state.classId) && (item.classId || 'class-local') === state.classId;
   state.students = students.filter(scoped).sort((a, b) => a.sortOrder - b.sortOrder);
   state.tasks = tasks.filter(scoped).map(normalizeTask);
   bindEvents();

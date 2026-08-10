@@ -19,6 +19,21 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
 
+/teacher-workspace/today.html
+  Cache-Control: no-store, max-age=0
+
+/teacher-workspace/tasks.html
+  Cache-Control: no-store, max-age=0
+
+/teacher-workspace/class.html
+  Cache-Control: no-store, max-age=0
+
+/teacher-workspace/review-export.html
+  Cache-Control: no-store, max-age=0
+
+/teacher-workspace/v07/index.html
+  Cache-Control: no-store, max-age=0
+
 /teacher-workspace/terms.html
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff

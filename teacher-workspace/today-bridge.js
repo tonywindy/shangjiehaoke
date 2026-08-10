@@ -8,8 +8,8 @@ const STORES = [
 
 const state = {
   db: null,
-  classId: 'class-local',
-  className: '四年级1班',
+  classId: '',
+  className: '尚未创建班级',
   students: [],
   kps: [],
   judgements: [],
@@ -108,15 +108,21 @@ function setAction(row, label, count, link) {
 function renderPending() {
   const rows = $$('.conf .crow');
   const pendingHomework = state.tasks.filter((task) => task.status !== 'completed' && task.type === 'homework_followup').length;
+  if (!state.classId) {
+    setAction(rows[0], '创建班级并导入学生', 0, 'class.html?onboarding=students');
+    setAction(rows[1], '导入知识点清单', 0, 'profile.html#onboardingCard');
+    setAction(rows[2], '开始第一条学情判断', 0, 'profile.html#onboardingCard');
+    return;
+  }
   if (!state.students.length) {
-    setAction(rows[0], '导入学生名单', 0, 'v07/index.html?view=class&focus=students#class');
-    setAction(rows[1], '导入知识点清单', state.kps.length, 'v07/index.html?view=class&focus=kps#class');
+    setAction(rows[0], '导入学生名单', 0, 'class.html?onboarding=students');
+    setAction(rows[1], '导入知识点清单', state.kps.length, 'v07/index.html?focus=kps#class');
     setAction(rows[2], '开始第一条学情判断', 0, 'v07/index.html#matrix');
     return;
   }
   if (!state.kps.length) {
     setAction(rows[0], '学生名单已导入', state.students.length, 'class.html');
-    setAction(rows[1], '导入知识点清单', 0, 'v07/index.html?view=class&focus=kps#class');
+    setAction(rows[1], '导入知识点清单', 0, 'v07/index.html?focus=kps#class');
     setAction(rows[2], '开始第一条学情判断', 0, 'v07/index.html#matrix');
     return;
   }
@@ -175,7 +181,7 @@ function renderPlan() {
     .filter((task) => (task.dueDate || task.homeworkDate || today) <= today)
     .sort((a, b) => String(a.dueTime || '').localeCompare(String(b.dueTime || '')));
   if (!tasks.length) {
-    plan.innerHTML = '<div style="padding:28px 12px;text-align:center;color:var(--text-3)">当前班级今天还没有计划</div>';
+    plan.innerHTML = `<div style="padding:28px 12px;text-align:center;color:var(--text-3)">${state.classId ? '当前班级今天还没有计划' : '创建班级后，这里会显示今天的计划'}</div>`;
     return;
   }
   plan.innerHTML = tasks.slice(0, 8).map((task, index) => {
@@ -200,7 +206,7 @@ function renderFeed() {
     活动: ['var(--green-l)', 'var(--green)'],
   };
   if (!state.notes.length) {
-    feed.innerHTML = '<div style="padding:32px 12px;text-align:center;color:var(--text-3)">当前班级还没有动态记录</div>';
+    feed.innerHTML = `<div style="padding:32px 12px;text-align:center;color:var(--text-3)">${state.classId ? '当前班级还没有动态记录' : '创建班级后，这里会显示班级动态'}</div>`;
     return;
   }
   feed.innerHTML = state.notes.slice(0, 12).map((note) => {
@@ -221,12 +227,19 @@ function renderSummary() {
   const notesToday = state.notes.filter((note) => (note.createdAt || 0) >= todayStart.getTime()).length;
   const pending = state.tasks.filter((task) => task.status !== 'completed').length;
   const summary = $('.summary .txt');
-  if (summary) summary.innerHTML = `当前班级已完成<b>${completed}</b>项任务，今天记录<b>${notesToday}</b>件班级事务，还有<b>${pending}</b>项需要继续跟进。`;
+  if (summary) summary.innerHTML = state.classId
+    ? `当前班级已完成<b>${completed}</b>项任务，今天记录<b>${notesToday}</b>件班级事务，还有<b>${pending}</b>项需要继续跟进。`
+    : '先创建班级并导入学生，工作台会在这里汇总每天的教学进展。';
   const done = $('#sDone');
   if (done) done.textContent = completed;
 }
 
 async function saveComposerNote() {
+  if (!state.classId) {
+    notify('请先创建班级并导入学生');
+    location.href = 'class.html?onboarding=students';
+    return;
+  }
   const input = $('#inp');
   const body = input?.value.trim();
   if (!body) return;
@@ -394,9 +407,12 @@ function simplifyComposer() {
 function updateTeacherGreeting() {
   const session = window.TeacherWorkspaceAccess?.session;
   const savedName = session?.user?.displayName?.trim();
+  const cachedName = (session?.user?.id && localStorage.getItem(`sjhk-workspace-display-name:${session.user.id}`))
+    || localStorage.getItem('sjhk-workspace-display-name');
   const username = session?.user?.username?.trim();
   const teacherName = savedName
-    || (username ? (username.endsWith('老师') ? username : `${username}老师`) : '甘老师');
+    || cachedName?.trim()
+    || (username ? (username.endsWith('老师') ? username : `${username}老师`) : (window.TeacherWorkspaceAccess?.isExperience ? '甘老师' : '老师'));
   const hour = new Date().getHours();
   const greeting = hour < 11 ? '早上好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好';
   const greetingNode = document.getElementById('hi');
@@ -413,9 +429,9 @@ async function init() {
     getAll('meta'), getAll('classes'), getAll('students'), getAll('kps'), getAll('judgements'),
     getAll('questionSets'), getAll('questionSetUses'), getAll('followupTasks'), getAll('notes'),
   ]);
-  state.classId = meta.find((item) => item.id === 'active-class-id')?.value || 'class-local';
-  state.className = classes.find((item) => item.id === state.classId)?.name || '四年级1班';
-  const scoped = (item) => (item.classId || 'class-local') === state.classId;
+  state.classId = meta.find((item) => item.id === 'active-class-id')?.value || '';
+  state.className = classes.find((item) => item.id === state.classId)?.name || '尚未创建班级';
+  const scoped = (item) => Boolean(state.classId) && (item.classId || 'class-local') === state.classId;
   state.students = students.filter(scoped).sort((a, b) => a.sortOrder - b.sortOrder);
   state.kps = kps.filter(scoped).filter((kp) => !kp.archivedAt).sort((a, b) => a.sortOrder - b.sortOrder);
   state.judgements = judgements.filter(scoped).sort((a, b) => a.judgedAt - b.judgedAt);

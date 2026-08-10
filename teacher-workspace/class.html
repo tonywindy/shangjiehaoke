@@ -308,7 +308,7 @@ svg{display:block}
   .hw-hist-body{grid-template-columns:1fr}.hw-hist-side{max-height:240px;border-right:0;border-bottom:1px solid var(--line)}.hw-students{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="workspace-shell.css">
-<script src="access-control.js?v=20260807"></script>
+<script src="access-control.js?v=20260810"></script>
 <script type="module" src="workspace-shell.js"></script>
 </head>
 <body>
@@ -346,7 +346,7 @@ svg{display:block}
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.5h17M8 3v3.6M16 3v3.6"/></svg>
       <span id="dT">7月27日</span><span id="dW" style="color:var(--text-3)">星期一</span>
     </div>
-    <button class="picker">四年级1班
+    <button class="picker">尚未创建班级
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-3)"><path d="m6 9 6 6 6-6"/></svg>
     </button>
     <div class="search">
@@ -373,8 +373,8 @@ svg{display:block}
           <option value="focus">着色：关注度</option>
           <option value="mastery">着色：本单元掌握</option>
         </select>
-        <a class="tbtn" href="v07/index.html?view=class&amp;focus=students#class">导入学生</a>
-        <a class="tbtn" href="v07/index.html?view=class&amp;focus=seats#class">编辑座位</a>
+        <a class="tbtn" href="class.html?onboarding=students">导入学生</a>
+        <a class="tbtn" id="editSeatsLink" href="class.html?onboarding=students">编辑座位</a>
       </div>
     </div>
 
@@ -559,7 +559,7 @@ function attentionDays(student){return student.last==null?Infinity:student.last}
 function attentionText(student){return student.last==null?'从未记录':student.last+' 天前'}
 
 /* 与学情页共用同一份本机数据 */
-var CLASS_DB=null,CLASS_ACTIVE_ID='class-local',CLASS_KPS=[],CLASS_JUDGEMENTS=[],CLASS_HOMEWORKS=[],CLASS_HOMEWORK_ENTRIES=[],CLASS_FOLLOWUP_TASKS=[],CLASS_NOTES=[],HOMEWORK_STATUSES={};
+var CLASS_DB=null,CLASS_ACTIVE_ID='',CLASS_ACTIVE_NAME='尚未创建班级',CLASS_KPS=[],CLASS_JUDGEMENTS=[],CLASS_HOMEWORKS=[],CLASS_HOMEWORK_ENTRIES=[],CLASS_FOLLOWUP_TASKS=[],CLASS_NOTES=[],HOMEWORK_STATUSES={};
 var SELECTED_HOMEWORK_ID='',HOMEWORK_HISTORY_STATUS='all',EDITING_HOMEWORK_ENTRY_ID='',DELETING_HOMEWORK_ID='';
 var CLASS_STORES=['meta','classes','students','kps','judgements','questionSets','questionSetUses','reasonTemplates','homeworks','homeworkEntries','followupTasks','notes'];
 function openClassDb(){
@@ -638,7 +638,7 @@ function classUid(prefix){
   return prefix+'-'+(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(16).slice(2));
 }
 function belongsToActiveClass(item){
-  return (item.classId||'class-local')===CLASS_ACTIVE_ID;
+  return Boolean(CLASS_ACTIVE_ID)&&(item.classId||'class-local')===CLASS_ACTIVE_ID;
 }
 function latestClassJudgements(items){
   var byPair={};
@@ -652,9 +652,11 @@ async function hydrateClassFromDb(){
   try{
     if(window.TeacherWorkspaceAccess)await window.TeacherWorkspaceAccess.ready;
     CLASS_DB=await openClassDb();
-    var data=await Promise.all([classDbAll('students'),classDbAll('kps'),classDbAll('judgements'),classDbAll('meta'),classDbAll('homeworks'),classDbAll('homeworkEntries'),classDbAll('followupTasks'),classDbAll('notes')]);
+    var data=await Promise.all([classDbAll('students'),classDbAll('kps'),classDbAll('judgements'),classDbAll('meta'),classDbAll('homeworks'),classDbAll('homeworkEntries'),classDbAll('followupTasks'),classDbAll('notes'),classDbAll('classes')]);
     var meta=data[3];
-    CLASS_ACTIVE_ID=(meta.find(function(item){return item.id==='active-class-id'})||{}).value||'class-local';
+    CLASS_ACTIVE_ID=(meta.find(function(item){return item.id==='active-class-id'})||{}).value||'';
+    CLASS_ACTIVE_NAME=((data[8].find(function(item){return item.id===CLASS_ACTIVE_ID})||{}).name)||'尚未创建班级';
+    $('#editSeatsLink').href=CLASS_ACTIVE_ID?'v07/index.html?focus=seats#class':'class.html?onboarding=students';
     var students=data[0].filter(belongsToActiveClass).sort(function(a,b){return a.sortOrder-b.sortOrder});
     CLASS_KPS=data[1].filter(function(kp){return belongsToActiveClass(kp)&&!kp.archivedAt}).sort(function(a,b){return a.sortOrder-b.sortOrder});
     CLASS_JUDGEMENTS=data[2].filter(belongsToActiveClass);
@@ -713,7 +715,7 @@ async function hydrateClassFromDb(){
     $('#ovTotal').textContent=STU.length;
     $('#ovWeek').textContent=CLASS_JUDGEMENTS.filter(function(item){return (item.judgedAt||0)>=Date.now()-7*86400000}).length;
     $('#ovRetest').textContent=new Set(latestClassJudgements().filter(function(item){return item.status==='needs_support'}).map(function(item){return item.studentId})).size;
-    $('#viewSub').textContent=(cfg.rows*cfg.desks*cfg.seatsPerDesk)+' 个座位 · '+STU.length+' 人';
+    $('#viewSub').textContent=CLASS_ACTIVE_ID?(cfg.rows*cfg.desks*cfg.seatsPerDesk)+' 个座位 · '+STU.length+' 人':'尚未创建班级';
     if(!CLASS_NOTES.length)$('#feed').innerHTML='<div class="hw-hist-empty" style="min-height:180px"><b>还没有班级动态</b><span>从记录这个班级的第一件事开始</span></div>';
     var requestedHomework=new URLSearchParams(location.search).get('homework');
     if(requestedHomework&&CLASS_HOMEWORKS.some(function(item){return item.id===requestedHomework})){
@@ -1066,6 +1068,12 @@ function seatLabel(r,c){return (r+1)+'排'+(c+1)+'座'}
 
 function renderMap(){
   var mode=$('#colorMode').value,h='';
+  if(!CLASS_ACTIVE_ID){
+    $('#seatMap').innerHTML='<div class="hw-hist-empty" style="min-height:360px"><b>还没有创建班级</b><span>先填写班级名称并导入学生，之后就可以安排座位。</span><a class="tbtn g" href="class.html?onboarding=students" style="margin-top:10px">创建班级并导入学生</a></div>';
+    $('#legend').innerHTML='';
+    $('#viewSub').textContent='尚未创建班级';
+    return;
+  }
   SEATS.forEach(function(row,ri){
     var seatsPerDesk=Math.max.apply(null,row.map(function(desk){return desk.length}));
     h+='<div class="deskrow" style="--desk-count:'+row.length+';--seats-per-desk:'+seatsPerDesk+'">';
@@ -1156,7 +1164,7 @@ function updateMarkMode(){
 }
 $('#markBtn').onclick=function(){
   if(!CLASS_KPS.length){
-    location.href='v07/index.html?view=class&focus=kps#class';
+    location.href='v07/index.html?focus=kps#class';
     return;
   }
   if(!STU.length){toast('请先导入学生名单');return}
@@ -1409,7 +1417,7 @@ function openStu(i,seat){
   $('#shAv').textContent=cur.name.trim().charAt(0);
   $('#shAv').style.background=cur.color;
   $('#shT').firstChild.textContent=cur.name.replace(/\s/g,'');
-  $('#shS').textContent=cur.no+'号 · '+(cur.seat)+' · 四年级1班';
+  $('#shS').textContent=cur.no+'号 · '+(cur.seat)+' · '+CLASS_ACTIVE_NAME;
   $$('.stab').forEach(function(x,k){x.classList.toggle('on',k===0)});
   renderTab(0);
   $('#sheet').classList.add('on');$('#scrim').classList.add('on');
@@ -1533,7 +1541,7 @@ async function saveStudentTask(form){
 }
 function goStudentLearning(){
   var kp=studentTargetKp();
-  if(!kp){location.href='v07/index.html?view=class&focus=kps#class';return}
+  if(!kp){location.href='v07/index.html?focus=kps#class';return}
   location.href='v07/index.html?student='+encodeURIComponent(cur.dbId)+'&kp='+encodeURIComponent(kp.id)+'&unit='+encodeURIComponent(kp.unitName||'')+'#matrix';
 }
 function close(){$('#sheet').classList.remove('on');$('#scrim').classList.remove('on')}
