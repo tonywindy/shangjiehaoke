@@ -17,8 +17,8 @@ function formatDate(value, fallback = '—') {
 }
 
 const statusLabels = { available: '待使用', redeemed: '已兑换', revoked: '已停用', expired: '已过期', active: '正常', disabled: '已停用' };
-const planLabels = { authorized: '标准授权', yearly: '年度授权', permanent: '长期授权', admin: '管理员' };
-const eventLabels = { 'license.created': '生成了授权码', 'license.redeemed': '授权码已被兑换', 'license.revoked': '停用了授权码', 'user.registered': '新账号完成注册', 'user.logged_in': '账号登录', 'user.logged_out': '账号退出', 'user.active': '恢复了账号', 'user.disabled': '停用了账号', 'session.created': '创建了登录会话' };
+const planLabels = { authorized: '旧版授权', yearly: '一年会员', permanent: '长期会员', admin: '管理员' };
+const eventLabels = { 'license.created': '生成了授权码', 'license.redeemed': '授权码已被兑换', 'license.revoked': '停用了授权码', 'user.registered': '新账号完成注册', 'user.logged_in': '账号登录', 'user.logged_out': '账号退出', 'user.profile_updated': '更新了个人信息', 'user.active': '恢复了账号', 'user.disabled': '停用了账号', 'session.created': '创建了登录会话' };
 
 function statusPill(status) { return `<span class="status-pill ${status}">${statusLabels[status] || status || '—'}</span>`; }
 

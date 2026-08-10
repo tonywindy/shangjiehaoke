@@ -391,8 +391,21 @@ function simplifyComposer() {
   }
 }
 
+function updateTeacherGreeting() {
+  const session = window.TeacherWorkspaceAccess?.session;
+  const savedName = session?.user?.displayName?.trim();
+  const username = session?.user?.username?.trim();
+  const teacherName = savedName
+    || (username ? (username.endsWith('老师') ? username : `${username}老师`) : '甘老师');
+  const hour = new Date().getHours();
+  const greeting = hour < 11 ? '早上好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好';
+  const greetingNode = document.getElementById('hi');
+  if (greetingNode) greetingNode.textContent = `${greeting}，${teacherName}`;
+}
+
 async function init() {
   await window.TeacherWorkspaceAccess?.ready;
+  updateTeacherGreeting();
   DB_NAME = window.TeacherWorkspaceAccess?.databaseName || DB_NAME;
   await window.TeacherClassManager?.ready;
   state.db = await openDatabase();

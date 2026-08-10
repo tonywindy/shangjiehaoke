@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#faf8f2">
+  <title>我的 · 上节好课教师工作台</title>
+  <link rel="stylesheet" href="workspace-shell.css">
+  <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="side">
+    <a class="brand" href="today.html">
+      <svg width="34" height="34" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M33 7C33 7 12 5 8 18c-3.4 11 6 17 6 17s2-13 9.5-19C17 22 15 33 15 33s16 1 18-14c.6-4.6 0-12 0-12Z" fill="#1e9455"/><path d="M14 35s1.6-13 9.6-19.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <div><div class="bt">上节好课</div><div class="bs">教师工作台</div></div>
+    </a>
+    <nav class="nav" aria-label="工作台导航">
+      <a href="today.html"><span>⌂</span>今日</a>
+      <a href="tasks.html"><span>✓</span>任务</a>
+      <a href="class.html"><span>♙</span>班级</a>
+      <a href="v07/index.html#matrix"><span>▥</span>学情</a>
+      <a class="on" href="profile.html" aria-current="page"><span>人</span>我的</a>
+    </nav>
+    <div class="grow"></div>
+    <a class="navmini" href="review-export.html"><span>▤</span>回顾与导出</a>
+  </aside>
+  <main class="main">
+    <header class="top"><div class="title">上节好课 · 教师工作台</div><div class="grow"></div><a class="profile-back" href="today.html">返回今日</a></header>
+    <div class="profile-wrap">
+      <section class="profile-intro"><p>MY PROFILE</p><h1>我的</h1><span>管理个人称呼、会员信息和账号安全。</span></section>
+
+      <section class="profile-card guest-card" id="guestCard" hidden>
+        <div class="guest-icon">人</div><h2>还没有登录账号</h2>
+        <p>体验版可以直接使用虚拟班级；登录会员账号后，可设置自己的主页称呼并查看会员状态。</p>
+        <a class="profile-button primary" href="account.html">登录或注册</a>
+      </section>
+
+      <div class="profile-grid" id="profileContent" hidden>
+        <section class="profile-card identity-card">
+          <div class="identity-head"><div class="profile-avatar" id="profileAvatar">师</div><div><p>当前账号</p><h2 id="profileDisplayHeading">老师</h2><span id="profileUsername">—</span></div></div>
+          <div class="profile-meta">
+            <div><span>会员类型</span><strong id="profilePlan">—</strong></div>
+            <div><span>会员状态</span><strong id="profileStatus">—</strong></div>
+            <div><span>有效期至</span><strong id="profileExpiry">—</strong></div>
+            <div><span>最近登录</span><strong id="profileLastLogin">—</strong></div>
+          </div>
+          <div class="profile-actions"><a class="profile-button secondary" href="account.html?change=1">修改登录密码</a><button class="profile-button quiet" id="profileLogout" type="button">退出账号</button></div>
+        </section>
+
+        <section class="profile-card edit-card">
+          <div class="card-heading"><p>主页称呼</p><h2>让工作台叫出你的名字</h2><span>这里填写的称呼会显示在今日首页，例如“晚上好，王老师”。</span></div>
+          <form id="profileForm">
+            <label><span>你的称呼</span><input id="displayNameInput" name="displayName" maxlength="24" placeholder="例如：王老师" autocomplete="name"><small>最多24个字；留空时会根据登录用户名显示。</small></label>
+            <div class="greeting-preview"><small>首页预览</small><strong id="greetingPreview">你好，老师</strong></div>
+            <button class="profile-button primary" type="submit">保存个人信息</button>
+          </form>
+          <div class="data-note"><b>数据说明</b><p>账号称呼和会员状态会随账号保存；学生、座位、作业和学情仍保存在当前电脑，不会因此自动云同步。</p></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="profile-toast" id="profileToast" role="status" aria-live="polite"></div>
+<script type="module" src="profile.js"></script>
+</body>
+</html>

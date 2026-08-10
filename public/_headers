@@ -13,6 +13,12 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
 
+/teacher-workspace/profile.html
+  Cache-Control: no-store, max-age=0
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
 /teacher-workspace/terms.html
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
