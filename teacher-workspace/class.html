@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>班级 · 上节好课教师工作台</title>
+<style>
+:root{
+  --green:#1a8050; --green-d:#146a41; --green-l:#eaf4ee; --green-l2:#f4faf6;
+  --cream:#faf8f2; --page:#fbfaf7; --card:#fff;
+  --line:#ecebe5; --line-2:#f3f2ec;
+  --text:#23262a; --text-2:#666d75; --text-3:#9aa0a7;
+  --red:#df4d43; --red-l:#fdedeb;
+  --amber:#e0a020; --amber-l:#fdf6e6;
+  --blue:#4a86d6; --blue-l:#edf3fc;
+  --purple:#8e6fc4; --purple-l:#f3eefb;
+  --orange:#e8833a; --orange-l:#fdf1e7;
+  --sh-1:0 1px 2px rgba(35,38,42,.04);
+  --sh-2:0 2px 10px rgba(35,38,42,.07);
+  --sh-3:0 8px 28px -8px rgba(35,38,42,.16);
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--page);color:var(--text);
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;padding:0}
+input{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+::selection{background:var(--green);color:#fff}
+.app{display:flex;min-height:100vh}
+
+/* 一级栏 */
+.side{width:196px;flex:none;background:var(--cream);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:0 14px 18px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;padding:20px 6px 24px}
+.brand .bt{font-size:17px;font-weight:700;letter-spacing:.5px;line-height:1.15}
+.brand .bs{font-size:10.5px;letter-spacing:.32em;color:var(--text-3);margin-top:3px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:11px;color:#4c545c;font-size:15px;transition:.2s var(--ease)}
+.nav a:hover{background:#f1eee4;color:var(--text)}
+.nav a.on{background:var(--green);color:#fff;font-weight:600;box-shadow:0 4px 12px -3px rgba(26,128,80,.42)}
+.side .grow{flex:1}
+/* 顶栏 */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:76px;flex:none;display:flex;align-items:center;gap:14px;padding:0 26px;background:#fff;border-bottom:1px solid var(--line)}
+.top h1{margin:0;font-size:25px;font-weight:700;letter-spacing:-.02em}
+.top .grow{flex:1}
+.date{display:flex;align-items:center;gap:8px;color:var(--text-2);font-size:14px}
+.picker{display:flex;align-items:center;gap:8px;height:38px;padding:0 13px;border:1px solid var(--line);border-radius:10px;font-size:14px;transition:.18s var(--ease)}
+.picker:hover{border-color:#dcdad2;background:#fcfbf8}
+.search{display:flex;align-items:center;gap:9px;height:38px;width:230px;padding:0 13px;border:1px solid var(--line);border-radius:10px;color:var(--text-3);transition:.2s var(--ease)}
+.search:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,128,80,.1)}
+.search input{border:none;outline:none;background:none;flex:1;font-size:14px}
+.search input::placeholder{color:var(--text-3)}
+/* 布局 */
+.body{padding:20px 24px 34px}
+.pane{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh-1);margin-bottom:16px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 396px;gap:16px;align-items:start}
+
+/* 概览条 */
+.ov{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.ovc{display:flex;align-items:center;gap:10px;padding:11px 15px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--sh-1);transition:.2s var(--ease);cursor:pointer}
+.ovc:hover{transform:translateY(-2px);box-shadow:var(--sh-2);border-color:#dfddd4}
+.ovc .n{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ovc .l{font-size:13px;color:var(--text-2)}
+.ovtools{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;flex:1;min-width:620px}
+.ovtools .seg{flex:none}
+.ovtools .sel{min-width:142px}
+.ovtools .tbtn{white-space:nowrap;flex:none}
+.tbtn.hw{border-color:#efd5ae;color:#a86713;background:#fff8eb}
+.tbtn.hw:hover{border-color:#e2bd83;color:#8c570f;background:#fdf2df}
+
+/* pane 头 */
+.ph{display:flex;align-items:center;gap:11px;padding:15px 18px 13px;border-bottom:1px solid var(--line-2)}
+.ph .ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:none}
+.ph h2{margin:0;font-size:16.5px;font-weight:680}
+.ph .grow{flex:1}
+.ph .sub{font-size:12.8px;color:var(--text-3)}
+
+.seg{display:flex;gap:2px;background:#f2f1ea;padding:3px;border-radius:10px}
+.seg button{padding:5px 13px;border-radius:8px;font-size:13.5px;color:var(--text-2);transition:.18s var(--ease)}
+.seg button.on{background:#fff;color:var(--text);font-weight:600;box-shadow:var(--sh-1)}
+.tbtn{display:flex;align-items:center;gap:6px;height:34px;padding:0 12px;border:1px solid var(--line);border-radius:9px;
+  font-size:13.5px;color:var(--text-2);transition:.18s var(--ease)}
+.tbtn:hover{border-color:#dcdad2;color:var(--text);background:#fcfbf8}
+.tbtn.g{background:var(--green);border-color:var(--green);color:#fff;font-weight:600;box-shadow:0 3px 10px -3px rgba(26,128,80,.5)}
+.tbtn.g:hover{background:var(--green-d)}
+.sel{height:34px;padding:0 11px;border:1px solid var(--line);border-radius:9px;font-size:13.5px;color:var(--text-2);background:#fff}
+
+/* ===== 座位表 ===== */
+.mapwrap{padding:18px 18px 8px;overflow:hidden}
+.podium{margin:0 auto 20px;width:230px;height:38px;border-radius:9px;background:#f4f3ec;border:1px dashed #ddd9cd;
+  display:grid;place-items:center;font-size:13px;color:var(--text-3);letter-spacing:.3em}
+.deskrow{width:100%;display:grid;grid-template-columns:repeat(var(--desk-count),minmax(0,1fr));
+  align-items:stretch;gap:clamp(10px,1.6vw,24px);margin-bottom:11px}
+.desk{min-width:0;display:grid;grid-template-columns:repeat(var(--seats-per-desk),minmax(0,1fr));gap:8px}
+.seat{width:100%;min-width:0;max-width:112px;height:60px;justify-self:center;border-radius:11px;border:1px solid var(--line);background:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  transition:transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease), background .2s var(--ease);
+  position:relative;overflow:hidden}
+.seat:hover{transform:translateY(-2px);box-shadow:var(--sh-2);border-color:#d7d4c9;z-index:2}
+.seat .nm{font-size:14.5px;font-weight:560;letter-spacing:.02em}
+.seat .no{font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums}
+.seat .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.seat.empty{background:#fbfaf6;border-style:dashed;color:var(--text-3);cursor:default}
+.seat.empty:hover{transform:none;box-shadow:none}
+.seat.empty .nm{font-size:12.5px;font-weight:400;color:#c3c6c0}
+.seat .flag{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%}
+/* 打点模式 */
+.mark .seat:not(.empty){cursor:crosshair}
+.mark .seat.hit{background:var(--red-l);border-color:#f2c2bc}
+.mark .seat.hit .nm{color:var(--red)}
+.mark .seat.hit::after{content:"✕";position:absolute;right:8px;bottom:5px;font-size:12px;color:var(--red);font-weight:700}
+.mark.mode-mastered .seat.hit{background:var(--green-l);border-color:#b9dec8}
+.mark.mode-mastered .seat.hit .nm{color:var(--green-d)}
+.mark.mode-mastered .seat.hit::after{content:"✓";color:var(--green);font-size:14px}
+.homework-mode .seat:not(.empty){cursor:pointer}
+.homework-mode .seat.hw-completed{background:var(--green-l2);border-color:#c9e2d2}
+.homework-mode .seat.hw-partial{background:var(--amber-l);border-color:#efd9ab}
+.homework-mode .seat.hw-incomplete{background:var(--red-l);border-color:#efc2bd}
+.homework-mode .seat .hw-badge{position:absolute;right:6px;bottom:4px;padding:0 5px;border-radius:5px;font-size:9px;font-weight:600}
+.homework-mode .seat.hw-completed .hw-badge{color:var(--green-d);background:#d9eee1}
+.homework-mode .seat.hw-partial .hw-badge{color:#a86a10;background:#f7e8c5}
+.homework-mode .seat.hw-incomplete .hw-badge{color:var(--red);background:#f7d8d4}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:12px 18px 16px;border-top:1px solid var(--line-2);
+  font-size:12.5px;color:var(--text-2);align-items:center}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:-1px}
+
+/* 打点条 */
+.markbar{display:none;align-items:center;gap:12px;margin:0 18px 4px;padding:12px 15px;border-radius:11px;
+  background:linear-gradient(100deg,#fdf3e5,#fefaf3);border:1px solid #f2e0c4}
+.markbar.on{display:flex}
+.markbar .t{flex:1;font-size:14px}
+.markbar .t b{color:#b5761a}
+.markbar .cnt{font-size:13px;color:var(--red);font-weight:600}
+.homeworkbar{display:none;align-items:center;flex-wrap:wrap;gap:8px;margin:0 18px 4px;padding:12px 15px;border-radius:11px;
+  background:linear-gradient(100deg,#edf7f1,#f7fbf8);border:1px solid #cfe6d7}
+.homeworkbar.on{display:flex}
+.homeworkbar .t{font-size:14px;font-weight:600;color:var(--green-d)}
+.homeworkbar input,.homeworkbar select{height:34px;min-width:116px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--text)}
+.homeworkbar .title-input{flex:1;min-width:170px}
+.homeworkbar .hw-counts{color:var(--text-2);font-size:12.5px;white-space:nowrap}
+
+/* ===== 卡片墙 ===== */
+.wall{display:none;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:11px;padding:18px}
+.wall.on{display:grid}
+.sc{border:1px solid var(--line);border-radius:12px;padding:13px 10px;display:flex;flex-direction:column;
+  align-items:center;gap:7px;transition:.2s var(--ease);background:#fff;position:relative}
+.sc:hover{transform:translateY(-3px);box-shadow:var(--sh-2);border-color:#d7d4c9}
+.sc .av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:16px;font-weight:600}
+.sc .nm{font-size:14.5px;font-weight:560}
+.sc .st{font-size:11.5px;color:var(--text-3)}
+.sc .flag{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:50%}
+
+/* ===== 名单 ===== */
+.list{display:none;padding:0 0 6px}
+.list.on{display:block}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:12.5px;font-weight:500;color:var(--text-3);text-align:left;padding:10px 14px;background:#fbfaf7;border-bottom:1px solid var(--line-2)}
+.tbl th:first-child{padding-left:18px}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--line-2);font-size:14px}
+.tbl td:first-child{padding-left:18px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{transition:background .16s var(--ease);cursor:pointer}
+.tbl tbody tr:hover{background:#fbfaf7}
+
+/* 通用 chip */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:3px 9px;border-radius:8px;
+  background:#f4f3ee;color:var(--text-2);white-space:nowrap}
+.chip.r{background:var(--red-l);color:var(--red)}
+.chip.a{background:var(--amber-l);color:#b5761a}
+.chip.g{background:var(--green-l);color:var(--green-d)}
+.chip.b{background:#f4f3ee;color:var(--text-2)}
+
+/* 盲区 */
+.blind{padding:6px 12px 14px}
+.br{display:flex;align-items:center;gap:12px;padding:12px 10px;border-radius:11px;transition:background .16s var(--ease);cursor:pointer}
+.br:hover{background:#fbfaf7}
+.br+.br{box-shadow:0 -1px 0 var(--line-2)}
+.br .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:13.5px;font-weight:600;flex:none}
+.br .bd{flex:1;min-width:0}
+.br .bd b{font-size:14.5px;font-weight:560}
+.br .bd i{display:block;font-style:normal;font-size:12.5px;color:var(--text-3);margin-top:2px}
+.br .days{font-size:13.5px;font-weight:600;color:var(--amber);flex:none;font-variant-numeric:tabular-nums}
+.br .days.long{color:var(--red)}
+.br .act{height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;color:var(--text-2);flex:none;transition:.16s var(--ease)}
+.br .act:hover{border-color:var(--green);color:var(--green)}
+.blindnote{margin:0 18px 16px;padding:11px 13px;background:#fbfaf7;border:1px solid var(--line);border-radius:10px;
+  font-size:12.8px;color:var(--text-2);line-height:1.6}
+
+/* 右栏 */
+.rp{position:sticky;top:20px}
+.compose{padding:14px 16px 12px}
+.compose .box{border:1px solid var(--line);border-radius:11px;transition:.2s var(--ease)}
+.compose .box:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,128,80,.1)}
+.compose textarea{width:100%;border:none;outline:none;resize:none;background:none;padding:13px 14px 4px;font-size:15px;min-height:60px;line-height:1.6}
+.compose textarea::placeholder{color:#b2b7bc}
+.compose .bar{display:flex;align-items:center;gap:8px;padding:6px 10px 9px 12px}
+.msel{display:flex;align-items:center;gap:6px;height:31px;padding:0 10px;border-radius:8px;border:1px solid var(--line);
+  font-size:13px;color:var(--text-2);transition:.16s var(--ease)}
+.msel:hover{border-color:#dcdad2;color:var(--text)}
+.mai{margin-left:auto;height:32px;padding:0 15px;border-radius:8px;background:var(--green);color:#fff;font-size:13.5px;
+  font-weight:600;box-shadow:0 3px 10px -3px rgba(26,128,80,.5);transition:.18s var(--ease)}
+.mai:hover{background:var(--green-d)}
+.mai.off{opacity:.4;pointer-events:none;box-shadow:none}
+
+.filters{display:flex;gap:6px;padding:2px 16px 10px;flex-wrap:wrap}
+.f{height:28px;padding:0 11px;border-radius:8px;font-size:12.8px;color:var(--text-2);background:#f4f3ee;transition:.16s var(--ease)}
+.f:hover{background:#eae8e0}
+.f.on{background:var(--green-l);color:var(--green-d);font-weight:600}
+.feed{padding:0 12px 14px;max-height:520px;overflow:auto}
+.feed::-webkit-scrollbar{width:6px}
+.feed::-webkit-scrollbar-thumb{background:#e6e4dc;border-radius:3px}
+.fi{display:flex;gap:11px;padding:11px 8px;border-radius:11px;transition:background .16s var(--ease);cursor:pointer}
+.fi:hover{background:#fbfaf7}
+.fi .sq{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center}
+.fi .bd{flex:1;min-width:0}
+.fi .bd .t{font-size:14.3px;line-height:1.5}
+.fi .bd .s{margin-top:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:12.3px;color:var(--text-3)}
+.fi .tm{font-size:12px;color:var(--text-3);flex:none;white-space:nowrap;padding-top:2px}
+
+/* 面板 */
+.scrim{position:fixed;inset:0;background:rgba(28,30,32,.3);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:.3s var(--ease);z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;top:14px;right:14px;bottom:14px;width:min(452px,calc(100vw - 28px));background:#fff;border-radius:16px;
+  box-shadow:var(--sh-3);z-index:41;display:flex;flex-direction:column;transform:translateX(calc(100% + 24px));transition:transform .42s var(--ease)}
+.sheet.on{transform:none}
+.sheet header{display:flex;align-items:center;gap:12px;padding:20px 22px 14px}
+.sheet header .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:16px;font-weight:600;flex:none}
+.sheet header h3{margin:0;font-size:18px;font-weight:660;flex:1}
+.sheet header h3 small{display:block;font-size:12.5px;font-weight:400;color:var(--text-3);margin-top:2px}
+.sheet .sb{flex:1;overflow:auto;padding:0 22px 22px}
+.sheet .sb::-webkit-scrollbar{width:7px}
+.sheet .sb::-webkit-scrollbar-thumb{background:#e6e4dc;border-radius:4px}
+.hw-hist-scrim{position:fixed;inset:0;background:rgba(28,30,32,.3);backdrop-filter:blur(2px);opacity:0;pointer-events:none;
+  transition:.3s var(--ease);z-index:50}
+.hw-hist-scrim.on{opacity:1;pointer-events:auto}
+.hw-hist-drawer{position:fixed;top:14px;right:14px;bottom:14px;width:min(780px,calc(100vw - 28px));background:#fff;border-radius:16px;
+  box-shadow:var(--sh-3);z-index:51;display:flex;flex-direction:column;transform:translateX(calc(100% + 24px));transition:transform .42s var(--ease);overflow:hidden}
+.hw-hist-drawer.on{transform:none}
+.hw-hist-head{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.hw-hist-head .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:#a86713;background:#fff4df;font-size:18px}
+.hw-hist-head h2{margin:0;font-size:18px}.hw-hist-head p{margin:1px 0 0;color:var(--text-3);font-size:12.5px}.hw-hist-head .grow{flex:1}
+.hw-hist-body{min-height:0;flex:1;display:grid;grid-template-columns:290px minmax(0,1fr)}
+.hw-hist-side{min-width:0;padding:14px;border-right:1px solid var(--line);background:#fbfaf7;overflow:auto}
+.hw-hist-search{width:100%;height:36px;border:1px solid var(--line);border-radius:9px;padding:0 10px;background:#fff;outline:none}
+.hw-hist-search:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,128,80,.1)}
+.hw-hist-list{display:grid;gap:8px;margin-top:11px}
+.hw-hist-item{width:100%;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff;text-align:left;transition:.16s var(--ease)}
+.hw-hist-item:hover{border-color:#d8d4c8;box-shadow:var(--sh-1)}.hw-hist-item.on{border-color:#9fcdb1;background:var(--green-l2)}
+.hw-hist-item span{display:block;color:var(--text-3);font-size:11.5px}.hw-hist-item b{display:block;margin:2px 0;font-size:14px}
+.hw-hist-item small{color:var(--text-2);font-size:11.5px}
+.hw-hist-detail{min-width:0;padding:18px 20px;overflow:auto}
+.hw-detail-top{display:flex;align-items:flex-start;gap:12px}.hw-detail-top h3{margin:0;font-size:18px}.hw-detail-top p{margin:3px 0 0;color:var(--text-3);font-size:12.5px}
+.hw-detail-top .grow{flex:1}.hw-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
+.hw-detail-top .tbtn.danger{color:var(--red);border-color:#efc2bd;background:var(--red-l)}
+.hw-delete-confirm{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;padding:12px 14px;border:1px solid #efc2bd;border-radius:10px;background:var(--red-l)}
+.hw-delete-confirm .msg{flex:1;min-width:240px}.hw-delete-confirm b{display:block;color:#a8322b}.hw-delete-confirm span{display:block;margin-top:2px;color:var(--text-2);font-size:11.5px}
+.hw-delete-confirm button{height:32px;padding:0 11px;border-radius:8px;background:#fff;border:1px solid var(--line);font-size:12px}
+.hw-delete-confirm .confirm{color:#fff;background:var(--red);border-color:var(--red)}
+.hw-summary button{padding:11px 8px;border:1px solid var(--line);border-radius:10px;background:#fbfaf7;text-align:center}
+.hw-summary button.on{border-color:#a7cfb6;background:var(--green-l2)}.hw-summary b{display:block;font-size:19px}.hw-summary span{font-size:11.5px;color:var(--text-2)}
+.hw-summary .partial b{color:#b5761a}.hw-summary .incomplete b{color:var(--red)}
+.hw-students{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hw-student-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 10px;border:1px solid var(--line);border-radius:10px}
+.hw-student-row .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--green-d);background:var(--green-l);font-size:12px;font-weight:600}
+.hw-student-row b{flex:1;font-size:13.5px}.hw-student-row small{padding:2px 6px;border-radius:6px;font-size:10.5px}
+.hw-student-row.completed small{color:var(--green-d);background:var(--green-l)}.hw-student-row.partial small{color:#a86713;background:var(--amber-l)}
+.hw-student-row.incomplete small{color:var(--red);background:var(--red-l)}
+.hw-student-row .hw-entry-action{height:27px;padding:0 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--text-2);font-size:11.5px}
+.hw-student-row.partial .hw-entry-action,.hw-student-row.incomplete .hw-entry-action{border-color:#a7cfb6;color:var(--green-d);background:var(--green-l2);font-weight:600}
+.hw-makeup-meta{flex-basis:100%;padding-left:39px;color:var(--text-3);font-size:11.5px;line-height:1.5}
+.hw-entry-form{flex-basis:100%;display:grid;grid-template-columns:120px minmax(150px,1fr);gap:8px;padding:10px;margin-top:2px;border-radius:9px;background:#fbfaf7;border:1px solid var(--line-2)}
+.hw-entry-form label{display:grid;gap:3px;color:var(--text-3);font-size:10.5px}
+.hw-entry-form select,.hw-entry-form input{width:100%;height:32px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 8px;font:inherit;font-size:12.5px;outline:none}
+.hw-entry-form .hw-note{grid-column:1/-1}.hw-entry-form .hw-form-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:7px}
+.hw-entry-form .hw-form-actions button{height:30px;padding:0 11px;border-radius:7px;background:#eeece6;color:var(--text-2);font-size:12px}
+.hw-entry-form .hw-form-actions .confirm{background:var(--green);color:#fff}
+.hw-hist-empty{min-height:260px;display:grid;place-content:center;justify-items:center;color:var(--text-3);text-align:center}.hw-hist-empty b{color:var(--text-2)}
+.stabs{display:flex;gap:3px;padding:0 22px;border-bottom:1px solid var(--line-2)}
+.stab{padding:9px 12px;font-size:13.5px;color:var(--text-2);border-bottom:2px solid transparent;transition:.18s var(--ease)}
+.stab.on{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+.frow{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2);font-size:14px}
+.frow .k{color:var(--text-3);width:76px;flex:none}
+.frow .v{flex:1}
+.pnl{background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.pnl .pt{font-size:11.5px;font-weight:600;color:var(--text-3);letter-spacing:.07em;margin-bottom:10px}
+.tl{padding-left:18px;border-left:2px solid var(--line);margin:2px 0 2px 4px}
+.tl .n{position:relative;padding-bottom:13px}
+.tl .n::before{content:"";position:absolute;left:-24px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--green);border:2.5px solid #fff}
+.tl .n b{font-size:13.5px}
+.tl .n p{margin:2px 0 0;font-size:12.5px;color:var(--text-2);line-height:1.55}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.act2{height:36px;padding:0 15px;border-radius:10px;background:#f4f3ee;font-size:13.8px;font-weight:500;transition:.18s var(--ease)}
+.act2:hover{background:#eae8e0}
+.act2.pri{background:var(--green);color:#fff;box-shadow:0 3px 10px -3px rgba(26,128,80,.5)}
+.act2.pri:hover{background:var(--green-d)}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);background:#23262a;color:#fff;font-size:13.5px;
+  padding:10px 18px;border-radius:11px;box-shadow:var(--sh-3);opacity:0;pointer-events:none;transition:.3s var(--ease);z-index:60}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1500px){.ovtools{min-width:100%;justify-content:flex-start}}
+@media(max-width:1240px){.cols{grid-template-columns:1fr}.rp{position:static}}
+@media(max-width:760px){.ovtools{align-items:stretch}.ovtools .seg{width:100%}.ovtools .seg button{flex:1}.ph{flex-wrap:wrap}.ph .grow{display:none}
+  .hw-hist-body{grid-template-columns:1fr}.hw-hist-side{max-height:240px;border-right:0;border-bottom:1px solid var(--line)}.hw-students{grid-template-columns:1fr}}
+</style>
+<link rel="stylesheet" href="workspace-shell.css">
+<script src="access-control.js?v=20260807"></script>
+<script type="module" src="workspace-shell.js"></script>
+</head>
+<body>
+<div class="app">
+
+<aside class="side">
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+      <path d="M33 7C33 7 12 5 8 18c-3.4 11 6 17 6 17s2-13 9.5-19C17 22 15 33 15 33s16 1 18-14c.6-4.6 0-12 0-12Z" fill="#1e9455"/>
+      <path d="M14 35s1.6-13 9.6-19.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <div><div class="bt">上节好课</div><div class="bs">教师工作台</div></div>
+  </div>
+  <nav class="nav">
+    <a href="today.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10.4 9-7 9 7"/><path d="M5.5 9.2V20h13V9.2"/><path d="M9.8 20v-5.6h4.4V20"/></svg>今日</a>
+    <a href="tasks.html"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12 2.6 2.6L16.4 9"/></svg>任务</a>
+    <a href="class.html" class="on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M16.6 5.4a3.2 3.2 0 0 1 0 6.2"/><path d="M19.8 19.5a5.6 5.6 0 0 0-2.7-4.8"/></svg>班级</a>
+    <a href="v07/index.html#matrix"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 19V10.5"/><path d="M12 19V5"/><path d="M19 19v-6"/></svg>学情</a>
+  </nav>
+  <div class="grow"></div>
+  <a href="review-export.html" class="navmini">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H13l6 6v8.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 18.5Z"/><path d="M13 4v6h6"/></svg>回顾与导出</a>
+  <button class="kbtn" data-kopen>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+    搜索<span class="kk">⌘K</span>
+  </button>
+</aside>
+
+<div class="main">
+  <header class="top">
+    <div class="title">上节好课 · 教师工作台</div>
+    <div class="grow"></div>
+    <div class="date">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.5h17M8 3v3.6M16 3v3.6"/></svg>
+      <span id="dT">7月27日</span><span id="dW" style="color:var(--text-3)">星期一</span>
+    </div>
+    <button class="picker">四年级1班
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-3)"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+      <input id="q" placeholder="搜索学生、内容、知识点">
+    </div>
+  </header>
+
+  <div class="body">
+
+    <!-- 概览 -->
+    <div class="ov">
+      <div class="ovc"><span class="n" id="ovTotal">0</span><span class="l">在册学生</span></div>
+      <div class="ovc"><span class="n" style="color:var(--green)" id="ovWeek">0</span><span class="l">本周记录</span></div>
+      <div class="ovc"><span class="n" style="color:var(--amber)" id="ovBlind">0</span><span class="l">久未关注</span></div>
+      <div class="ovc"><span class="n" style="color:var(--red)" id="ovRetest">0</span><span class="l">待提升</span></div>
+      <div class="ovtools">
+        <div class="seg" id="viewSeg">
+          <button class="on" data-view="map">座位表</button>
+          <button data-view="wall">卡片墙</button>
+          <button data-view="list">名单</button>
+        </div>
+        <select class="sel" id="colorMode">
+          <option value="focus">着色：关注度</option>
+          <option value="mastery">着色：本单元掌握</option>
+        </select>
+        <a class="tbtn" href="v07/index.html?view=class&amp;focus=students#class">导入学生</a>
+        <a class="tbtn" href="v07/index.html?view=class&amp;focus=seats#class">编辑座位</a>
+      </div>
+    </div>
+
+    <div class="cols">
+      <!-- ================= 左：学生 ================= -->
+      <div>
+        <section class="pane">
+          <div class="ph">
+            <span class="ic" style="background:var(--green-l);color:var(--green)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M16.6 5.4a3.2 3.2 0 0 1 0 6.2"/></svg>
+            </span>
+            <h2>学生</h2>
+            <span class="sub" id="viewSub">0 个座位 · 0 人</span>
+            <span class="grow"></span>
+            <button class="tbtn" id="openHomeworkHistory">作业记录</button>
+            <button class="tbtn hw" id="openHomework">登记作业</button>
+            <button class="tbtn g" id="markBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4"/><circle cx="12" cy="12" r="3.4"/></svg>
+              <span id="markBtnLabel">课堂快速打点</span>
+            </button>
+          </div>
+
+          <!-- 打点条 -->
+          <div class="markbar" id="markBar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b5761a" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.6v5M12 16.2h.01"/></svg>
+            <span class="t">正在打点：<b id="mkKp">请选择知识点</b> —— <span id="mkInstruction">点击还没掌握的学生姓名，其余默认已掌握</span></span>
+            <select class="sel" id="mkSel"></select>
+            <select class="sel" id="mkMode" aria-label="课堂打点方式">
+              <option value="support">点还没掌握的</option>
+              <option value="mastered">点已经掌握的</option>
+            </select>
+            <span class="cnt" id="mkCnt">已选 0 人</span>
+            <button class="tbtn" id="mkCancel">取消</button>
+            <button class="tbtn g" id="mkDone">完成打点</button>
+          </div>
+
+          <!-- 作业登记条 -->
+          <div class="homeworkbar" id="homeworkBar">
+            <span class="t">登记作业</span>
+            <input type="date" id="hwDate" aria-label="作业日期">
+            <input type="text" class="title-input" id="hwTitle" placeholder="作业名称">
+            <span class="hw-counts" id="hwCounts">已完成 0 · 部分完成 0 · 未完成 0</span>
+            <button class="tbtn" type="button" id="hwCancel">取消</button>
+            <button class="tbtn g" type="button" id="hwSave">完成登记</button>
+          </div>
+
+          <!-- 座位表 -->
+          <div class="mapwrap" id="mapWrap">
+            <div class="podium">讲　台</div>
+            <div id="seatMap"></div>
+          </div>
+
+          <!-- 卡片墙 -->
+          <div class="wall" id="wall"></div>
+
+          <!-- 名单 -->
+          <div class="list" id="list">
+            <table class="tbl">
+              <thead><tr><th>学号</th><th>姓名</th><th>座位</th><th>本单元掌握</th><th>最近评价</th><th>最近记录</th></tr></thead>
+              <tbody id="listBody"></tbody>
+            </table>
+          </div>
+
+          <div class="legend" id="legend"></div>
+        </section>
+
+        <!-- 关注度盲区 -->
+        <section class="pane">
+          <div class="ph">
+            <span class="ic" style="background:var(--amber-l);color:var(--amber)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.6-6.5 9.5-6.5S21.5 12 21.5 12s-3.6 6.5-9.5 6.5S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/><path d="m4 20 16-16"/></svg>
+            </span>
+            <h2>你有一阵没关注他们了</h2>
+            <span class="grow"></span>
+            <span class="sub">按最后一次记录排序</span>
+          </div>
+          <div class="blind" id="blind"></div>
+          <div class="blindnote">
+            这里统计的是<b>最后一次单独记录或评价</b>的时间 —— 既包括班级事务里的表扬和提醒，也包括作业分析产生的知识状态证据。
+            不吵不闹、作业按时交、也没出过错的学生最容易掉进这里。这不是问题清单，只是提醒你看一眼。
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ================= 右 ================= -->
+      <div class="rp">
+        <section class="pane">
+          <div class="ph">
+            <span class="ic" style="background:var(--green-l);color:var(--green)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M7.5 9h9M7.5 13h6"/></svg>
+            </span>
+            <h2>班级动态</h2>
+            <span class="grow"></span>
+            <button class="tbtn" id="showAllNotes" style="height:30px;padding:0 10px">全部记录</button>
+          </div>
+
+          <div class="compose">
+            <div class="box">
+              <textarea id="ci" rows="2" placeholder="今天班里发生了什么？@学生 可以关联到个人档案"></textarea>
+              <div class="bar">
+                <select class="msel" id="noteCategory" aria-label="记录类型">
+                  <option>活动</option><option>表扬</option><option>提醒</option><option>沟通</option><option>通知</option>
+                </select>
+                <select class="msel" id="noteStudentSelect" aria-label="关联学生">
+                  <option value="">关联学生</option>
+                </select>
+                <button class="mai off" id="cGo">记下来</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="filters" id="filters">
+            <button class="f on" data-f="all">全部</button>
+            <button class="f" data-f="表扬">表扬</button>
+            <button class="f" data-f="提醒">提醒</button>
+            <button class="f" data-f="活动">活动</button>
+            <button class="f" data-f="沟通">沟通</button>
+            <button class="f" data-f="通知">通知</button>
+          </div>
+
+          <div class="feed" id="feed"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet">
+  <header>
+    <span class="av" id="shAv">张</span>
+    <h3 id="shT">学生<small id="shS"></small></h3>
+    <button class="tbtn" id="shX" style="width:34px;padding:0;justify-content:center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </header>
+  <div class="stabs" id="stabs">
+    <button class="stab on" data-t="0">概览</button>
+    <button class="stab" data-t="1">班级经历</button>
+    <button class="stab" data-t="2">知识清单</button>
+    <button class="stab" data-t="3">个性化提升</button>
+  </div>
+  <div class="sb" id="shB"></div>
+</aside>
+<div class="hw-hist-scrim" id="hwHistoryScrim"></div>
+<aside class="hw-hist-drawer" id="hwHistoryDrawer" aria-label="作业记录">
+  <div class="hw-hist-head">
+    <span class="ic" aria-hidden="true">▣</span>
+    <div><h2>作业记录</h2><p>完成情况只作登记，不直接改变知识掌握判断</p></div>
+    <span class="grow"></span>
+    <button class="tbtn" id="closeHomeworkHistory" type="button" aria-label="关闭作业记录">关闭</button>
+  </div>
+  <div class="hw-hist-body">
+    <section class="hw-hist-side">
+      <input class="hw-hist-search" id="homeworkHistorySearch" type="search" placeholder="搜索作业或学生">
+      <div class="hw-hist-list" id="homeworkHistoryList"></div>
+    </section>
+    <section class="hw-hist-detail" id="homeworkHistoryDetail"></section>
+  </div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)},$$=function(s){return[].slice.call(document.querySelectorAll(s))};
+var tmr;function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tmr);tmr=setTimeout(function(){t.classList.remove('on')},2200)}
+function esc(s){return s.replace(/[<>&]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;'}[c]})}
+function escAttr(s){return String(s==null?'':s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]})}
+(function(){var d=new Date();$('#dT').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日';
+ $('#dW').textContent=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()]})();
+
+/* ============ 数据 ============ */
+var PAL=['#e7a15c','#7aa5dd','#8bbf94','#c99ad0','#e08c8c','#7fbfb0','#d3a86a','#9aa8d8','#84c0a4','#dba0b4'];
+var STU=[];
+
+var MASLBL={m:'已掌握',d:'基本掌握',n:'待提升',u:'未评价'};
+var MASCLR={m:'#3aa96b',d:'#e0a020',n:'#df4d43',u:'#d2d6d0'};
+function focusClr(d){return d==null?'#df4d43':d<=7?'#3aa96b':d<=14?'#e0a020':'#df4d43'}
+function attentionDays(student){return student.last==null?Infinity:student.last}
+function attentionText(student){return student.last==null?'从未记录':student.last+' 天前'}
+
+/* 与学情页共用同一份本机数据 */
+var CLASS_DB=null,CLASS_ACTIVE_ID='class-local',CLASS_KPS=[],CLASS_JUDGEMENTS=[],CLASS_HOMEWORKS=[],CLASS_HOMEWORK_ENTRIES=[],CLASS_FOLLOWUP_TASKS=[],CLASS_NOTES=[],HOMEWORK_STATUSES={};
+var SELECTED_HOMEWORK_ID='',HOMEWORK_HISTORY_STATUS='all',EDITING_HOMEWORK_ENTRY_ID='',DELETING_HOMEWORK_ID='';
+var CLASS_STORES=['meta','classes','students','kps','judgements','questionSets','questionSetUses','reasonTemplates','homeworks','homeworkEntries','followupTasks','notes'];
+function openClassDb(){
+  return new Promise(function(resolve,reject){
+    var dbName=window.TeacherWorkspaceAccess?window.TeacherWorkspaceAccess.databaseName:'shangjiehaoke-teacher-workspace-v07';
+    var req=indexedDB.open(dbName,5);
+    req.onupgradeneeded=function(){
+      var db=req.result;
+      CLASS_STORES.forEach(function(name){
+        if(!db.objectStoreNames.contains(name))db.createObjectStore(name,{keyPath:'id'});
+      });
+    };
+    req.onsuccess=function(){resolve(req.result)};
+    req.onerror=function(){reject(req.error)};
+  });
+}
+function classDbAll(store){
+  return new Promise(function(resolve,reject){
+    var req=CLASS_DB.transaction(store,'readonly').objectStore(store).getAll();
+    req.onsuccess=function(){resolve(req.result)};
+    req.onerror=function(){reject(req.error)};
+  });
+}
+function classDbPut(store,value){
+  return new Promise(function(resolve,reject){
+    var req=CLASS_DB.transaction(store,'readwrite').objectStore(store).put(value);
+    req.onsuccess=function(){resolve(value)};
+    req.onerror=function(){reject(req.error)};
+  });
+}
+function classDbDelete(store,id){
+  return new Promise(function(resolve,reject){
+    var req=CLASS_DB.transaction(store,'readwrite').objectStore(store).delete(id);
+    req.onsuccess=resolve;
+    req.onerror=function(){reject(req.error)};
+  });
+}
+function selectedClassKp(){
+  if(!CLASS_KPS.length)return null;
+  return CLASS_KPS.find(function(kp){return kp.id===$('#mkSel').value})||CLASS_KPS[0];
+}
+function applyCurrentKpStatus(){
+  var kp=selectedClassKp();if(!kp)return;
+  STU.forEach(function(st){
+    var latest=CLASS_JUDGEMENTS.filter(function(j){return j.studentId===st.dbId&&j.kpId===kp.id})
+      .sort(function(a,b){return b.judgedAt-a.judgedAt})[0];
+    st.mas=!latest||latest.status==='cleared'?'u':latest.status==='mastered'?'m':'n';
+  });
+  renderMap();renderList();
+}
+function saveClassroomJudgements(mode){
+  var kp=selectedClassKp();
+  if(!CLASS_DB||!kp)return Promise.resolve(0);
+  var timestamp=Date.now();
+  var rows=STU.filter(function(st){return st.dbId}).map(function(st){
+    var selected=hits.has(st.i);
+    return {
+      id:'judgement-'+(crypto.randomUUID?crypto.randomUUID():timestamp+'-'+Math.random().toString(16).slice(2)),
+      classId:CLASS_ACTIVE_ID,
+      studentId:st.dbId,
+      kpId:kp.id,
+      status:mode==='support'?(selected?'needs_support':'mastered'):(selected?'mastered':'needs_support'),
+      note:'',
+      judgedAt:timestamp,
+      sourceType:'classroom_quick'
+    };
+  });
+  return new Promise(function(resolve,reject){
+    var tx=CLASS_DB.transaction('judgements','readwrite'),store=tx.objectStore('judgements');
+    rows.forEach(function(row){store.put(row)});
+    tx.oncomplete=function(){CLASS_JUDGEMENTS=CLASS_JUDGEMENTS.concat(rows);resolve(rows.length)};
+    tx.onerror=function(){reject(tx.error)};
+  });
+}
+function classUid(prefix){
+  return prefix+'-'+(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(16).slice(2));
+}
+function belongsToActiveClass(item){
+  return (item.classId||'class-local')===CLASS_ACTIVE_ID;
+}
+function latestClassJudgements(items){
+  var byPair={};
+  (items||CLASS_JUDGEMENTS).forEach(function(item){
+    var key=item.studentId+'|'+item.kpId,previous=byPair[key];
+    if(!previous||(item.judgedAt||0)>(previous.judgedAt||0))byPair[key]=item;
+  });
+  return Object.keys(byPair).map(function(key){return byPair[key]});
+}
+async function hydrateClassFromDb(){
+  try{
+    if(window.TeacherWorkspaceAccess)await window.TeacherWorkspaceAccess.ready;
+    CLASS_DB=await openClassDb();
+    var data=await Promise.all([classDbAll('students'),classDbAll('kps'),classDbAll('judgements'),classDbAll('meta'),classDbAll('homeworks'),classDbAll('homeworkEntries'),classDbAll('followupTasks'),classDbAll('notes')]);
+    var meta=data[3];
+    CLASS_ACTIVE_ID=(meta.find(function(item){return item.id==='active-class-id'})||{}).value||'class-local';
+    var students=data[0].filter(belongsToActiveClass).sort(function(a,b){return a.sortOrder-b.sortOrder});
+    CLASS_KPS=data[1].filter(function(kp){return belongsToActiveClass(kp)&&!kp.archivedAt}).sort(function(a,b){return a.sortOrder-b.sortOrder});
+    CLASS_JUDGEMENTS=data[2].filter(belongsToActiveClass);
+    CLASS_HOMEWORKS=data[4].sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0)});
+    CLASS_HOMEWORKS=CLASS_HOMEWORKS.filter(belongsToActiveClass);
+    CLASS_HOMEWORK_ENTRIES=data[5].filter(belongsToActiveClass);
+    CLASS_FOLLOWUP_TASKS=data[6].filter(belongsToActiveClass);
+    CLASS_NOTES=data[7].filter(belongsToActiveClass).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0)});
+    STU=students.map(function(student,i){
+      var related=CLASS_NOTES.filter(function(note){return (note.studentIds||[]).indexOf(student.id)>=0})[0];
+      var relatedJudgement=CLASS_JUDGEMENTS.filter(function(item){return item.studentId===student.id}).sort(function(a,b){return (b.judgedAt||0)-(a.judgedAt||0)})[0];
+      var latest=Math.max(related?related.createdAt||0:0,relatedJudgement?relatedJudgement.judgedAt||0:0);
+      var days=latest?Math.max(0,Math.floor((Date.now()-latest)/86400000)):null;
+      return {i:i,no:student.seatNo||i+1,name:student.name,last:days,mas:'u',
+        color:PAL[i%PAL.length],dbId:student.id};
+    });
+    var cfg=(meta.find(function(x){return x.id==='seat-config:'+CLASS_ACTIVE_ID})||meta.find(function(x){return x.id==='seat-config'})||{}).value||{rows:7,desks:3,seatsPerDesk:2};
+    var assignments=(meta.find(function(x){return x.id==='seat-assignments:'+CLASS_ACTIVE_ID})||meta.find(function(x){return x.id==='seat-assignments'})||{}).value||{};
+    var byId={};STU.forEach(function(st){byId[st.dbId]=st});
+    var hasAssignments=Object.keys(assignments).length>0,k=0;
+    SEATS=[];
+    for(var r=0;r<cfg.rows;r++){
+      var row=[];
+      for(var d=0;d<cfg.desks;d++){
+        var desk=[];
+        for(var s=0;s<cfg.seatsPerDesk;s++){
+          var studentId=assignments[r+':'+d+':'+s];
+          desk.push(hasAssignments?(byId[studentId]||null):(STU[k++]||null));
+        }
+        row.push(desk);
+      }
+      SEATS.push(row);
+    }
+    if(CLASS_KPS.length){
+      $('#mkSel').innerHTML=CLASS_KPS.map(function(kp){return '<option value="'+kp.id+'">#'+esc(kp.name)+'</option>'}).join('');
+      var preferred=CLASS_KPS.find(function(kp){return kp.name==='一位数除法竖式'})||CLASS_KPS[0];
+      $('#mkSel').value=preferred.id;$('#mkKp').textContent='#'+preferred.name;
+      $('#markBtn').dataset.noKps='';$('#markBtnLabel').textContent='课堂快速打点';
+      applyCurrentKpStatus();
+    }else{
+      $('#mkSel').innerHTML='<option value="">尚未导入知识点</option>';
+      $('#mkKp').textContent='尚未导入知识点';
+      $('#markBtn').dataset.noKps='true';$('#markBtnLabel').textContent='先导入知识点';
+      renderMap();renderList();
+    }
+    FEED=CLASS_NOTES.map(function(note){
+      var category=note.category||'活动';
+      return {id:note.id,t:note.category||'活动',time:noteTime(note.createdAt),txt:note.body||note.title||'班级记录',
+        sub:(note.studentNames||[]).length?'相关学生：'+note.studentNames.join('、'):'已记入班级时间线',
+        c:note.color||(category==='提醒'?'red':category==='通知'?'blue':category==='沟通'?'purple':category==='表扬'?'amber':'green')};
+    });
+    renderWall();renderBlind();renderFeed('all');
+    $('#noteStudentSelect').innerHTML='<option value="">关联学生</option>'+STU.map(function(student){
+      return '<option value="'+student.i+'">'+esc(student.name)+'</option>';
+    }).join('');
+    $('#ovTotal').textContent=STU.length;
+    $('#ovWeek').textContent=CLASS_JUDGEMENTS.filter(function(item){return (item.judgedAt||0)>=Date.now()-7*86400000}).length;
+    $('#ovRetest').textContent=new Set(latestClassJudgements().filter(function(item){return item.status==='needs_support'}).map(function(item){return item.studentId})).size;
+    $('#viewSub').textContent=(cfg.rows*cfg.desks*cfg.seatsPerDesk)+' 个座位 · '+STU.length+' 人';
+    if(!CLASS_NOTES.length)$('#feed').innerHTML='<div class="hw-hist-empty" style="min-height:180px"><b>还没有班级动态</b><span>从记录这个班级的第一件事开始</span></div>';
+    var requestedHomework=new URLSearchParams(location.search).get('homework');
+    if(requestedHomework&&CLASS_HOMEWORKS.some(function(item){return item.id===requestedHomework})){
+      SELECTED_HOMEWORK_ID=requestedHomework;
+      setTimeout(openHomeworkHistory,0);
+    }
+    var requestedStudent=new URLSearchParams(location.search).get('student');
+    var requestedStudentIndex=STU.findIndex(function(student){return student.dbId===requestedStudent});
+    if(requestedStudentIndex>=0)setTimeout(function(){openStu(requestedStudentIndex)},0);
+  }catch(error){
+    console.warn('班级数据读取失败',error);
+    $('#seatMap').innerHTML='<div class="hw-hist-empty" style="min-height:240px"><b>班级数据暂时无法读取</b><span>请刷新页面；如果仍然失败，请从“回顾与导出”恢复备份</span></div>';
+    toast('班级数据读取失败，请刷新后重试');
+  }
+}
+
+/* ============ 作业登记 ============ */
+function defaultHomeworkTitle(dateValue){
+  var parts=String(dateValue||'').split('-');
+  if(parts.length!==3)return'今日作业';
+  return Number(parts[1])+'月'+Number(parts[2])+'日作业';
+}
+function isDefaultHomeworkTitle(value){
+  return !String(value||'').trim()||/^\d{1,2}月\d{1,2}日作业$/.test(String(value).trim())||String(value).trim()==='今日作业';
+}
+function syncDefaultHomeworkTitle(){
+  if(isDefaultHomeworkTitle($('#hwTitle').value))$('#hwTitle').value=defaultHomeworkTitle($('#hwDate').value);
+}
+function openHomework(){
+  var students=STU.filter(function(st){return st.dbId});
+  if(!CLASS_DB||!students.length){toast('请先在班级中导入学生');return}
+  var access=window.TeacherWorkspaceAccess;
+  if(access&&access.isExperience&&CLASS_HOMEWORKS.length>=access.limits.homeworks){access.requireFeature('unlimitedHomeworks');return}
+  if(marking)endMark();
+  var nowDate=new Date(),localDate=new Date(nowDate.getTime()-nowDate.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  $('#hwDate').value=localDate;$('#hwTitle').value=defaultHomeworkTitle(localDate);
+  HOMEWORK_STATUSES={};students.forEach(function(st){HOMEWORK_STATUSES[st.dbId]='completed'});
+  homeworkMarking=true;
+  $('#homeworkBar').classList.add('on');
+  $('#mapWrap').classList.add('homework-mode');
+  $('#openHomework').style.visibility='hidden';
+  updateHomeworkCounts();renderMap();
+  toast('默认全班已完成；点击姓名切换为部分完成或未完成');
+}
+function updateHomeworkCounts(){
+  var counts={completed:0,partial:0,incomplete:0};
+  STU.filter(function(st){return st.dbId}).forEach(function(st){counts[HOMEWORK_STATUSES[st.dbId]||'completed']++});
+  $('#hwCounts').textContent='已完成 '+counts.completed+' · 部分完成 '+counts.partial+' · 未完成 '+counts.incomplete;
+}
+function cycleHomeworkStatus(student){
+  if(!student||!student.dbId)return;
+  var order=['completed','partial','incomplete'];
+  var current=HOMEWORK_STATUSES[student.dbId]||'completed';
+  HOMEWORK_STATUSES[student.dbId]=order[(order.indexOf(current)+1)%order.length];
+  updateHomeworkCounts();renderMap();
+}
+function endHomework(){
+  homeworkMarking=false;
+  $('#homeworkBar').classList.remove('on');
+  $('#mapWrap').classList.remove('homework-mode');
+  $('#openHomework').style.visibility='';
+  HOMEWORK_STATUSES={};
+  renderMap();
+}
+async function saveHomeworkFromClass(){
+  var students=STU.filter(function(st){return st.dbId});
+  if(!students.length){toast('请先导入学生');return}
+  var access=window.TeacherWorkspaceAccess;
+  if(access&&access.isExperience&&CLASS_HOMEWORKS.length>=access.limits.homeworks){access.requireFeature('unlimitedHomeworks');return}
+  var timestamp=Date.now(),homeworkId=classUid('homework');
+  var homework={id:homeworkId,classId:CLASS_ACTIVE_ID,title:$('#hwTitle').value.trim()||defaultHomeworkTitle($('#hwDate').value),
+    date:$('#hwDate').value||new Date().toISOString().slice(0,10),createdAt:timestamp};
+  var entries=students.map(function(st,index){
+    return {id:classUid('homework-entry'),classId:CLASS_ACTIVE_ID,homeworkId:homeworkId,studentId:st.dbId,
+      outcome:HOMEWORK_STATUSES[st.dbId]||'completed',createdAt:timestamp+index};
+  });
+  var partialEntries=entries.filter(function(entry){return entry.outcome==='partial'});
+  var incompleteEntries=entries.filter(function(entry){return entry.outcome==='incomplete'});
+  var affectedIds=partialEntries.concat(incompleteEntries).map(function(entry){return entry.studentId});
+  var affectedStudents=students.filter(function(st){return affectedIds.indexOf(st.dbId)>=0});
+  var followupTask=affectedStudents.length?{
+    id:'homework-followup-'+homeworkId,
+    type:'homework_followup',
+    classId:CLASS_ACTIVE_ID,
+    homeworkId:homeworkId,
+    title:'跟进：'+homework.title,
+    homeworkTitle:homework.title,
+    homeworkDate:homework.date,
+    kpName:'作业跟进',
+    partialCount:partialEntries.length,
+    incompleteCount:incompleteEntries.length,
+    studentIds:affectedStudents.map(function(st){return st.dbId}),
+    studentNames:affectedStudents.map(function(st){return st.name}),
+    status:'pending',
+    createdAt:timestamp,
+    updatedAt:timestamp
+  }:null;
+  try{
+    await new Promise(function(resolve,reject){
+      var stores=['homeworks','homeworkEntries'];if(followupTask)stores.push('followupTasks');
+      var tx=CLASS_DB.transaction(stores,'readwrite');
+      tx.objectStore('homeworks').put(homework);
+      entries.forEach(function(entry){tx.objectStore('homeworkEntries').put(entry)});
+      if(followupTask)tx.objectStore('followupTasks').put(followupTask);
+      tx.oncomplete=function(){resolve()};tx.onerror=function(){reject(tx.error)};
+    });
+  }catch(error){console.warn('作业登记保存失败',error);toast('保存失败，请刷新后重试');return}
+  CLASS_HOMEWORKS.unshift(homework);
+  CLASS_HOMEWORK_ENTRIES=CLASS_HOMEWORK_ENTRIES.concat(entries);
+  if(followupTask)CLASS_FOLLOWUP_TASKS.unshift(followupTask);
+  SELECTED_HOMEWORK_ID=homework.id;
+  var partial=partialEntries.length;
+  var incomplete=incompleteEntries.length;
+  endHomework();
+  toast('作业已登记：'+partial+' 人部分完成，'+incomplete+' 人未完成'+(followupTask?'，已生成跟进任务':''));
+}
+
+/* ============ 作业记录 ============ */
+function normalizedHomeworkOutcome(outcome){
+  if(outcome==='partial'||outcome==='needs_support')return'partial';
+  if(outcome==='incomplete'||outcome==='unsubmitted')return'incomplete';
+  return'completed';
+}
+function homeworkOutcomeLabel(outcome){
+  return{completed:'已完成',partial:'部分完成',incomplete:'未完成'}[normalizedHomeworkOutcome(outcome)];
+}
+function localDateValue(timestamp){
+  var date=new Date(timestamp||Date.now());
+  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+}
+function localDateTimeValue(timestamp){
+  var date=new Date(timestamp||Date.now());
+  return localDateValue(date.getTime())+'T'+String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0');
+}
+function homeworkMakeupLabel(entry,homework){
+  if(!entry.makeupAt)return'';
+  var date=new Date(entry.makeupAt),time=String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0');
+  var homeworkDay=new Date(String(homework.date||'')+'T00:00:00');
+  var makeupDay=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  var dayDiff=Math.round((makeupDay-homeworkDay)/86400000);
+  var prefix=dayDiff===0?'当天':dayDiff===1?'次日':(date.getMonth()+1)+'月'+date.getDate()+'日';
+  return prefix+' '+time+' 补交';
+}
+function homeworkEntriesFor(homeworkId){
+  return CLASS_HOMEWORK_ENTRIES.filter(function(entry){return entry.homeworkId===homeworkId});
+}
+function renderHomeworkHistory(){
+  var query=$('#homeworkHistorySearch').value.trim().toLowerCase();
+  var studentById={};STU.forEach(function(student){if(student.dbId)studentById[student.dbId]=student});
+  var filtered=CLASS_HOMEWORKS.filter(function(homework){
+    if(!query)return true;
+    var studentNames=homeworkEntriesFor(homework.id).map(function(entry){return studentById[entry.studentId]?studentById[entry.studentId].name:''}).join(' ');
+    return [homework.title,homework.date,studentNames].join(' ').toLowerCase().indexOf(query)>=0;
+  });
+  if(!filtered.some(function(homework){return homework.id===SELECTED_HOMEWORK_ID}))SELECTED_HOMEWORK_ID=filtered[0]?filtered[0].id:'';
+  $('#homeworkHistoryList').innerHTML=filtered.length?filtered.map(function(homework){
+    var entries=homeworkEntriesFor(homework.id);
+    var partial=entries.filter(function(entry){return normalizedHomeworkOutcome(entry.outcome)==='partial'}).length;
+    var incomplete=entries.filter(function(entry){return normalizedHomeworkOutcome(entry.outcome)==='incomplete'}).length;
+    return '<button class="hw-hist-item'+(homework.id===SELECTED_HOMEWORK_ID?' on':'')+'" type="button" data-homework-history-id="'+homework.id+'">'+
+      '<span>'+esc(String(homework.date||''))+'</span><b>'+esc(String(homework.title||'未命名作业'))+'</b>'+
+      '<small>部分 '+partial+' · 未完成 '+incomplete+'</small></button>';
+  }).join(''):'<div class="hw-hist-empty"><b>没有找到作业记录</b><span>换个关键词试试</span></div>';
+  renderHomeworkHistoryDetail();
+}
+function renderHomeworkHistoryDetail(){
+  var homework=CLASS_HOMEWORKS.find(function(item){return item.id===SELECTED_HOMEWORK_ID});
+  if(!homework){
+    $('#homeworkHistoryDetail').innerHTML='<div class="hw-hist-empty"><b>还没有作业记录</b><span>点击“登记作业”完成第一次记录。</span></div>';
+    return;
+  }
+  var studentById={};STU.forEach(function(student){if(student.dbId)studentById[student.dbId]=student});
+  var entries=homeworkEntriesFor(homework.id);
+  var counts={completed:0,partial:0,incomplete:0};
+  entries.forEach(function(entry){counts[normalizedHomeworkOutcome(entry.outcome)]++});
+  var visible=entries.filter(function(entry){return HOMEWORK_HISTORY_STATUS==='all'||normalizedHomeworkOutcome(entry.outcome)===HOMEWORK_HISTORY_STATUS})
+    .sort(function(a,b){var sa=studentById[a.studentId],sb=studentById[b.studentId];return(sa?sa.no:999)-(sb?sb.no:999)});
+  var buttons=[['all','全部',entries.length],['completed','已完成',counts.completed],['partial','部分完成',counts.partial],['incomplete','未完成',counts.incomplete]];
+  var deleteConfirm=DELETING_HOMEWORK_ID===homework.id?
+    '<div class="hw-delete-confirm"><div class="msg"><b>确定删除“'+esc(String(homework.title||'未命名作业'))+'”吗？</b>'+
+    '<span>该作业的学生完成情况和跟进任务会一起删除，删除后无法恢复。</span></div>'+
+    '<button type="button" data-cancel-homework-delete>取消</button><button type="button" class="confirm" data-confirm-homework-delete>确定删除</button></div>':'';
+  $('#homeworkHistoryDetail').innerHTML='<div class="hw-detail-top"><div><h3>'+esc(String(homework.title||'未命名作业'))+'</h3>'+
+    '<p>'+esc(String(homework.date||''))+'</p></div><span class="grow"></span>'+
+    '<button class="tbtn danger" type="button" id="deleteHomeworkRecord">删除记录</button>'+
+    '<button class="tbtn" type="button" id="exportHomeworkRecord">导出 CSV</button></div>'+
+    deleteConfirm+
+    '<div class="hw-summary">'+buttons.map(function(item){return'<button type="button" class="'+(HOMEWORK_HISTORY_STATUS===item[0]?'on ':'')+(item[0]==='partial'?'partial':item[0]==='incomplete'?'incomplete':'')+
+      '" data-homework-status-filter="'+item[0]+'"><b>'+item[2]+'</b><span>'+item[1]+'</span></button>'}).join('')+'</div>'+
+    '<div class="hw-students">'+(visible.length?visible.map(function(entry){
+      var student=studentById[entry.studentId],outcome=normalizedHomeworkOutcome(entry.outcome),name=student?student.name:'学生已移除';
+      var makeupLabel=homeworkMakeupLabel(entry,homework),isEditing=entry.id===EDITING_HOMEWORK_ENTRY_ID;
+      return'<div class="hw-student-row '+outcome+'"><span class="av">'+esc(name.trim().charAt(0)||'—')+'</span><b>'+esc(name)+'</b>'+
+        '<small>'+homeworkOutcomeLabel(outcome)+'</small>'+
+        '<button type="button" class="hw-entry-action" '+(outcome==='completed'?'data-homework-entry-edit':'data-homework-entry-complete')+'="'+entry.id+'">'+(outcome==='completed'?'修改':'登记补交')+'</button>'+
+        (makeupLabel?'<div class="hw-makeup-meta">'+esc(makeupLabel)+(entry.makeupNote?' · '+esc(entry.makeupNote):'')+'</div>':'')+
+        (isEditing?'<form class="hw-entry-form" data-homework-entry-form="'+entry.id+'">'+
+          '<label>更新为<select class="hw-followup-status"><option value="completed" selected>已完成</option><option value="partial">部分完成</option><option value="incomplete">未完成</option></select></label>'+
+          '<label>补交／更新时间<input class="hw-followup-time" type="datetime-local" value="'+localDateTimeValue(entry.makeupAt||Date.now())+'"></label>'+
+          '<label class="hw-note">备注（可不填）<input class="hw-followup-note" type="text" maxlength="80" value="'+escAttr(entry.makeupNote||'')+'" placeholder="例如：订正后补交、家长已说明"></label>'+
+          '<div class="hw-form-actions"><button type="button" data-homework-entry-cancel>取消</button><button type="submit" class="confirm">确认登记</button></div></form>':'')+
+        '</div>';
+    }).join(''):'<div class="hw-hist-empty"><b>这个状态下没有学生</b></div>')+'</div>';
+}
+function openHomeworkHistory(){
+  HOMEWORK_HISTORY_STATUS='all';
+  if(!SELECTED_HOMEWORK_ID&&CLASS_HOMEWORKS[0])SELECTED_HOMEWORK_ID=CLASS_HOMEWORKS[0].id;
+  $('#homeworkHistorySearch').value='';
+  renderHomeworkHistory();
+  $('#hwHistoryDrawer').classList.add('on');$('#hwHistoryScrim').classList.add('on');
+}
+function closeHomeworkHistory(){
+  EDITING_HOMEWORK_ENTRY_ID='';DELETING_HOMEWORK_ID='';
+  $('#hwHistoryDrawer').classList.remove('on');$('#hwHistoryScrim').classList.remove('on');
+}
+async function deleteSelectedHomework(){
+  var homework=CLASS_HOMEWORKS.find(function(item){return item.id===SELECTED_HOMEWORK_ID});
+  if(!homework||DELETING_HOMEWORK_ID!==homework.id||!CLASS_DB)return;
+  var entries=homeworkEntriesFor(homework.id);
+  var tasks=CLASS_FOLLOWUP_TASKS.filter(function(task){return task.homeworkId===homework.id});
+  try{
+    await new Promise(function(resolve,reject){
+      var tx=CLASS_DB.transaction(['homeworks','homeworkEntries','followupTasks'],'readwrite');
+      tx.objectStore('homeworks').delete(homework.id);
+      entries.forEach(function(entry){tx.objectStore('homeworkEntries').delete(entry.id)});
+      tasks.forEach(function(task){tx.objectStore('followupTasks').delete(task.id)});
+      tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error)};
+    });
+  }catch(error){console.warn('作业记录删除失败',error);toast('删除失败，请刷新后重试');return}
+  CLASS_HOMEWORKS=CLASS_HOMEWORKS.filter(function(item){return item.id!==homework.id});
+  CLASS_HOMEWORK_ENTRIES=CLASS_HOMEWORK_ENTRIES.filter(function(entry){return entry.homeworkId!==homework.id});
+  CLASS_FOLLOWUP_TASKS=CLASS_FOLLOWUP_TASKS.filter(function(task){return task.homeworkId!==homework.id});
+  SELECTED_HOMEWORK_ID=CLASS_HOMEWORKS[0]?CLASS_HOMEWORKS[0].id:'';
+  HOMEWORK_HISTORY_STATUS='all';EDITING_HOMEWORK_ENTRY_ID='';DELETING_HOMEWORK_ID='';
+  renderHomeworkHistory();
+  toast('已删除“'+homework.title+'”及其跟进任务');
+}
+async function updateHomeworkEntryFromHistory(entryId,form){
+  var current=CLASS_HOMEWORK_ENTRIES.find(function(entry){return entry.id===entryId});
+  var homework=CLASS_HOMEWORKS.find(function(item){return item.id===SELECTED_HOMEWORK_ID});
+  if(!current||!homework||!CLASS_DB)throw new Error('作业记录尚未加载完成');
+  var previousOutcome=normalizedHomeworkOutcome(current.outcome);
+  var nextOutcome=form?form.querySelector('.hw-followup-status').value:'completed';
+  var timeValue=form?form.querySelector('.hw-followup-time').value:'';
+  var changedAt=timeValue?new Date(timeValue).getTime():Date.now();
+  if(!Number.isFinite(changedAt))throw new Error('请选择正确的补交时间');
+  var note=form?form.querySelector('.hw-followup-note').value.trim():'',now=Date.now();
+  var updated=Object.assign({},current,{
+    outcome:nextOutcome,
+    updatedAt:now,
+    history:(Array.isArray(current.history)?current.history:[]).concat([{
+      from:previousOutcome,to:nextOutcome,changedAt:changedAt,recordedAt:now,note:note,source:'homework_followup'
+    }])
+  });
+  if(nextOutcome==='completed'&&previousOutcome!=='completed'){
+    updated.makeupAt=changedAt;
+    updated.makeupNote=note;
+    updated.makeupFrom=previousOutcome;
+  }else if(nextOutcome==='completed'&&current.makeupAt){
+    updated.makeupAt=changedAt;
+    updated.makeupNote=note;
+  }else if(nextOutcome!=='completed'){
+    updated.makeupAt=null;
+    updated.makeupNote='';
+    updated.makeupFrom='';
+  }else if(note){
+    updated.makeupNote=note;
+  }
+  var projected=homeworkEntriesFor(homework.id).map(function(entry){return entry.id===updated.id?updated:entry});
+  var partialEntries=projected.filter(function(entry){return normalizedHomeworkOutcome(entry.outcome)==='partial'});
+  var incompleteEntries=projected.filter(function(entry){return normalizedHomeworkOutcome(entry.outcome)==='incomplete'});
+  var affectedEntries=partialEntries.concat(incompleteEntries),affectedIds=affectedEntries.map(function(entry){return entry.studentId});
+  var affectedStudents=STU.filter(function(student){return affectedIds.indexOf(student.dbId)>=0});
+  var task=CLASS_FOLLOWUP_TASKS.find(function(item){return item.homeworkId===homework.id});
+  if(affectedEntries.length&&!task){
+    task={id:'homework-followup-'+homework.id,type:'homework_followup',classId:CLASS_ACTIVE_ID,homeworkId:homework.id,
+      title:'跟进：'+homework.title,homeworkTitle:homework.title,homeworkDate:homework.date,
+      kpName:'作业跟进',createdAt:now};
+  }
+  if(task){
+    task=Object.assign({},task,{
+      classId:CLASS_ACTIVE_ID,
+      kpId:null,
+      kpName:'作业跟进',
+      partialCount:partialEntries.length,
+      incompleteCount:incompleteEntries.length,
+      studentIds:affectedStudents.map(function(student){return student.dbId}),
+      studentNames:affectedStudents.map(function(student){return student.name}),
+      status:affectedEntries.length?'pending':'completed',
+      completedAt:affectedEntries.length?null:now,
+      autoCompletedAt:affectedEntries.length?null:now,
+      updatedAt:now
+    });
+  }
+  try{
+    await new Promise(function(resolve,reject){
+      var stores=['homeworkEntries'];if(task)stores.push('followupTasks');
+      var tx=CLASS_DB.transaction(stores,'readwrite');
+      tx.objectStore('homeworkEntries').put(updated);
+      if(task)tx.objectStore('followupTasks').put(task);
+      tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error)};
+    });
+  }catch(error){console.warn('补交状态保存失败',error);toast('保存失败，请刷新后重试');return}
+  CLASS_HOMEWORK_ENTRIES=CLASS_HOMEWORK_ENTRIES.map(function(entry){return entry.id===updated.id?updated:entry});
+  if(task){
+    var taskIndex=CLASS_FOLLOWUP_TASKS.findIndex(function(item){return item.id===task.id});
+    if(taskIndex>=0)CLASS_FOLLOWUP_TASKS[taskIndex]=task;else CLASS_FOLLOWUP_TASKS.unshift(task);
+  }
+  EDITING_HOMEWORK_ENTRY_ID='';
+  renderHomeworkHistory();
+  if(nextOutcome==='completed'){
+    toast(affectedEntries.length?'已登记补交，仍有 '+affectedEntries.length+' 人待跟进':'已登记补交，本次作业已全部完成');
+  }else{
+    toast('状态已更新，作业跟进任务已同步');
+  }
+}
+function csvCell(value){return'"'+String(value==null?'':value).replace(/"/g,'""')+'"'}
+function exportHomeworkRecord(){
+  var homework=CLASS_HOMEWORKS.find(function(item){return item.id===SELECTED_HOMEWORK_ID});if(!homework)return;
+  var studentById={};STU.forEach(function(student){if(student.dbId)studentById[student.dbId]=student});
+  var rows=[['日期','作业名称','学号','姓名','完成情况','补交时间','补交备注']];
+  homeworkEntriesFor(homework.id).forEach(function(entry){
+    var student=studentById[entry.studentId];
+    rows.push([homework.date,homework.title,student?student.no:'',student?student.name:'学生已移除',
+      homeworkOutcomeLabel(entry.outcome),entry.makeupAt?new Date(entry.makeupAt).toLocaleString('zh-CN'):'',entry.makeupNote||'']);
+  });
+  var csv='\ufeff'+rows.map(function(row){return row.map(csvCell).join(',')}).join('\r\n');
+  var url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');
+  link.href=url;link.download=(homework.date||'作业')+'-'+(homework.title||'作业记录')+'.csv';link.click();URL.revokeObjectURL(url);
+  toast('当前作业记录已导出');
+}
+
+/* ============ 座位表 ============ */
+var SEATS=[];/* 7排 × 3桌 × 2座 = 42 */
+(function(){
+  var k=0;
+  for(var r=0;r<7;r++){var row=[];
+    for(var d=0;d<3;d++){var desk=[];
+      for(var s=0;s<2;s++){
+        /* 最后一排留 4 个空位 */
+        if(r===6&&d>=2){desk.push(null)}
+        else if(r===6&&d===1&&s===1){desk.push(null)}
+        else if(r===6&&d===1&&s===0){desk.push(null)}
+        else desk.push(k<STU.length?STU[k++]:null);
+      }
+      row.push(desk)}
+    SEATS.push(row)}
+})();
+function seatLabel(r,c){return (r+1)+'排'+(c+1)+'座'}
+
+function renderMap(){
+  var mode=$('#colorMode').value,h='';
+  SEATS.forEach(function(row,ri){
+    var seatsPerDesk=Math.max.apply(null,row.map(function(desk){return desk.length}));
+    h+='<div class="deskrow" style="--desk-count:'+row.length+';--seats-per-desk:'+seatsPerDesk+'">';
+    row.forEach(function(desk,di){
+      h+='<div class="desk">';
+      desk.forEach(function(st,si){
+        var ci=di*seatsPerDesk+si;
+        if(!st){h+='<div class="seat empty"><span class="nm">空位</span></div>';return}
+        var bar='',flag='',seatClass='',homeworkBadge='';
+        if(mode==='focus') bar=focusClr(st.last);
+        else bar=MASCLR[st.mas];
+        if(attentionDays(st)>14) flag='<span class="flag" style="background:var(--amber)"></span>';
+        if(homeworkMarking&&st.dbId){
+          var hwStatus=HOMEWORK_STATUSES[st.dbId]||'completed';
+          seatClass=' hw-'+hwStatus;
+          homeworkBadge='<span class="hw-badge">'+({completed:'已完成',partial:'部分',incomplete:'未完成'}[hwStatus])+'</span>';
+        }
+        h+='<button class="seat'+seatClass+'" data-i="'+st.i+'" data-seat="'+seatLabel(ri,ci)+'">'+
+           '<span class="bar" style="background:'+bar+'"></span>'+flag+
+           '<span class="nm">'+esc(st.name)+'</span>'+
+           '<span class="no">'+st.no+'号</span>'+homeworkBadge+'</button>';
+      });
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  $('#seatMap').innerHTML=h;
+  renderLegend(mode);
+}
+function renderLegend(mode){
+  var h='';
+  if(homeworkMarking)h='<span><i style="background:#d9eee1"></i>已完成</span><span><i style="background:#f7e8c5"></i>部分完成</span><span><i style="background:#f7d8d4"></i>未完成</span><span style="color:var(--text-3)">· 点击学生姓名循环切换</span>';
+  else if(mode==='focus') h='<span><i style="background:#3aa96b"></i>7 天内有记录</span><span><i style="background:#e0a020"></i>7–14 天</span><span><i style="background:#df4d43"></i>超过 14 天或从未记录</span><span style="color:var(--text-3)">· 右上角小圆点 = 久未关注</span>';
+  else if(mode==='mastery') h='<span><i style="background:#3aa96b"></i>已掌握</span><span><i style="background:#e0a020"></i>基本掌握</span><span><i style="background:#df4d43"></i>待提升</span><span><i style="background:#d2d6d0"></i>未评价</span><span style="color:var(--text-3)">· 未评价不等于不会</span>';
+  $('#legend').innerHTML=h;
+}
+$('#colorMode').onchange=function(){renderMap();toast('已切换着色依据')};
+
+/* ============ 卡片墙 ============ */
+function renderWall(){
+  var h='';
+  STU.forEach(function(st){
+    var flag=attentionDays(st)>14?'<span class="flag" style="background:var(--amber)"></span>':'';
+    h+='<button class="sc" data-i="'+st.i+'">'+flag+
+      '<span class="av" style="background:'+st.color+'">'+esc(st.name.trim().charAt(0))+'</span>'+
+      '<span class="nm">'+esc(st.name)+'</span>'+
+      '<span class="st">'+st.no+'号 · '+attentionText(st)+'</span></button>';
+  });
+  $('#wall').innerHTML=h;
+}
+/* ============ 名单 ============ */
+function renderList(){
+  var h='',seatOf={};
+  SEATS.forEach(function(row,ri){row.forEach(function(d,di){d.forEach(function(s,si){if(s)seatOf[s.i]=seatLabel(ri,di*2+si)})})});
+  STU.forEach(function(st){
+    h+='<tr data-i="'+st.i+'"><td>'+st.no+'</td><td style="font-weight:560">'+esc(st.name)+'</td>'+
+      '<td style="color:var(--text-2)">'+(seatOf[st.i]||'—')+'</td>'+
+      '<td><span class="chip" style="background:'+MASCLR[st.mas]+'1f;color:'+MASCLR[st.mas]+'">'+MASLBL[st.mas]+'</span></td>'+
+      '<td style="color:var(--text-2)">'+(st.mas==='u'?'—':attentionText(st))+'</td>'+
+      '<td style="color:'+(attentionDays(st)>14?'var(--amber)':'var(--text-2)')+'">'+attentionText(st)+'</td></tr>';
+  });
+  $('#listBody').innerHTML=h;
+}
+
+/* 视图切换 */
+$('#viewSeg').onclick=function(e){
+  var b=e.target.closest('button');if(!b)return;
+  $$('#viewSeg button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+  var v=b.dataset.view;
+  $('#mapWrap').style.display=v==='map'?'':'none';
+  $('#wall').classList.toggle('on',v==='wall');
+  $('#list').classList.toggle('on',v==='list');
+  $('#legend').style.display=v==='list'?'none':'';
+  $('#markBtn').style.display=v==='map'?'':'none';
+  $('#openHomework').style.display=v==='map'?'':'none';
+  if(v!=='map'&&marking)endMark();
+  if(v!=='map'&&homeworkMarking)endHomework();
+  var seatCount=SEATS.reduce(function(total,row){return total+row.reduce(function(sum,desk){return sum+desk.length},0)},0);
+  $('#viewSub').textContent=v==='map'?seatCount+' 个座位 · '+STU.length+' 人':v==='wall'?STU.length+' 人':'按学号排序';
+};
+
+/* ============ 课堂快速打点 ============ */
+var marking=false,homeworkMarking=false,hits=new Set();
+function updateMarkMode(){
+  var mastered=$('#mkMode').value==='mastered';
+  $('#mkInstruction').textContent=mastered?'点击已经掌握的学生姓名，其余默认待提升':'点击还没掌握的学生姓名，其余默认已掌握';
+  $('#mapWrap').classList.toggle('mode-mastered',mastered);
+}
+$('#markBtn').onclick=function(){
+  if(!CLASS_KPS.length){
+    location.href='v07/index.html?view=class&focus=kps#class';
+    return;
+  }
+  if(!STU.length){toast('请先导入学生名单');return}
+  if(homeworkMarking)endHomework();
+  marking=true;hits.clear();
+  $('#markBar').classList.add('on');
+  $('#mapWrap').classList.add('mark');
+  $('#markBtn').style.visibility='hidden';
+  $('#mkCnt').textContent='已选 0 人';
+  updateMarkMode();
+  toast($('#mkMode').value==='mastered'?'请点击已经掌握的学生姓名':'请点击还没掌握的学生姓名');
+};
+$('#mkSel').onchange=function(){
+  var kp=selectedClassKp();
+  $('#mkKp').textContent=kp?'#'+kp.name:this.options[this.selectedIndex].text;
+  applyCurrentKpStatus();
+};
+$('#mkMode').onchange=function(){
+  hits.clear();$$('.seat.hit').forEach(function(s){s.classList.remove('hit')});
+  $('#mkCnt').textContent='已选 0 人';updateMarkMode();
+};
+$('#mkCancel').onclick=endMark;
+$('#mkDone').onclick=async function(){
+  var n=hits.size,mode=$('#mkMode').value,total=STU.length;
+  var saved=0;
+  try{saved=await saveClassroomJudgements(mode)}
+  catch(error){console.warn('课堂打点保存失败',error);toast('保存失败，请刷新后重试');return}
+  STU.forEach(function(st){
+    var selected=hits.has(st.i);
+    st.mas=mode==='support'?(selected?'n':'m'):(selected?'m':'n');
+  });
+  endMark();
+  $('#colorMode').value='mastery';renderMap();renderList();
+  if(!saved){toast('打点已显示；请先导入学生和知识点后再同步学情');return}
+  if(mode==='support')toast(n?'已记录：'+n+' 人待提升，其余 '+(total-n)+' 人已掌握':'已记录：全班均已掌握');
+  else toast(n?'已记录：'+n+' 人已掌握，其余 '+(total-n)+' 人待提升':'已记录：全班均待提升');
+};
+function endMark(){
+  marking=false;
+  $('#markBar').classList.remove('on');
+  $('#mapWrap').classList.remove('mark','mode-mastered');
+  $('#markBtn').style.visibility='';
+  $$('.seat.hit').forEach(function(s){s.classList.remove('hit')});
+}
+
+$('#openHomework').onclick=openHomework;
+$('#hwCancel').onclick=endHomework;
+$('#hwDate').onchange=syncDefaultHomeworkTitle;
+$('#hwSave').onclick=saveHomeworkFromClass;
+$('#openHomeworkHistory').onclick=openHomeworkHistory;
+$('#closeHomeworkHistory').onclick=closeHomeworkHistory;
+$('#hwHistoryScrim').onclick=closeHomeworkHistory;
+$('#homeworkHistorySearch').oninput=renderHomeworkHistory;
+$('#homeworkHistoryList').onclick=function(e){
+  var item=e.target.closest('[data-homework-history-id]');if(!item)return;
+  SELECTED_HOMEWORK_ID=item.dataset.homeworkHistoryId;HOMEWORK_HISTORY_STATUS='all';EDITING_HOMEWORK_ENTRY_ID='';DELETING_HOMEWORK_ID='';renderHomeworkHistory();
+};
+$('#homeworkHistoryDetail').onclick=function(e){
+  var filter=e.target.closest('[data-homework-status-filter]');
+  if(filter){HOMEWORK_HISTORY_STATUS=filter.dataset.homeworkStatusFilter;EDITING_HOMEWORK_ENTRY_ID='';renderHomeworkHistoryDetail();return}
+  var complete=e.target.closest('[data-homework-entry-complete]');
+  if(complete){
+    complete.disabled=true;complete.textContent='登记中…';
+    updateHomeworkEntryFromHistory(complete.dataset.homeworkEntryComplete,null).catch(function(error){
+      console.warn('补交状态更新失败',error);
+      toast('保存失败：'+(error&&error.message?error.message:'请刷新后重试'));
+      complete.disabled=false;complete.textContent='登记补交';
+    });
+    return;
+  }
+  var edit=e.target.closest('[data-homework-entry-edit]');
+  if(edit){EDITING_HOMEWORK_ENTRY_ID=edit.dataset.homeworkEntryEdit;renderHomeworkHistoryDetail();return}
+  if(e.target.closest('[data-homework-entry-cancel]')){EDITING_HOMEWORK_ENTRY_ID='';renderHomeworkHistoryDetail();return}
+  if(e.target.closest('#deleteHomeworkRecord')){DELETING_HOMEWORK_ID=SELECTED_HOMEWORK_ID;EDITING_HOMEWORK_ENTRY_ID='';renderHomeworkHistoryDetail();return}
+  if(e.target.closest('[data-cancel-homework-delete]')){DELETING_HOMEWORK_ID='';renderHomeworkHistoryDetail();return}
+  var confirmDelete=e.target.closest('[data-confirm-homework-delete]');
+  if(confirmDelete){confirmDelete.disabled=true;confirmDelete.textContent='删除中…';deleteSelectedHomework();return}
+  if(e.target.closest('#exportHomeworkRecord'))exportHomeworkRecord();
+};
+$('#homeworkHistoryDetail').onsubmit=function(e){
+  var form=e.target.closest('[data-homework-entry-form]');if(!form)return;
+  e.preventDefault();
+  var save=form.querySelector('.confirm');save.disabled=true;save.textContent='保存中…';
+  updateHomeworkEntryFromHistory(form.dataset.homeworkEntryForm,form).catch(function(error){
+    console.warn('补交状态更新失败',error);
+    toast('保存失败：'+(error&&error.message?error.message:'请刷新后重试'));
+    save.disabled=false;save.textContent='确认登记';
+  });
+};
+
+/* ============ 点击 ============ */
+document.addEventListener('click',function(e){
+  var deleteNote=e.target.closest('[data-note-delete]');
+  if(deleteNote){
+    e.stopPropagation();
+    if(deleteNote.dataset.confirm!=='true'){
+      deleteNote.dataset.confirm='true';deleteNote.textContent='确定删除';deleteNote.style.color='var(--red)';
+      setTimeout(function(){if(deleteNote.isConnected){deleteNote.dataset.confirm='';deleteNote.textContent='删除';deleteNote.style.color=''}},2600);
+      return;
+    }
+    classDbDelete('notes',deleteNote.dataset.noteDelete).then(function(){
+      CLASS_NOTES=CLASS_NOTES.filter(function(note){return note.id!==deleteNote.dataset.noteDelete});
+      FEED=FEED.filter(function(note){return note.id!==deleteNote.dataset.noteDelete});
+      renderFeed($('.f.on').dataset.f);toast('记录已删除');
+    }).catch(function(){toast('删除失败，请刷新后重试')});
+    return;
+  }
+  var studentAction=e.target.closest('[data-student-action]');
+  if(studentAction){
+    var action=studentAction.dataset.studentAction;
+    if(action==='note')renderStudentNoteForm();
+    else if(action==='task')renderStudentTaskForm();
+    else if(action==='support'||action==='knowledge'||action==='evaluate')goStudentLearning();
+    else if(action==='cancel')renderTab(0);
+    return;
+  }
+  var seat=e.target.closest('.seat:not(.empty)');
+  if(seat){
+    if(homeworkMarking){
+      cycleHomeworkStatus(STU[+seat.dataset.i]);
+      return;
+    }
+    if(marking){
+      var i=+seat.dataset.i;
+      seat.classList.toggle('hit');
+      if(seat.classList.contains('hit'))hits.add(i);else hits.delete(i);
+      $('#mkCnt').textContent='已选 '+hits.size+' 人';
+      return;
+    }
+    openStu(+seat.dataset.i,seat.dataset.seat);return;
+  }
+  var sc=e.target.closest('.sc');if(sc){openStu(+sc.dataset.i);return}
+  var tr=e.target.closest('#listBody tr');if(tr){openStu(+tr.dataset.i);return}
+  var br=e.target.closest('.br');if(br){openStu(+br.dataset.i);if(e.target.closest('.act'))renderStudentNoteForm();return}
+  var f=e.target.closest('.f');
+  if(f){$$('.f').forEach(function(x){x.classList.remove('on')});f.classList.add('on');renderFeed(f.dataset.f);return}
+  var tab=e.target.closest('.stab');
+  if(tab){$$('.stab').forEach(function(x){x.classList.remove('on')});tab.classList.add('on');renderTab(+tab.dataset.t);return}
+  if(e.target.closest('#shX')||e.target.id==='scrim')close();
+});
+document.addEventListener('submit',function(e){
+  if(e.target.id==='studentNoteForm'){e.preventDefault();saveStudentNote(e.target);return}
+  if(e.target.id==='studentTaskForm'){e.preventDefault();saveStudentTask(e.target)}
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    if($('#hwHistoryDrawer').classList.contains('on'))closeHomeworkHistory();
+    else if(homeworkMarking)endHomework();
+    else if(marking)endMark();
+    else close();
+  }
+});
+
+/* ============ 盲区 ============ */
+function renderBlind(){
+  var l=STU.slice().sort(function(a,b){return attentionDays(b)-attentionDays(a)}).slice(0,4);
+  var h='';
+  l.forEach(function(st){
+    var latestJudgement=CLASS_JUDGEMENTS.filter(function(item){return item.studentId===st.dbId})
+      .sort(function(a,b){return (b.judgedAt||0)-(a.judgedAt||0)})[0];
+    var judgementText=latestJudgement?(latestJudgement.status==='mastered'?'最近判断：已掌握':latestJudgement.status==='needs_support'?'最近判断：待提升':'最近判断：尚未判断'):'暂无知识判断';
+    h+='<div class="br" data-i="'+st.i+'">'+
+      '<span class="av" style="background:'+st.color+'">'+esc(st.name.trim().charAt(0))+'</span>'+
+      '<span class="bd"><b>'+esc(st.name)+'</b><i>'+st.no+'号 · '+judgementText+'</i></span>'+
+      '<span class="days'+(attentionDays(st)>20?' long':'')+'">'+attentionText(st)+'</span>'+
+      '<button class="act">记一笔</button></div>';
+  });
+  if(!h)h='<div class="hw-hist-empty" style="min-height:150px"><b>还没有学生</b><span>导入学生后，这里会提示久未关注的学生</span></div>';
+  $('#blind').innerHTML=h;
+  $('#ovBlind').textContent=STU.filter(function(s){return attentionDays(s)>14}).length;
+}
+
+/* ============ 动态 ============ */
+var FEED=[];
+function noteTime(value){
+  var date=new Date(value||Date.now()),today=new Date();
+  var same=date.toDateString()===today.toDateString();
+  return (same?'今天':(date.getMonth()+1)+'月'+date.getDate()+'日')+' '+('0'+date.getHours()).slice(-2)+':'+('0'+date.getMinutes()).slice(-2);
+}
+var CMAP={green:['var(--green-l)','var(--green)'],amber:['var(--amber-l)','var(--amber)'],
+  blue:['var(--blue-l)','var(--blue)'],red:['var(--red-l)','var(--red)'],purple:['var(--purple-l)','var(--purple)']};
+var ICO={
+ 活动:'<rect x="3" y="4.5" width="18" height="15" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m4 17.5 5-4 4 3 3-2 4 3"/>',
+ 表扬:'<path d="m12 3.6 2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.8l5.9-.8Z"/>',
+ 通知:'<path d="M3.5 10v4h3.5l5 3.6V6.4L7 10Z"/><path d="M16 9.2a4 4 0 0 1 0 5.6"/>',
+ 提醒:'<circle cx="12" cy="12" r="9"/><path d="M12 7.6v5M12 16.2h.01"/>',
+ 沟通:'<path d="M20.5 11.5a7.5 7.5 0 0 1-10.9 6.7L4 20l1.9-5.4A7.5 7.5 0 1 1 20.5 11.5Z"/>'
+};
+function renderFeed(f){
+  var h='';
+  FEED.filter(function(x){return !f||f==='all'||x.t===f}).forEach(function(x){
+    var c=CMAP[x.c];
+    h+='<div class="fi"><span class="sq" style="background:'+c[0]+';color:'+c[1]+'">'+
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+ICO[x.t]+'</svg></span>'+
+      '<span class="bd"><span class="t">'+esc(x.txt)+'</span><span class="s"><span class="chip">'+x.t+'</span>'+esc(x.sub)+'</span></span>'+
+      '<span class="tm">'+esc(x.time)+'</span>'+
+      (x.id?'<button type="button" data-note-delete="'+x.id+'" style="font-size:12px;color:var(--text-3);padding:5px 8px;border-radius:7px">删除</button>':'')+'</div>';
+  });
+  if(!h) h='<div style="text-align:center;padding:22px 0;color:var(--text-3);font-size:13.5px">这个类型还没有记录</div>';
+  $('#feed').innerHTML=h;
+}
+/* 快速记录 */
+var ci=$('#ci'),cGo=$('#cGo');
+ci.addEventListener('input',function(){cGo.classList.toggle('off',!ci.value.trim());
+  ci.style.height='auto';ci.style.height=Math.max(60,ci.scrollHeight)+'px'});
+$('#noteStudentSelect').onchange=function(){
+  if(this.value==='')return;
+  var student=STU[Number(this.value)];
+  if(student){
+    var mention='@'+student.name.replace(/\s/g,'');
+    if(ci.value.indexOf(mention)<0)ci.value+=(ci.value&&!/\s$/.test(ci.value)?' ':'')+mention+' ';
+    ci.focus();cGo.classList.remove('off');
+  }
+  this.value='';
+};
+ci.addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))send()});
+cGo.onclick=send;
+$('#showAllNotes').onclick=function(){
+  $$('.f').forEach(function(x){x.classList.toggle('on',x.dataset.f==='all')});
+  renderFeed('all');
+  $('#feed').scrollIntoView({behavior:'smooth',block:'nearest'});
+};
+async function send(){
+  var v=ci.value.trim();if(!v)return;
+  if(!CLASS_DB){toast('班级数据仍在加载，请稍后再试');return}
+  var mentioned=(v.match(/@([^\s@，。,.、]{1,12})/g)||[]).map(function(x){return x.slice(1).replace(/\s/g,'')});
+  var related=STU.filter(function(student){return mentioned.indexOf(student.name.replace(/\s/g,''))>=0});
+  var names=related.map(function(student){return student.name}),timestamp=Date.now(),body=v.replace(/@/g,'');
+  var category=$('#noteCategory').value||'活动';
+  var record={id:classUid('note'),classId:CLASS_ACTIVE_ID,type:names.length?'student_note':'class_note',category:category,body:body,
+    studentIds:related.map(function(student){return student.dbId}),studentNames:names,createdAt:timestamp,updatedAt:timestamp};
+  cGo.disabled=true;cGo.textContent='保存中…';
+  try{await classDbPut('notes',record)}
+  catch(error){console.warn('班级记录保存失败',error);toast('保存失败，请刷新后重试');cGo.disabled=false;cGo.textContent='记下来';return}
+  CLASS_NOTES.unshift(record);
+  related.forEach(function(student){student.last=0});
+  FEED.unshift({id:record.id,t:category,time:noteTime(timestamp),txt:body,sub:names.length?'相关学生：'+names.join('、'):'已记入班级时间线',
+    c:category==='提醒'?'red':category==='通知'?'blue':category==='沟通'?'purple':category==='表扬'?'amber':'green'});
+  $$('.f').forEach(function(x){x.classList.toggle('on',x.dataset.f==='all')});
+  renderFeed('all');renderBlind();
+  ci.value='';ci.style.height='60px';cGo.classList.add('off');
+  cGo.disabled=false;cGo.textContent='记下来';
+  toast(names.length?'已记录，同步到 '+names.join('、')+' 的档案':'已记录');
+}
+
+/* ============ 学生面板 ============ */
+var cur=null;
+function openStu(i,seat){
+  cur=STU[i];cur.seat=seat||cur.seat||'—';
+  $('#shAv').textContent=cur.name.trim().charAt(0);
+  $('#shAv').style.background=cur.color;
+  $('#shT').firstChild.textContent=cur.name.replace(/\s/g,'');
+  $('#shS').textContent=cur.no+'号 · '+(cur.seat)+' · 四年级1班';
+  $$('.stab').forEach(function(x,k){x.classList.toggle('on',k===0)});
+  renderTab(0);
+  $('#sheet').classList.add('on');$('#scrim').classList.add('on');
+}
+function renderTab(t){
+  if(!cur)return;var h='';
+  var relatedTasks=CLASS_FOLLOWUP_TASKS.filter(function(task){return (task.studentIds||[]).indexOf(cur.dbId)>=0});
+  var pendingTasks=relatedTasks.filter(function(task){return task.status!=='completed'}).length;
+  var relatedNotes=CLASS_NOTES.filter(function(note){return (note.studentIds||[]).indexOf(cur.dbId)>=0});
+  var relatedJudgements=CLASS_JUDGEMENTS.filter(function(item){return item.studentId===cur.dbId})
+    .sort(function(a,b){return (b.judgedAt||0)-(a.judgedAt||0)});
+  var relatedLatestJudgements=latestClassJudgements(relatedJudgements).sort(function(a,b){return (b.judgedAt||0)-(a.judgedAt||0)});
+  var latestJudgement=relatedLatestJudgements[0];
+  var latestStatus=latestJudgement?(latestJudgement.status==='mastered'?'m':latestJudgement.status==='needs_support'?'d':'u'):'u';
+  var latestStatusLabel=latestJudgement?(latestJudgement.status==='mastered'?'已掌握':latestJudgement.status==='needs_support'?'待提升':'尚未判断'):'尚未判断';
+  function changeTime(value){
+    if(!value)return'时间未记录';
+    var date=new Date(value),today=new Date(),days=Math.max(0,Math.floor((today-date)/86400000));
+    if(days===0)return'今天';
+    if(days===1)return'昨天';
+    return (date.getMonth()+1)+' 月 '+date.getDate()+' 日';
+  }
+  if(t===0){
+    h+='<div class="frow"><span class="k">最近记录</span><span class="v">'+attentionText(cur)+(attentionDays(cur)>14?' <span class="chip a">久未关注</span>':'')+'</span></div>';
+    h+='<div class="frow"><span class="k">最近判断</span><span class="v"><span class="chip" style="background:'+MASCLR[latestStatus]+'1f;color:'+MASCLR[latestStatus]+'">'+latestStatusLabel+'</span></span></div>';
+    h+='<div class="frow"><span class="k">相关任务</span><span class="v">'+pendingTasks+' 条待办 · '+relatedTasks.filter(function(task){return task.status!=='completed'&&task.dueDate&&task.dueDate<new Date().toISOString().slice(0,10)}).length+' 条逾期</span></div>';
+    var changes=[];
+    relatedNotes.slice(0,3).forEach(function(note){
+      changes.push({time:note.createdAt,title:(note.category||'记录')+' · '+changeTime(note.createdAt),body:note.body||note.title||'已保存一条记录'});
+    });
+    relatedJudgements.slice(0,3).forEach(function(item){
+      var kp=CLASS_KPS.find(function(x){return x.id===item.kpId});
+      changes.push({time:item.judgedAt,title:'知识判断 · '+changeTime(item.judgedAt),body:(kp?kp.name+' → ':'')+(item.status==='mastered'?'已掌握':item.status==='needs_support'?'待提升':'尚未判断')});
+    });
+    changes.sort(function(a,b){return (b.time||0)-(a.time||0)});
+    h+='<div class="pnl"><div class="pt">最近变化</div>';
+    if(changes.length)h+='<div class="tl">'+changes.slice(0,4).map(function(item){return '<div class="n"><b>'+esc(item.title)+'</b><p>'+esc(item.body)+'</p></div>'}).join('')+'</div>';
+    else h+='<div class="hw-hist-empty" style="min-height:120px"><b>还没有变化记录</b><span>点击“记一笔”或在知识矩阵中完成判断后会显示在这里</span></div>';
+    h+='</div>';
+    h+='<div class="acts"><button class="act2 pri" data-student-action="note">记一笔</button><button class="act2" data-student-action="task">建任务</button><button class="act2" data-student-action="support">记录补差题</button></div>';
+  }
+  if(t===1){
+    h+='<div class="pnl"><div class="pt">班级经历 · 本学期</div>';
+    if(relatedNotes.length)h+='<div class="tl">'+relatedNotes.map(function(note){return '<div class="n"><b>'+esc(changeTime(note.createdAt)+' · '+(note.category||'班级记录'))+'</b><p>'+esc(note.body||note.title||'已保存一条记录')+'</p></div>'}).join('')+'</div>';
+    else h+='<div class="hw-hist-empty" style="min-height:140px"><b>还没有班级经历</b><span>与该学生关联的班级记录会显示在这里</span></div>';
+    h+='</div>';
+    h+='<div class="blindnote" style="margin:0">这一栏只记录<b>班里发生的事</b>，不记录学科掌握情况 —— 那些在「知识清单」里。</div>';
+  }
+  if(t===2){
+    h+='<div class="pnl"><div class="pt">知识清单 · '+CLASS_KPS.length+' 个知识点</div>';
+    if(CLASS_KPS.length)CLASS_KPS.forEach(function(kp){
+      var evidence=relatedJudgements.filter(function(item){return item.kpId===kp.id});
+      var item=evidence[0],status=item?(item.status==='mastered'?'m':item.status==='needs_support'?'d':'u'):'u';
+      h+='<div class="frow" style="padding:9px 0"><span class="k" style="width:auto;flex:1;color:var(--text)">'+esc(kp.name)+'</span>'+
+         '<span class="chip" style="background:'+MASCLR[status]+'1f;color:'+MASCLR[status]+'">'+MASLBL[status]+'</span>'+
+         '<span style="width:64px;text-align:right;font-size:12.5px;color:var(--text-3)">'+(evidence.length?evidence.length+' 条记录':'—')+'</span></div>';
+    });
+    else h+='<div class="hw-hist-empty" style="min-height:140px"><b>还没有知识点</b><span>先导入知识点清单，再为学生做掌握判断</span></div>';
+    h+='</div><div class="acts"><button class="act2 pri" data-student-action="knowledge">看完整知识清单</button><button class="act2" data-student-action="evaluate">手动评价</button></div>';
+  }
+  if(t===3){
+    var needsSupport=relatedLatestJudgements.filter(function(item){return item.status==='needs_support'});
+    h+='<div class="pnl"><div class="pt">活跃提升项 '+needsSupport.length+'</div>';
+    if(needsSupport.length)needsSupport.forEach(function(item){
+      var kp=CLASS_KPS.find(function(x){return x.id===item.kpId});
+      h+='<div class="frow" style="padding:10px 0"><span class="k" style="width:auto;flex:1;color:var(--text)">'+esc(kp?kp.name:'未命名知识点')+'</span><span class="chip r">待提升</span></div>';
+    });
+    else h+='<div class="hw-hist-empty" style="min-height:140px"><b>暂无提升项</b><span>知识矩阵中标记为“待提升”的内容会显示在这里</span></div>';
+    h+='</div>';
+    h+='<div class="blindnote" style="margin:0">提升项默认<b>仅你可见</b>，不会变成学生标签，也不进入任何评分。</div>';
+  }
+  $('#shB').innerHTML=h;
+}
+function studentTargetKp(){
+  if(!cur)return null;
+  var latest=latestClassJudgements(CLASS_JUDGEMENTS.filter(function(item){return item.studentId===cur.dbId}))
+    .filter(function(item){return item.status==='needs_support'})
+    .sort(function(a,b){return (b.judgedAt||0)-(a.judgedAt||0)})[0];
+  return CLASS_KPS.find(function(kp){return latest&&kp.id===latest.kpId})||selectedClassKp()||CLASS_KPS[0]||null;
+}
+function renderStudentNoteForm(){
+  if(!cur)return;
+  $('#shB').innerHTML='<form class="student-action-form" id="studentNoteForm">'+
+    '<div class="pnl"><div class="pt">记入 '+esc(cur.name)+' 的个人档案</div>'+
+    '<label style="display:block;margin-bottom:10px">记录类型<select name="category" style="display:block;width:100%;height:40px;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:#fff">'+
+    '<option>表扬</option><option>提醒</option><option>沟通</option><option>活动</option><option>通知</option></select></label>'+
+    '<label style="display:block">记录内容<textarea name="body" required maxlength="300" autofocus placeholder="例如：今天主动帮助同学讲题" style="display:block;width:100%;min-height:110px;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:12px;resize:vertical"></textarea></label></div>'+
+    '<div class="acts"><button type="button" class="act2" data-student-action="cancel">取消</button><button type="submit" class="act2 pri">保存记录</button></div></form>';
+  setTimeout(function(){$('#studentNoteForm textarea').focus()},0);
+}
+function renderStudentTaskForm(){
+  if(!cur)return;
+  var date=new Date(),dateValue=date.getFullYear()+'-'+('0'+(date.getMonth()+1)).slice(-2)+'-'+('0'+date.getDate()).slice(-2);
+  $('#shB').innerHTML='<form class="student-action-form" id="studentTaskForm">'+
+    '<div class="pnl"><div class="pt">为 '+esc(cur.name)+' 建任务</div>'+
+    '<label style="display:block;margin-bottom:10px">任务名称<input name="title" required maxlength="80" value="跟进：'+escAttr(cur.name)+'" style="display:block;width:100%;height:40px;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:0 10px"></label>'+
+    '<label style="display:block">到期日期<input name="dueDate" type="date" required value="'+dateValue+'" style="display:block;width:100%;height:40px;margin-top:6px;border:1px solid var(--line);border-radius:10px;padding:0 10px"></label></div>'+
+    '<div class="acts"><button type="button" class="act2" data-student-action="cancel">取消</button><button type="submit" class="act2 pri">创建任务</button></div></form>';
+}
+async function saveStudentNote(form){
+  if(!CLASS_DB||!cur)return;
+  var data=new FormData(form),body=String(data.get('body')||'').trim();if(!body)return;
+  var category=String(data.get('category')||'活动'),timestamp=Date.now();
+  var record={id:classUid('note'),classId:CLASS_ACTIVE_ID,type:'student_note',category:category,body:body,
+    studentIds:[cur.dbId],studentNames:[cur.name],createdAt:timestamp,updatedAt:timestamp};
+  try{await classDbPut('notes',record)}catch(error){console.warn('学生记录保存失败',error);toast('保存失败，请刷新后重试');return}
+  CLASS_NOTES.unshift(record);cur.last=0;
+  FEED.unshift({id:record.id,t:category,time:noteTime(timestamp),txt:body,sub:'相关学生：'+cur.name,c:category==='提醒'?'red':category==='通知'?'blue':category==='沟通'?'purple':category==='表扬'?'amber':'green'});
+  renderFeed('all');renderBlind();renderTab(0);toast('已保存到 '+cur.name+' 的个人档案');
+}
+async function saveStudentTask(form){
+  if(!CLASS_DB||!cur)return;
+  var access=window.TeacherWorkspaceAccess;
+  var manualTaskCount=CLASS_FOLLOWUP_TASKS.filter(function(task){return task.type!=='homework_followup'&&task.type!=='demo'}).length;
+  if(access&&access.isExperience&&manualTaskCount>=access.limits.manualTasks){access.requireFeature('unlimitedTasks');return}
+  var data=new FormData(form),title=String(data.get('title')||'').trim(),dueDate=String(data.get('dueDate')||'');if(!title||!dueDate)return;
+  var timestamp=Date.now(),record={id:classUid('task'),classId:CLASS_ACTIVE_ID,type:'manual',title:title,status:'pending',
+    dueDate:dueDate,list:'班级管理',source:'学生档案',studentIds:[cur.dbId],studentNames:[cur.name],createdAt:timestamp,updatedAt:timestamp};
+  try{await classDbPut('followupTasks',record)}catch(error){console.warn('任务创建失败',error);toast('创建失败，请刷新后重试');return}
+  CLASS_FOLLOWUP_TASKS.unshift(record);renderTab(0);toast('已为 '+cur.name+' 创建任务');
+}
+function goStudentLearning(){
+  var kp=studentTargetKp();
+  if(!kp){location.href='v07/index.html?view=class&focus=kps#class';return}
+  location.href='v07/index.html?student='+encodeURIComponent(cur.dbId)+'&kp='+encodeURIComponent(kp.id)+'&unit='+encodeURIComponent(kp.unitName||'')+'#matrix';
+}
+function close(){$('#sheet').classList.remove('on');$('#scrim').classList.remove('on')}
+
+/* 当前页面学生检索 */
+$('#q').addEventListener('input',function(){
+  var v=this.value.trim().replace(/\s/g,'');
+  $$('.seat:not(.empty)').forEach(function(s){
+    var st=STU[+s.dataset.i];
+    var hit=!v||st.name.replace(/\s/g,'').indexOf(v)>=0||String(st.no).indexOf(v)>=0;
+    s.style.outline=hit&&v?'2px solid var(--green)':'';
+    s.style.outlineOffset=hit&&v?'1px':'';
+    s.style.opacity=hit?'1':'.22';
+  });
+  $$('.sc').forEach(function(card){
+    var st=STU[+card.dataset.i],hit=!v||st.name.replace(/\s/g,'').indexOf(v)>=0||String(st.no).indexOf(v)>=0;
+    card.style.display=hit?'':'none';
+  });
+  $$('#listBody tr').forEach(function(row){
+    var st=STU[+row.dataset.i],hit=!v||st.name.replace(/\s/g,'').indexOf(v)>=0||String(st.no).indexOf(v)>=0;
+    row.style.display=hit?'':'none';
+  });
+});
+
+renderMap();renderWall();renderList();renderBlind();renderFeed('all');hydrateClassFromDb();
+})();
+</script>
+
+</body>
+</html>

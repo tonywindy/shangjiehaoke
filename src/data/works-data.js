@@ -1,4 +1,5 @@
 import miwenCover from '../../miwen/fm.png';
+import teacherWorkspaceCover from '../../teacher-workspace/assets/teacher-workspace-landing-hero.png';
 
 /**
  * 页面与作品统一数据源
@@ -39,6 +40,15 @@ export const SITE_PAGES = [
 ];
 
 export const WORKS_DATA = [
+  {
+    id: 'teacher-workspace',
+    title: '上节好课 · 教师工作台',
+    cover: teacherWorkspaceCover,
+    path: '/teacher-workspace/index.html',
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['班级管理', '教学记录'],
+    featured: true,
+  },
   {
     id: 'ai-math-assistant',
     title: 'AI小学数学精准教学助手',

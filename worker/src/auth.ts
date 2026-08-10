@@ -84,6 +84,24 @@ export async function verifyPassword(password: string, encodedHash: string): Pro
   }
 }
 
+export async function hashPassword(password: string, iterations = 100_000): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const passwordKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
+  const derived = await crypto.subtle.deriveBits({
+    name: 'PBKDF2',
+    hash: 'SHA-256',
+    salt,
+    iterations,
+  }, passwordKey, 256);
+  return `pbkdf2_sha256$${iterations}$${bytesToBase64Url(salt)}$${bytesToBase64Url(new Uint8Array(derived))}`;
+}
+
 export async function issueSessionToken(
   sessionSecret: string,
   teacher: Omit<TeacherSession, 'exp'>,

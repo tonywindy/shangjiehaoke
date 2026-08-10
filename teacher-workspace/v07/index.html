@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="上节好课教师工作台 v0.8：班级座位、知识矩阵、课堂打点与题库闭环。">
+  <title>上节好课 · 教师工作台 v0.8</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="../workspace-shell.css">
+  <script src="../access-control.js?v=20260807"></script>
+  <script type="module" src="../workspace-shell.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="../today.html" aria-label="返回教师工作台今日首页">
+        <svg class="leaf" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <path d="M33 7C33 7 12 5 8 18c-3.4 11 6 17 6 17s2-13 9.5-19C17 22 15 33 15 33s16 1 18-14c.6-4.6 0-12 0-12Z" fill="#1e9455"/>
+          <path d="M14 35s1.6-13 9.6-19.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span><b>上节好课</b><small>教师工作台</small></span>
+      </a>
+
+      <nav class="main-nav" aria-label="工作台导航">
+        <a class="main-link" href="../today.html">
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10.4 9-7 9 7"/><path d="M5.5 9.2V20h13V9.2"/><path d="M9.8 20v-5.6h4.4V20"/></svg></span><span>今日</span>
+        </a>
+        <a class="main-link" href="../tasks.html">
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12 2.6 2.6L16.4 9"/></svg></span><span>任务</span>
+        </a>
+        <a class="main-link" href="../class.html" data-main-view="class">
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5a6 6 0 0 1 12 0"/><path d="M16.6 5.4a3.2 3.2 0 0 1 0 6.2"/><path d="M19.8 19.5a5.6 5.6 0 0 0-2.7-4.8"/></svg></span><span>班级</span>
+        </a>
+        <a class="main-link active" href="#matrix" data-main-view="learning" aria-current="page">
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 19V10.5"/><path d="M12 19V5"/><path d="M19 19v-6"/></svg></span><span>学情</span>
+        </a>
+      </nav>
+
+      <div class="shell-grow"></div>
+      <a href="../review-export.html" class="shell-mini">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H13l6 6v8.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 18.5Z"/><path d="M13 4v6h6"/></svg>
+        回顾与导出
+      </a>
+      <button class="shell-kbtn" type="button" data-kopen>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+        搜索<span class="kk">⌘K</span>
+      </button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="shell-title">上节好课 · 教师工作台</div>
+        <div class="shell-grow"></div>
+        <div class="shell-date">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.5h17M8 3v3.6M16 3v3.6"/></svg>
+          <span id="shellDateText">7月27日</span><span id="shellWeekText" style="color:var(--text-3)">星期一</span>
+        </div>
+        <button class="shell-picker" type="button">四年级1班
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-3)"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <label class="shell-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+          <input type="search" placeholder="搜索学生、内容、知识点" aria-label="搜索学生、内容、知识点">
+        </label>
+      </header>
+
+      <div class="learning-tools sub-nav-wrap">
+        <div class="view-copy">
+          <p class="eyebrow" id="viewEyebrow">今天只维护一张表</p>
+          <h1 id="viewTitle">知识矩阵</h1>
+        </div>
+        <nav class="sub-nav" aria-label="学情页面导航">
+          <button class="sub-nav-item active" data-view="matrix">
+            <span aria-hidden="true">▦</span><span>知识矩阵</span>
+          </button>
+          <button class="sub-nav-item" data-view="library">
+            <span aria-hidden="true">▤</span><span>我的题库</span>
+            <span class="nav-count" id="libraryCount">0</span>
+          </button>
+        </nav>
+        <div class="tool-grow"></div>
+        <label class="unit-picker" id="unitPickerWrap">
+          <span>单元</span>
+          <select id="unitSelect" aria-label="选择单元"></select>
+        </label>
+        <button class="button secondary" id="exportQuick">导出备份</button>
+      </div>
+
+      <section class="view active" id="matrixView">
+        <div class="summary-row">
+          <article class="summary-card">
+            <span class="summary-icon green" aria-hidden="true">✓</span>
+            <div><strong id="masteredCount">0</strong><span>已掌握判断</span></div>
+          </article>
+          <article class="summary-card">
+            <span class="summary-icon red" aria-hidden="true">×</span>
+            <div><strong id="supportCount">0</strong><span>待提升判断</span></div>
+          </article>
+          <article class="summary-card">
+            <span class="summary-icon gray" aria-hidden="true">·</span>
+            <div><strong id="unassessedCount">0</strong><span>尚未判断</span></div>
+          </article>
+          <article class="summary-card">
+            <span class="summary-icon amber" aria-hidden="true">⌁</span>
+            <div><strong id="noteCount">0</strong><span>已记录错因</span></div>
+          </article>
+        </div>
+
+        <div class="matrix-layout">
+          <section class="panel matrix-panel">
+            <div class="panel-head">
+              <div>
+                <h2 id="matrixTitle">本单元知识判断</h2>
+                <p>点状态格依次切换：未判断 → 已掌握 → 待提升 → 未判断</p>
+              </div>
+              <div class="head-actions">
+                <div class="legend" aria-label="状态图例">
+                  <span><i class="dot mastered"></i>已掌握</span>
+                  <span><i class="dot support"></i>待提升</span>
+                  <span><i class="dot empty"></i>未判断</span>
+                </div>
+              </div>
+            </div>
+            <div class="matrix-scroll" id="matrixScroll">
+              <table class="matrix-table">
+                <thead id="matrixHead"></thead>
+                <tbody id="matrixBody"></tbody>
+              </table>
+            </div>
+            <div class="empty-state hidden" id="matrixEmpty">
+              <span aria-hidden="true">＋</span>
+              <h3>还没有可以显示的知识矩阵</h3>
+              <p>先导入学生和知识点，几分钟就能开始记录。</p>
+              <button class="button primary" data-go-data>去导入数据</button>
+            </div>
+          </section>
+
+          <aside class="panel detail-panel" id="detailPanel">
+            <div class="detail-empty" id="detailEmpty">
+              <span aria-hidden="true">↖</span>
+              <h2>选择一个格子</h2>
+              <p>这里会显示学生、知识点、错因和补差出题入口。</p>
+            </div>
+            <div class="detail-content hidden" id="detailContent">
+              <div class="detail-head">
+                <div>
+                  <span class="detail-kicker">当前判断</span>
+                  <h2 id="detailStudent">—</h2>
+                  <p id="detailKp">—</p>
+                </div>
+                <button class="icon-button" id="closeDetail" aria-label="关闭详情">×</button>
+              </div>
+
+              <fieldset class="status-control">
+                <legend>掌握状态</legend>
+                <button data-status="unassessed">未判断</button>
+                <button data-status="mastered">已掌握</button>
+                <button data-status="needs_support">待提升</button>
+              </fieldset>
+
+              <label class="field">
+                <span>一句话错因 <small>停顿后自动保存，并加入本单元常用错因</small></span>
+                <input id="noteInput" maxlength="80" placeholder="例如：竖式对位错，商的位置写错" autocomplete="off">
+              </label>
+              <div class="inline-actions">
+                <span class="saved-hint" id="noteSaved" aria-live="polite"></span>
+              </div>
+              <div class="reason-templates">
+                <span>本单元常用错因</span>
+                <div id="reasonChips" class="reason-chips"></div>
+              </div>
+
+              <div class="save-set">
+                <div class="subhead">
+                  <div>
+                    <span class="detail-kicker">补差题记录</span>
+                    <h3>保存教师编写的练习题</h3>
+                  </div>
+                </div>
+                <label class="field">
+                  <span>题组标题</span>
+                  <input id="setTitle" placeholder="题组标题">
+                </label>
+                <label class="field">
+                  <span class="sr-only">题组内容</span>
+                  <textarea id="setContent" rows="8" placeholder="输入题目、答案和解析；也可以粘贴已有练习。"></textarea>
+                </label>
+                <button class="button primary full" id="saveSet">保存到题库</button>
+              </div>
+
+              <div class="history-block">
+                <div class="subhead">
+                  <h3>最近判断</h3>
+                  <span id="historyCount">0 条</span>
+                </div>
+                <div id="judgementHistory" class="history-list"></div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="libraryView">
+        <div class="library-toolbar">
+          <div>
+            <h2>按知识点沉淀题组</h2>
+            <p>题目挂在知识点下，可以跨学生、跨学期复用。</p>
+          </div>
+          <label class="search-field">
+            <span class="sr-only">搜索题库</span>
+            <input id="librarySearch" placeholder="搜索知识点、错因或题目内容">
+          </label>
+        </div>
+        <div id="libraryList" class="library-list"></div>
+        <div class="empty-state hidden" id="libraryEmpty">
+          <span aria-hidden="true">▤</span>
+          <h3>题库还是空的</h3>
+          <p>在矩阵中选择学生和知识点，手动保存一组补差练习。</p>
+          <button class="button primary" data-go-matrix>回到知识矩阵</button>
+        </div>
+      </section>
+
+      <section class="view" id="classView">
+        <div class="seat-editor-layout" id="seatEditorSection">
+          <section class="panel seat-editor-card">
+            <div class="panel-head">
+              <div>
+                <h2>编辑班级座位</h2>
+                <p>拖动座位上的学生名牌到另一位学生，即可点对点交换；也可以先点学生，再点目标座位。</p>
+              </div>
+              <button class="button primary" id="toggleSeatEdit">进入编辑模式</button>
+            </div>
+            <div class="seat-toolbar">
+              <label>排数 <input type="number" id="seatRows" min="1" max="12" value="6"></label>
+              <label>每排桌数 <input type="number" id="seatDesks" min="1" max="9" value="3"></label>
+              <label>每桌座位 <input type="number" id="seatPerDesk" min="1" max="4" value="2"></label>
+              <span class="seat-limit" id="seatLimit">每排 6 / 9 座</span>
+              <button class="button secondary small" id="applySeatLayout">应用布局</button>
+              <span class="toolbar-divider"></span>
+              <button class="button secondary small" id="autoFillSeats">按名单自动填充</button>
+              <button class="button secondary small" id="undoSeatChange" disabled>撤销上一步</button>
+              <button class="button secondary small" data-move-seats="front">全班前移一排</button>
+              <button class="button secondary small" data-move-seats="back">全班后移一排</button>
+              <button class="button secondary small" data-move-seats="left">全班左移一桌</button>
+              <button class="button secondary small" data-move-seats="right">全班右移一桌</button>
+            </div>
+            <div class="classroom-front">讲台 · 教室前方</div>
+            <div id="seatBoard" class="seat-board"></div>
+          </section>
+
+          <aside class="panel student-roster-panel" aria-label="待安排学生">
+            <div class="roster-head">
+              <div>
+                <h2>学生名牌</h2>
+                <p><b id="unassignedCount">0</b> 人待安排 · 拖入左侧座位</p>
+              </div>
+              <button class="icon-button" id="clearSeatSelection" type="button" aria-label="取消已选学生">×</button>
+            </div>
+            <label class="roster-search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+              <input id="seatRosterSearch" type="search" placeholder="搜索姓名或拼音" autocomplete="off">
+            </label>
+            <div class="roster-body">
+              <div id="unassignedStudents" class="unassigned-students"></div>
+              <nav id="seatAlphabet" class="seat-alphabet" aria-label="按姓名首字母筛选"></nav>
+            </div>
+            <div class="roster-tip">拖到空位是移动；拖到已有学生的座位会交换双方位置。</div>
+          </aside>
+        </div>
+
+        <div class="data-grid">
+          <section class="panel data-card" id="studentImportSection">
+            <span class="step-number">1</span>
+            <div>
+              <h2>导入学生名单</h2>
+              <p>每行一位学生，也支持“学号,姓名”。重新导入会替换当前名单。</p>
+            </div>
+            <label class="field">
+              <span class="sr-only">学生名单文本</span>
+              <textarea id="studentPaste" rows="10" placeholder="学号,姓名&#10;1,学生姓名"></textarea>
+            </label>
+            <div class="file-row student-file-row">
+              <label class="file-button">
+                <input type="file" id="studentExcelFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                <span>选择 Excel</span>
+              </label>
+              <span id="studentExcelName">未选择文件</span>
+            </div>
+            <p class="import-hint">支持 .xlsx；推荐第一行为“学号、姓名”，读取后可先在上方核对。</p>
+            <div class="card-actions"><button class="button primary" id="importStudents">导入学生</button></div>
+          </section>
+
+          <section class="panel data-card">
+            <span class="step-number">2</span>
+            <div>
+              <h2>导入知识点清单</h2>
+              <p>识别“单元、知识点”表头，支持直接粘贴、Excel 或 CSV。</p>
+            </div>
+            <label class="field">
+              <span class="sr-only">知识点清单文本</span>
+              <textarea id="kpPaste" rows="10" placeholder="第一单元,表内乘除法&#10;第一单元,一位数除法竖式"></textarea>
+            </label>
+            <div class="file-row">
+              <label class="file-button">
+                <input type="file" id="kpFile" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
+                <span>选择 Excel / CSV</span>
+              </label>
+              <span id="kpFileName">未选择文件</span>
+            </div>
+            <p class="import-hint">推荐首行为“单元、知识点”；读取后会先填入上方文本框供核对。</p>
+            <div class="card-actions">
+              <button class="button secondary template-button" id="applyBnupTemplate">一键套用北师大四上清单</button>
+              <a class="button secondary" id="downloadKpTemplate" href="../assets/北师大版四年级上册数学知识点清单.xlsx" download>下载 Excel 模板</a>
+              <button class="button primary" id="importKps">导入知识点</button>
+            </div>
+            <p class="template-meta" id="bnupTemplateMeta"></p>
+          </section>
+
+          <section class="panel data-card wide">
+            <span class="step-number">3</span>
+            <div>
+              <h2>班级数据备份与恢复</h2>
+              <p>这是本机试用版。每周导出一次完整备份，换电脑时可以恢复。</p>
+            </div>
+            <div class="backup-actions">
+              <button class="button primary" id="exportBackup">导出当前班级备份</button>
+              <a class="file-button" href="../review-export.html#workspaceBackupPane">备份与安全恢复</a>
+              <button class="button danger" id="clearAll">清空本机数据</button>
+            </div>
+            <dl class="data-stats" id="dataStats"></dl>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="setup-dialog" id="setupDialog">
+    <form method="dialog">
+      <span class="setup-mark" aria-hidden="true">叶</span>
+      <p class="eyebrow">上节好课 · 教师工作台 v0.8</p>
+      <h2>先用一张表，记录真实教学判断</h2>
+      <p class="setup-copy">第一版只做三件事：导入知识点、点格子记录掌握状态、按错因保存补差题。</p>
+      <div class="setup-options">
+        <button value="import" class="setup-option" id="startImport">
+          <b>导入我的数据</b>
+          <span>导入学生名单和知识点清单后开始</span>
+        </button>
+      </div>
+      <p class="privacy-note">数据默认只保存在这台设备的当前浏览器中。</p>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

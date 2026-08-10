@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>上节好课 · 教师工作台 低保真原型 v0.4</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --line:#e3e6ea; --line2:#eef0f3;
+  --text:#1f2328; --text2:#5b6470; --text3:#8b949e;
+  --brand:#2f6feb; --brand-weak:#eaf1fe;
+  --red:#d1435b; --red-weak:#fdecef;
+  --amber:#c98a12; --amber-weak:#fdf4e3;
+  --green:#1f9254; --green-weak:#e8f6ee;
+  --gray:#b4bcc6; --gray-weak:#f1f3f5;
+  --radius:8px;
+}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
+button{font:inherit;cursor:pointer}
+.app{display:flex;min-height:100vh}
+
+/* ---------- 侧边栏 ---------- */
+.side{width:180px;flex:none;background:#1e2530;color:#c6cdd6;padding:14px 0;display:flex;flex-direction:column}
+.side .logo{padding:6px 16px 16px;font-weight:600;color:#fff;font-size:15px}
+.side .logo small{display:block;font-weight:400;color:#7c8695;font-size:11px;margin-top:2px}
+.nav-item{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;cursor:pointer;font-size:14px}
+.nav-item:hover{background:#28313e;color:#fff}
+.nav-item.active{background:var(--brand);color:#fff}
+.nav-item .badge{background:var(--red);color:#fff;border-radius:9px;padding:0 6px;font-size:11px;line-height:16px}
+.nav-sub{padding:6px 16px 6px 30px;font-size:13px;color:#9aa4b1;cursor:pointer}
+.nav-sub:hover{color:#fff}
+.nav-sub.active{color:#fff;font-weight:600}
+.side .foot{margin-top:auto;padding:12px 16px;font-size:11px;color:#69727f;border-top:1px solid #2b3441}
+
+/* ---------- 主区 ---------- */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:48px;flex:none;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 18px}
+.topbar .crumb{font-weight:600}
+.topbar .spacer{flex:1}
+.sel{border:1px solid var(--line);border-radius:6px;padding:4px 8px;background:#fff;color:var(--text)}
+.page{padding:18px;display:none}
+.page.active{display:block}
+
+/* ---------- 通用 ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px}
+.card > h3{margin:0;padding:11px 14px;border-bottom:1px solid var(--line2);font-size:14px;display:flex;align-items:center;gap:8px}
+.card > h3 .spacer{flex:1}
+.card .body{padding:14px}
+.muted{color:var(--text2)}
+.tiny{font-size:12px;color:var(--text3)}
+.row{display:flex;gap:14px;align-items:flex-start}
+.col{flex:1;min-width:0}
+.btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 11px;color:var(--text)}
+.btn:hover{border-color:#c2c9d2;background:#fafbfc}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:#2860cf}
+.btn.sm{padding:3px 8px;font-size:12px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--brand)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 14px}
+.tab{padding:8px 12px;border-bottom:2px solid transparent;color:var(--text2);cursor:pointer;font-size:13px}
+.tab.active{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+.pill{display:inline-block;border-radius:11px;padding:1px 9px;font-size:12px;border:1px solid transparent}
+.p-gray{background:var(--gray-weak);color:var(--text2);border-color:var(--line)}
+.p-red{background:var(--red-weak);color:var(--red);border-color:#f6d3da}
+.p-amber{background:var(--amber-weak);color:var(--amber);border-color:#f2e0be}
+.p-green{background:var(--green-weak);color:var(--green);border-color:#c9e8d6}
+.p-blue{background:var(--brand-weak);color:var(--brand);border-color:#cfe0fb}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line2);text-align:left}
+th{color:var(--text2);font-weight:500;background:#fbfcfd;position:sticky;top:0}
+.note{background:#fffbe9;border:1px solid #f0e3b8;border-radius:6px;padding:9px 11px;font-size:12.5px;color:#6b5a1e;margin:0 0 12px}
+.note b{color:#4d4110}
+.ann{border-left:3px solid var(--brand);background:var(--brand-weak);padding:8px 11px;font-size:12.5px;color:#2a4f9e;border-radius:0 6px 6px 0;margin:10px 0}
+
+/* 状态点 */
+.st{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:12px;font-weight:700}
+.st-un{background:var(--gray-weak);color:#c3cad3;border:1px dashed #d2d8de}
+.st-need{background:var(--red-weak);color:var(--red)}
+.st-dev{background:var(--amber-weak);color:var(--amber)}
+.st-mast{background:var(--green-weak);color:var(--green)}
+.cell{cursor:pointer;text-align:center}
+.cell:hover{background:var(--brand-weak)}
+
+/* 分布条 */
+.bar{display:flex;height:20px;border-radius:4px;overflow:hidden;background:var(--gray-weak);min-width:200px}
+.bar i{display:block;height:100%;font-style:normal;font-size:11px;color:#fff;text-align:center;line-height:20px}
+.b-need{background:#e05c72}.b-dev{background:#e0a83c}.b-mast{background:#3aa96b}.b-un{background:#cdd4dc;color:#6b7480}
+
+/* 抽屉 */
+.drawer{position:fixed;top:0;right:0;width:400px;height:100%;background:#fff;border-left:1px solid var(--line);box-shadow:-4px 0 18px rgba(0,0,0,.08);transform:translateX(100%);transition:.2s;z-index:50;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer header{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;font-weight:600}
+.drawer .dbody{padding:14px;overflow:auto;flex:1}
+.tl{border-left:2px solid var(--line);padding-left:14px;margin-left:5px}
+.tl .ev{position:relative;padding-bottom:14px}
+.tl .ev::before{content:"";position:absolute;left:-20px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--brand)}
+
+/* 步骤条 */
+.steps{display:flex;gap:0;margin-bottom:14px}
+.steps .s{flex:1;padding:8px 10px;background:#fff;border:1px solid var(--line);border-right:none;font-size:13px;color:var(--text3)}
+.steps .s:last-child{border-right:1px solid var(--line);border-radius:0 6px 6px 0}
+.steps .s:first-child{border-radius:6px 0 0 6px}
+.steps .s.done{color:var(--green);background:var(--green-weak)}
+.steps .s.cur{color:#fff;background:var(--brand);border-color:var(--brand);font-weight:600}
+
+/* 看板 */
+.kanban{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.kcol{flex:1;min-width:158px;background:#f1f3f6;border-radius:8px;padding:8px}
+.kcol h4{margin:0 0 8px;font-size:12.5px;color:var(--text2);display:flex;justify-content:space-between}
+.kcard{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px;margin-bottom:7px;font-size:12.5px;cursor:pointer}
+.kcard:hover{border-color:var(--brand)}
+.kcard b{display:block;font-weight:600;margin-bottom:3px}
+
+/* 确认页 */
+.reviewer{display:flex;gap:12px;align-items:stretch;height:calc(100vh - 200px);min-height:460px}
+.rq{width:200px;flex:none;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:auto}
+.rq .grp{padding:7px 10px;font-size:12px;color:var(--text2);background:#fbfcfd;border-bottom:1px solid var(--line2);position:sticky;top:0}
+.rq .it{padding:8px 10px;border-bottom:1px solid var(--line2);font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.rq .it:hover{background:#f7f9fc}
+.rq .it.cur{background:var(--brand-weak);border-left:3px solid var(--brand);padding-left:7px}
+.rpaper{flex:1;background:#fff;border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-width:0}
+.rpanel{width:330px;flex:none;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:auto}
+.scan{flex:1;background:#f4f5f7;margin:10px;border-radius:6px;padding:12px;overflow:auto;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#42484f}
+.qrow{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.qrow.err{border-left:3px solid var(--red)}
+.qrow.ok{border-left:3px solid var(--green)}
+.sugg{border:1px solid var(--line);border-radius:6px;padding:10px;margin:10px}
+.sugg h5{margin:0 0 6px;font-size:12.5px;color:var(--text2)}
+.actionbar{border-top:1px solid var(--line);padding:9px 10px;display:flex;gap:8px;align-items:center;background:#fbfcfd;border-radius:0 0 8px 8px}
+kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11px;font-family:inherit;color:var(--text2)}
+
+/* 补差三层 */
+.layer{border:1px solid var(--line);border-radius:6px;margin-bottom:10px}
+.layer h5{margin:0;padding:8px 11px;background:#fbfcfd;border-bottom:1px solid var(--line2);font-size:13px;display:flex;gap:8px;align-items:center}
+.layer .qq{padding:9px 11px;border-bottom:1px solid var(--line2);font-size:13px;display:flex;gap:10px}
+.layer .qq:last-child{border-bottom:none}
+.layer .qq .qtx{flex:1}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;padding:4px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--text2);align-items:center;flex-wrap:wrap}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ============ 侧边栏 ============ -->
+<aside class="side">
+  <div class="logo">上节好课<small>教师工作台 v0.4 原型</small></div>
+  <div class="nav-item active" data-go="today">今日 <span class="badge">17</span></div>
+  <div class="nav-item" data-go="today">任务</div>
+  <div class="nav-item" data-go="matrix">班级</div>
+  <div class="nav-item" data-go="matrix">学情</div>
+  <div class="nav-sub" data-go="assess">· 评价任务</div>
+  <div class="nav-sub active" data-go="matrix">· 知识矩阵</div>
+  <div class="nav-sub" data-go="remedy">· 精准补差</div>
+  <div class="nav-sub" data-go="import">· 知识清单</div>
+  <div class="nav-item" data-go="today">记录</div>
+  <div class="foot">
+    快捷入口<br>
+    <a href="#" data-go="student" style="color:#8fb4ff">学生档案示例</a><br>
+    <a href="#" data-go="review" style="color:#8fb4ff">AI 分析确认</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <span class="crumb" id="crumb">今日</span>
+    <span class="spacer"></span>
+    <select class="sel"><option>三年级 2 班</option><option>三年级 5 班</option></select>
+    <select class="sel"><option>小学数学 · 三上</option></select>
+    <select class="sel"><option>第一单元</option><option>第二单元</option><option>全部单元</option></select>
+    <span class="tiny">王老师</span>
+  </div>
+
+<!-- ==================== 页面 1：今日 ==================== -->
+<section class="page active" id="p-today">
+  <div class="note"><b>设计意图：</b>"今日"是唯一的日常入口，把学情模块产生的行动翻译成"我现在点一下就能做完的事"。三个区块的顺序不可调换 —— <b>待我确认</b>（有人在等我）＞ <b>今天要做</b>（我的执行）＞ <b>班级关注</b>（我的判断）。班级关注区永远不写"班级没掌握"，只写"证据显示"或"证据不足"。</div>
+
+  <div class="card">
+    <div class="body" style="display:flex;gap:8px;align-items:center">
+      <input class="sel" style="flex:1" placeholder="随手记一句：今天 @张小雨 主动帮同学讲题，@李明 作业没交需要跟进…">
+      <button class="btn primary">记录</button>
+      <button class="btn">📷 传作业</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <h3>待我确认 <span class="pill p-red">17</span><span class="spacer"></span><span class="tiny">按耗时排序</span></h3>
+        <div class="body" style="padding:0">
+          <div style="padding:11px 14px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:10px">
+            <div style="flex:1">
+              <div>三年级 2 班 · 第一单元练习：<b>12 份</b> AI 分析待确认</div>
+              <div class="tiny">其中 9 份高置信度可批量接受 · <b style="color:var(--red)">3 份需要你逐个看</b> · 预计 4 分钟</div>
+            </div>
+            <button class="btn primary sm" data-go="review">去确认</button>
+          </div>
+          <div style="padding:11px 14px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:10px">
+            <div style="flex:1"><div>3 名学生的<b>姓名匹配</b>不确定</div><div class="tiny">文件名 IMG_3391 / IMG_3402 / IMG_3418 未能匹配到花名册</div></div>
+            <button class="btn sm" data-go="assess">去匹配</button>
+          </div>
+          <div style="padding:11px 14px;display:flex;align-items:center;gap:10px">
+            <div style="flex:1"><div>5 条<b>个性化提升建议</b>待确认</div><div class="tiny">AI 已尝试合并到已有提升项 —— 4 条建议合并，1 条建议新建</div></div>
+            <button class="btn sm" data-go="student">去确认</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>今天要做<span class="spacer"></span><span class="tiny">来自学情与班级事务</span></h3>
+        <div class="body" style="padding:6px 14px">
+          <label class="chk"><input type="checkbox"> 为 6 名学生准备"知识点 2：一位数除法竖式"补差题 <span class="pill p-blue">学情</span></label>
+          <label class="chk"><input type="checkbox"> 打印张小雨、李明的个性化练习 <span class="pill p-blue">学情</span></label>
+          <label class="chk"><input type="checkbox"> 复测王浩 · 知识点 1 <span class="pill p-amber">到期</span> <span class="tiny">补差完成已 6 天</span></label>
+          <label class="chk"><input type="checkbox"> 提醒陈可欣明天带三角尺 <span class="pill p-gray">班级事务</span></label>
+          <label class="chk"><input type="checkbox" checked> <s class="muted">检查上周补差任务完成情况</s></label>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:340px;flex:none">
+      <div class="card">
+        <h3>班级关注</h3>
+        <div class="body" style="padding:0">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--line2)">
+            <div>知识点 2 · 一位数除法竖式</div>
+            <div class="bar" style="margin:6px 0 4px"><i class="b-need" style="width:47%">18</i><i class="b-dev" style="width:21%">8</i><i class="b-mast" style="width:24%">9</i><i class="b-un" style="width:8%">3</i></div>
+            <div class="tiny">18 人待提升（占已评价的 51%）→ <b style="color:var(--red)">建议全班重讲</b></div>
+            <button class="btn sm" style="margin-top:6px" data-go="matrix">看矩阵</button>
+          </div>
+          <div style="padding:10px 14px;border-bottom:1px solid var(--line2)">
+            <div>知识点 3 · 有余数除法的验算</div>
+            <div class="tiny" style="margin-top:4px">9 人未评价 —— <b>证据不足，不能判断掌握情况</b>，建议下次练习覆盖</div>
+          </div>
+          <div style="padding:10px 14px">
+            <div>4 个个性化提升项超过 2 周未跟进</div>
+            <div class="tiny" style="margin-top:4px">张小雨"审题漏条件"已 19 天无新证据</div>
+            <button class="btn sm" style="margin-top:6px">一键转为教师任务</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>今日动态</h3>
+        <div class="body tiny" style="line-height:1.9">
+          09:12 上传 三2班第一单元练习（35 份）<br>
+          09:20 AI 分析完成 32 份，3 份图片不清晰<br>
+          10:05 你确认了 8 名学生的知识状态<br>
+          10:06 知识矩阵已更新 · 知识点 1、2<br>
+          14:30 记录班级事务：数学小组竞赛
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 页面 2：班级知识矩阵 ==================== -->
+<section class="page" id="p-matrix">
+  <div class="note"><b>关键设计取舍：</b>默认视图<b>不是</b>"学生 × 知识点"大表格，而是<b>教学视图</b>（一行一个知识点 + 人数分布条）。原因：一学期 60–100 个知识点，学生×知识点表格必然横向滚动到不可用（Canvas Learning Mastery Gradebook 的经典失败）。教师 90% 的日常问题是"这个知识点全班怎么样、该重讲还是小组补"，教学视图直接回答；"学生 × 知识点"是下钻视图，只在选定单元后展开。</div>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active" data-mtab="teach">教学视图 · 知识点 × 人数分布</div>
+      <div class="tab" data-mtab="grid">学生视图 · 学生 × 知识点</div>
+      <div style="flex:1"></div>
+      <div style="padding:8px 12px" class="tiny">
+        <label><input type="checkbox"> 只看待提升</label> &nbsp;
+        <label><input type="checkbox"> 只看未评价</label>
+      </div>
+    </div>
+
+    <!-- 教学视图 -->
+    <div class="body" id="m-teach">
+      <div class="legend" style="margin-bottom:10px">
+        <span><i style="display:inline-block;width:10px;height:10px;background:#e05c72;border-radius:2px"></i> 待提升</span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#e0a83c;border-radius:2px"></i> 基本掌握</span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#3aa96b;border-radius:2px"></i> 已掌握</span>
+        <span><i style="display:inline-block;width:10px;height:10px;background:#cdd4dc;border-radius:2px"></i> 未评价</span>
+        <span class="tiny">· 灰色不计入百分比，"未评价"永远不等于"不会"</span>
+      </div>
+      <table>
+        <thead><tr><th style="width:30%">知识点</th><th style="width:36%">全班分布（38 人）</th><th>证据</th><th>系统提示</th><th style="width:120px">操作</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1 · 两位数乘一位数（不进位）</td>
+            <td><div class="bar"><i class="b-need" style="width:8%"></i><i class="b-dev" style="width:16%">6</i><i class="b-mast" style="width:71%">27</i><i class="b-un" style="width:5%"></i></div></td>
+            <td class="tiny">2.3 条/人</td>
+            <td><span class="pill p-green">整体良好</span></td>
+            <td><button class="btn sm" data-go="remedy">小组补差 3 人</button></td>
+          </tr>
+          <tr style="background:#fffaf9">
+            <td><b>2 · 一位数除法竖式</b></td>
+            <td><div class="bar"><i class="b-need" style="width:47%">18</i><i class="b-dev" style="width:21%">8</i><i class="b-mast" style="width:24%">9</i><i class="b-un" style="width:8%">3</i></div></td>
+            <td class="tiny">1.8 条/人</td>
+            <td><span class="pill p-red">建议全班重讲</span></td>
+            <td><button class="btn primary sm" data-go="remedy">建补差任务</button></td>
+          </tr>
+          <tr>
+            <td>3 · 有余数除法的验算</td>
+            <td><div class="bar"><i class="b-need" style="width:16%">6</i><i class="b-dev" style="width:26%">10</i><i class="b-mast" style="width:34%">13</i><i class="b-un" style="width:24%">9</i></div></td>
+            <td class="tiny">0.9 条/人</td>
+            <td><span class="pill p-gray">证据不足</span></td>
+            <td><button class="btn sm" data-go="assess">安排评价</button></td>
+          </tr>
+          <tr>
+            <td>4 · 倍的认识</td>
+            <td><div class="bar"><i class="b-un" style="width:100%">38 人未评价</i></div></td>
+            <td class="tiny">0</td>
+            <td><span class="pill p-gray">尚未教学</span></td>
+            <td><button class="btn sm">课堂快速打点</button></td>
+          </tr>
+          <tr>
+            <td>5 · 求一个数是另一个数的几倍</td>
+            <td><div class="bar"><i class="b-need" style="width:11%">4</i><i class="b-dev" style="width:13%">5</i><i class="b-mast" style="width:53%">20</i><i class="b-un" style="width:23%">9</i></div></td>
+            <td class="tiny">1.4 条/人</td>
+            <td><span class="pill p-amber">2 人状态反复</span></td>
+            <td><button class="btn sm">查看</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="ann"><b>课堂快速打点（阶段 2 的关键入口，不依赖 AI）：</b>点击后弹出全班头像墙 → 教师点掉"没掌握的人" → 保存。3 秒完成一个知识点的全班评价，证据来源记为"课堂观察"。没有这个入口，纯手工维护知识矩阵不会有教师真的做。</div>
+    </div>
+
+    <!-- 学生视图 -->
+    <div class="body hidden" id="m-grid">
+      <div class="tiny" style="margin-bottom:8px">第一单元 · 5 个知识点 · 点任意格子查看证据 · 支持多选学生批量建补差</div>
+      <table>
+        <thead><tr>
+          <th style="width:26px"><input type="checkbox"></th><th style="width:90px">学生</th>
+          <th class="cell">1</th><th class="cell">2</th><th class="cell">3</th><th class="cell">4</th><th class="cell">5</th>
+          <th style="width:170px">个性化提升</th><th style="width:90px">最近评价</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><input type="checkbox" checked></td><td><a href="#" data-go="student">张小雨</a></td>
+            <td class="cell" data-cell="1"><span class="st st-mast">✓</span></td>
+            <td class="cell" data-cell="1"><span class="st st-need">✕</span></td>
+            <td class="cell" data-cell="1"><span class="st st-dev">◐</span></td>
+            <td class="cell"><span class="st st-un">·</span></td>
+            <td class="cell"><span class="st st-mast">✓</span></td>
+            <td class="tiny">审题易漏条件</td><td class="tiny">7-27</td></tr>
+          <tr><td><input type="checkbox" checked></td><td>李　明</td>
+            <td class="cell" data-cell="1"><span class="st st-dev">◐</span></td>
+            <td class="cell" data-cell="1"><span class="st st-need">✕</span></td>
+            <td class="cell"><span class="st st-un">·</span></td>
+            <td class="cell"><span class="st st-un">·</span></td>
+            <td class="cell" data-cell="1"><span class="st st-mast">✓</span></td>
+            <td class="tiny">单位书写不完整</td><td class="tiny">7-26</td></tr>
+          <tr><td><input type="checkbox"></td><td>王　浩</td>
+            <td class="cell" data-cell="1"><span class="st st-mast">✓</span></td>
+            <td class="cell" data-cell="1"><span class="st st-mast">✓</span></td>
+            <td class="cell" data-cell="1"><span class="st st-mast">✓</span></td>
+            <td class="cell"><span class="st st-un">·</span></td>
+            <td class="cell" data-cell="1"><span class="st st-dev">◐</span></td>
+            <td class="tiny">—</td><td class="tiny">7-25</td></tr>
+          <tr><td><input type="checkbox" checked></td><td>陈可欣</td>
+            <td class="cell" data-cell="1"><span class="st st-mast">✓</span></td>
+            <td class="cell" data-cell="1"><span class="st st-need">✕</span></td>
+            <td class="cell" data-cell="1"><span class="st st-need">✕</span></td>
+            <td class="cell"><span class="st st-un">·</span></td>
+            <td class="cell"><span class="st st-un">·</span></td>
+            <td class="tiny">竖式书写不规范</td><td class="tiny">7-27</td></tr>
+          <tr><td><input type="checkbox"></td><td>刘星宇</td>
+            <td class="cell" data-cell="1"><span class="st st-dev">◐</span></td>
+            <td class="cell" data-cell="1"><span class="st st-dev">◐</span></td>
+            <td class="cell" data-cell="1"><span class="st st-mast">✓</span></td>
+            <td class="cell"><span class="st st-un">·</span></td>
+            <td class="cell" data-cell="1"><span class="st st-mast">✓</span></td>
+            <td class="tiny">图文题读取慢</td><td class="tiny">7-27</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;background:var(--brand-weak);border:1px solid #cfe0fb;border-radius:6px;padding:9px 12px;display:flex;align-items:center;gap:10px">
+        <b>已选 3 名学生</b><span class="tiny">共同薄弱：知识点 2</span><span style="flex:1"></span>
+        <button class="btn sm">批量改状态</button>
+        <button class="btn primary sm" data-go="remedy">创建小组补差</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 页面 3：学生知识清单 ==================== -->
+<section class="page" id="p-student">
+  <div class="note"><b>设计意图：</b>学生页只做<b>信息聚合</b>，不生成任何形式的综合评分或排名。个性化提升项默认仅教师可见，且限制活跃项数量（≤5），逼教师做取舍，避免变成没人管的碎片列表。</div>
+
+  <div class="card">
+    <div class="body" style="display:flex;align-items:center;gap:14px;padding-bottom:0;border:none">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--brand-weak);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600">张</div>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:600">张小雨 <span class="tiny" style="font-weight:400">三年级 2 班 · 学号 07</span></div>
+        <div class="tiny">最近评价 7 月 27 日 · 本单元 5 个知识点：已掌握 2 · 基本掌握 1 · 待提升 1 · 未评价 1</div>
+      </div>
+      <button class="btn sm">导出该生知识清单</button>
+      <button class="btn primary sm" data-go="remedy">生成补差题</button>
+    </div>
+    <div class="tabs" style="margin-top:10px">
+      <div class="tab" data-stab="s1">概览</div>
+      <div class="tab" data-stab="s2">班级经历</div>
+      <div class="tab active" data-stab="s3">知识清单</div>
+      <div class="tab" data-stab="s4">个性化提升</div>
+      <div class="tab" data-stab="s5">补差记录</div>
+    </div>
+
+    <div class="body hidden" id="s-s1">
+      <div class="tiny">今日事项 2 条 · 待办 1 条 · 最近变化：知识点 5 由「基本掌握」升为「已掌握」（7-27，复测证据）</div>
+    </div>
+    <div class="body hidden" id="s-s2">
+      <div class="tl">
+        <div class="ev"><b>7 月 27 日</b> · 数学小组竞赛，主动帮同学讲题 <span class="pill p-gray">表扬</span></div>
+        <div class="ev"><b>7 月 22 日</b> · 忘带三角尺，已提醒家长 <span class="pill p-gray">沟通</span></div>
+        <div class="ev"><b>7 月 15 日</b> · 单元前测缺考，已补测</div>
+      </div>
+    </div>
+
+    <div class="body" id="s-s3">
+      <div class="tiny" style="margin-bottom:8px">小学数学 · 三年级上册 · 人教版（教师自定义清单 v2）</div>
+      <table>
+        <thead><tr><th style="width:38%">知识点</th><th style="width:90px">当前状态</th><th style="width:90px">证据强度</th><th style="width:90px">最近评价</th><th>判断依据</th><th style="width:60px"></th></tr></thead>
+        <tbody>
+          <tr><td colspan="6" style="background:#fbfcfd;font-weight:600">第一单元 · 乘除法初步</td></tr>
+          <tr class="cell" data-cell="1" style="text-align:left"><td>1 · 两位数乘一位数（不进位）</td><td><span class="pill p-green">已掌握</span></td><td class="tiny">●●●○ 3 条</td><td class="tiny">7-27</td><td class="tiny">单元练习 1、4 题全对</td><td><button class="btn ghost sm">详情</button></td></tr>
+          <tr class="cell" data-cell="1" style="text-align:left"><td>2 · 一位数除法竖式</td><td><span class="pill p-red">待提升</span></td><td class="tiny">●●○○ 2 条</td><td class="tiny">7-27</td><td class="tiny">第 2、3 题：商的位置写错</td><td><button class="btn ghost sm">详情</button></td></tr>
+          <tr class="cell" data-cell="1" style="text-align:left"><td>3 · 有余数除法的验算</td><td><span class="pill p-amber">基本掌握</span></td><td class="tiny">●○○○ 1 条</td><td class="tiny">7-20</td><td class="tiny">仅 1 条证据，建议再测</td><td><button class="btn ghost sm">详情</button></td></tr>
+          <tr style="text-align:left"><td>4 · 倍的认识</td><td><span class="pill p-gray">未评价</span></td><td class="tiny">—</td><td class="tiny">—</td><td class="tiny">尚未教学</td><td><button class="btn ghost sm">手动评价</button></td></tr>
+          <tr class="cell" data-cell="1" style="text-align:left"><td>5 · 求一个数是另一个数的几倍</td><td><span class="pill p-green">已掌握</span></td><td class="tiny">●●●● 4 条</td><td class="tiny">7-27</td><td class="tiny">补差后复测通过</td><td><button class="btn ghost sm">详情</button></td></tr>
+        </tbody>
+      </table>
+      <div class="ann"><b>证据强度</b>是底层连续掌握度的置信度可视化，不是第五种状态。1 条证据的"已掌握"和 4 条证据的"已掌握"在表格里颜色相同，但教师能一眼看出哪个结论更靠得住。"未评价"永远不会被系统自动改成"待提升"。</div>
+    </div>
+
+    <div class="body hidden" id="s-s4">
+      <div style="display:flex;align-items:center;margin-bottom:10px"><b>活跃提升项 2 / 5</b><span style="flex:1"></span><button class="btn sm">＋ 教师直接填写</button></div>
+      <div class="card" style="margin-bottom:8px"><div class="body">
+        <div style="display:flex;gap:8px"><b style="flex:1">审题时容易遗漏条件</b><span class="pill p-amber">提升中</span></div>
+        <div class="tiny" style="margin:5px 0">教师描述：列式基本正确，但应用题常漏读"每份"。接下来两周重点检查完整读题。</div>
+        <div class="tiny">来源：教师填写 7-15 · 关联知识点：（未关联）· 最近跟进：19 天前 <span class="pill p-red">超期未跟进</span></div>
+      </div></div>
+      <div class="card" style="margin-bottom:8px"><div class="body">
+        <div style="display:flex;gap:8px"><b style="flex:1">应用题作答时单位书写不完整</b><span class="pill p-gray">待关注</span></div>
+        <div class="tiny" style="margin:5px 0">来源：AI 建议（7-27 单元练习第 5、7 题）· 关联知识点：5</div>
+      </div></div>
+      <div style="border:1px dashed var(--brand);background:var(--brand-weak);border-radius:6px;padding:11px">
+        <b style="color:var(--brand)">AI 待确认建议 1 条</b>
+        <div style="margin:6px 0">建议新增："竖式书写对位不齐，导致进位出错"</div>
+        <div class="tiny" style="margin-bottom:8px">🔎 已检索到相似的已有项：无。<b>若存在相似项，默认动作是"合并到已有"而非"新建"。</b></div>
+        <button class="btn primary sm">接受</button>
+        <button class="btn sm">修改后接受</button>
+        <button class="btn sm">合并到已有项…</button>
+        <button class="btn sm">拒绝</button>
+      </div>
+    </div>
+
+    <div class="body hidden" id="s-s5">
+      <table>
+        <thead><tr><th>补差任务</th><th>针对知识点</th><th>题量</th><th>完成</th><th>复测结果</th><th>状态变化</th></tr></thead>
+        <tbody>
+          <tr><td>7-20 除法竖式专项</td><td>2</td><td>6（教师改了 2 题）</td><td>6/6</td><td>7-27 单元复测第 4 题 ✓</td><td class="tiny">待提升 → 基本掌握</td></tr>
+          <tr><td>7-12 倍数关系</td><td>5</td><td>4</td><td>4/4</td><td>7-18 通过</td><td class="tiny">基本掌握 → 已掌握</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 页面 4：评价任务与批量上传 ==================== -->
+<section class="page" id="p-assess">
+  <div class="note"><b>核心设计：</b>题目 → 知识点的映射<b>对整份作业只确认一次</b>，不为每个学生重复确认。这份作业随后作为<b>可复用资产</b>入库，下学期同一份单元练习零成本复用 —— 这是长期壁垒。</div>
+
+  <div class="card">
+    <h3>评价任务<span class="spacer"></span><button class="btn primary sm">＋ 新建评价任务</button></h3>
+    <div class="body">
+      <table>
+        <thead><tr><th>任务</th><th>班级</th><th>覆盖知识点</th><th>进度</th><th>状态</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>第一单元练习</td><td>三2班</td><td>1、2、3</td><td>35/38 已上传 · 32 已分析</td><td><span class="pill p-red">待教师确认 12</span></td><td><button class="btn primary sm" data-go="review">去确认</button></td></tr>
+          <tr><td>前测</td><td>三2班</td><td>1、2</td><td>38/38</td><td><span class="pill p-green">已更新矩阵</span></td><td><button class="btn sm">查看</button></td></tr>
+          <tr><td>倍的认识随堂测</td><td>三5班</td><td>4、5</td><td>—</td><td><span class="pill p-gray">草稿</span></td><td><button class="btn sm">继续配置</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>新建评价任务 · 向导</h3>
+    <div class="body">
+      <div class="steps">
+        <div class="s done">1 基本信息 ✓</div>
+        <div class="s done">2 上传作业 ✓</div>
+        <div class="s cur">3 学生匹配</div>
+        <div class="s">4 题目 → 知识点映射</div>
+        <div class="s">5 开始 AI 分析</div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>学生匹配 · 35 个文件</b>
+          <div class="tiny" style="margin:4px 0 8px">按文件名自动匹配 32 个，<b style="color:var(--red)">3 个需要你确认</b>。匹配不确定时系统绝不猜测。</div>
+          <table>
+            <thead><tr><th>文件</th><th>匹配到</th><th>置信度</th><th></th></tr></thead>
+            <tbody>
+              <tr style="background:#fffaf9"><td>IMG_3391.jpg</td><td><select class="sel"><option>— 请选择 —</option><option>赵一鸣</option><option>周天翊</option></select></td><td><span class="pill p-red">无匹配</span></td><td><button class="btn sm">看图</button></td></tr>
+              <tr style="background:#fffaf9"><td>IMG_3402.jpg</td><td><select class="sel"><option>李明（74%）</option><option>李茗（71%）</option></select></td><td><span class="pill p-amber">两名相近</span></td><td><button class="btn sm">看图</button></td></tr>
+              <tr><td>07_张小雨.jpg</td><td>张小雨</td><td><span class="pill p-green">98%</span></td><td></td></tr>
+              <tr><td>12_王浩_p1.jpg +p2</td><td>王浩（2 页）</td><td><span class="pill p-green">96%</span></td><td></td></tr>
+            </tbody>
+          </table>
+          <div class="tiny" style="margin-top:6px">未上传：3 人（缺考 / 请假）→ 系统记为"未评价"，<b>不记为待提升</b>。</div>
+        </div>
+
+        <div style="width:400px;flex:none">
+          <b>下一步预览 · 题目 → 知识点映射</b>
+          <div class="tiny" style="margin:4px 0 8px">AI 已生成草稿，你只需对<b>这一份作业</b>确认一次。</div>
+          <table>
+            <thead><tr><th style="width:38px">题号</th><th>题目</th><th style="width:110px">对应知识点</th><th style="width:44px"></th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td class="tiny">24×2＝</td><td><span class="pill p-blue">1</span></td><td>✓</td></tr>
+              <tr><td>2</td><td class="tiny">86÷2 竖式</td><td><span class="pill p-blue">2</span></td><td>✓</td></tr>
+              <tr><td>3</td><td class="tiny">95÷4 竖式并验算</td><td><span class="pill p-blue">2</span> <span class="pill p-blue">3</span></td><td>✓</td></tr>
+              <tr style="background:#fffbe9"><td>7</td><td class="tiny">妈妈买 3 盒…每盒多少？</td><td><span class="pill p-amber">2 ?</span></td><td><button class="btn ghost sm">改</button></td></tr>
+            </tbody>
+          </table>
+          <div class="ann" style="margin-top:10px"><b>作业入库：</b>确认后本份作业与映射保存为可复用资源，可跨班级、跨学年调用。第二年不必重做映射。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 页面 5：AI 分析确认 ==================== -->
+<section class="page" id="p-review">
+  <div class="note"><b>这一页决定产品生死。</b>12 份 × 10 题 × 5 个字段 = 教师第二周弃用。因此引入<b>置信度分流</b>：高置信度项默认已接受、折叠隐藏；只把低置信、与历史冲突、图片模糊的推到教师眼前。仍然满足"教师确认后才更新矩阵"，但成本从 O(题数) 降到 O(异常数)。全流程键盘可完成。</div>
+
+  <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center">
+    <b>三年级 2 班 · 第一单元练习</b>
+    <span class="pill p-red">3 份需逐个确认</span>
+    <span class="pill p-green">9 份高置信度</span>
+    <span style="flex:1"></span>
+    <button class="btn">批量接受 9 份高置信度</button>
+    <span class="tiny">快捷键 <kbd>J</kbd>/<kbd>K</kbd> 切换学生 · <kbd>Enter</kbd> 接受并下一个 · <kbd>E</kbd> 标记证据不足</span>
+  </div>
+
+  <div class="reviewer">
+    <div class="rq">
+      <div class="grp">需要你看 · 3</div>
+      <div class="it cur">张小雨 <span class="pill p-red">冲突</span></div>
+      <div class="it">陈可欣 <span class="pill p-amber">图片模糊</span></div>
+      <div class="it">赵一鸣 <span class="pill p-amber">低置信</span></div>
+      <div class="grp">高置信度 · 已默认接受 · 9</div>
+      <div class="it muted">王　浩 <span class="tiny">✓</span></div>
+      <div class="it muted">刘星宇 <span class="tiny">✓</span></div>
+      <div class="it muted">李　明 <span class="tiny">✓</span></div>
+      <div class="it muted">周天翊 <span class="tiny">✓</span></div>
+      <div class="it muted tiny" style="justify-content:center">…还有 5 人</div>
+    </div>
+
+    <div class="rpaper">
+      <div style="padding:10px 12px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:8px">
+        <b>张小雨</b><span class="tiny">2 页 · 10 题 · 识别置信度 91%</span><span style="flex:1"></span>
+        <button class="btn sm">看原图</button><button class="btn sm">图片不清晰</button>
+      </div>
+      <div class="scan">
+        <div class="qrow ok"><b>第 1 题</b> 24×2＝ &nbsp;学生答：<b>48</b> ✓ &nbsp;<span class="tiny">→ 知识点 1</span></div>
+        <div class="qrow err"><b>第 2 题</b> 86÷2 竖式 &nbsp;学生答：<b>43</b>（结果对）<br>
+          <span class="tiny">过程可见证据：商"4"写在个位上方，位置错误 → 知识点 2</span><br>
+          <span class="tiny" style="color:var(--red)">⚠ 答案对但过程错 —— 这是"计算失误"还是"未掌握"？需要你判断。</span></div>
+        <div class="qrow err"><b>第 3 题</b> 95÷4 竖式并验算 &nbsp;学生答：<b>23…3</b>（应为 23…3 ✓），验算<b>未写</b><br>
+          <span class="tiny">→ 知识点 2 ✓ ／ 知识点 3 <b>证据不足</b>（未作答不等于不会）</span></div>
+        <div class="qrow err"><b>第 7 题</b> 应用题 &nbsp;学生答：<b>3×8＝24</b>，缺单位<br><span class="tiny">→ 知识点 2；个性化：单位书写不完整</span></div>
+        <div class="tiny" style="text-align:center;padding:6px">…第 4、5、6、8、9、10 题均正确，已折叠</div>
+      </div>
+      <div class="actionbar">
+        <button class="btn primary">接受全部建议并下一个 <kbd>⏎</kbd></button>
+        <button class="btn">逐条修改</button>
+        <button class="btn">标记证据不足 <kbd>E</kbd></button>
+        <span style="flex:1"></span><span class="tiny">1 / 3</span>
+      </div>
+    </div>
+
+    <div class="rpanel">
+      <div class="sugg">
+        <h5>知识状态建议</h5>
+        <div style="margin-bottom:7px">知识点 1 <span class="pill p-green">建议：已掌握</span><div class="tiny">依据：第 1、4 题正确，与历史一致</div></div>
+        <div style="margin-bottom:7px;background:#fffaf9;padding:6px;border-radius:5px">知识点 2 <span class="pill p-red">建议：待提升</span>
+          <div class="tiny">依据：第 2 题过程错、第 7 题缺单位</div>
+          <div class="tiny" style="color:var(--red)">⚠ 与历史冲突：7-20 曾评为"基本掌握"</div>
+          <div style="margin-top:5px"><button class="btn sm">接受</button> <button class="btn sm">改为基本掌握</button> <button class="btn sm">拒绝</button></div>
+        </div>
+        <div>知识点 3 <span class="pill p-gray">建议：暂不更新</span><div class="tiny">依据：未作答，证据不足</div></div>
+      </div>
+      <div class="sugg">
+        <h5>个性化提升建议</h5>
+        <div>"应用题作答时单位书写不完整"</div>
+        <div class="tiny" style="margin:4px 0">🔎 与已有项"审题易漏条件"相似度 34% → 不建议合并</div>
+        <button class="btn sm">新建</button> <button class="btn sm">合并到…</button> <button class="btn sm">拒绝</button>
+      </div>
+      <div class="sugg">
+        <h5>补差方向建议</h5>
+        <div class="tiny">错误类型：竖式对位规则未内化（非计算能力问题）→ 建议只出"基础修正"层 3 题，不必出迁移题。</div>
+        <button class="btn primary sm" style="margin-top:6px" data-go="remedy">生成补差题</button>
+      </div>
+      <div class="sugg" style="border-color:#f0e3b8;background:#fffbe9">
+        <h5 style="color:#6b5a1e">AI 与教师留痕</h5>
+        <div class="tiny">AI 原始输出与你的最终版本分别保存，状态变化可审计、可追溯。模型版本：v2026-07。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 页面 6：精准补差与复测 ==================== -->
+<section class="page" id="p-remedy">
+  <div class="note"><b>闭环原则：</b>补差<b>不以生成题目为终点</b>，以复测证据回写知识状态为终点。复测时间不由教师拍脑袋，由系统按记忆衰减模型（FSRS 思路：难度 / 稳定度 / 可提取性）排队并在"今日"提醒。"已掌握"永不自动降级，但会打"证据已过期"标记交给教师判断。</div>
+
+  <div class="card">
+    <h3>补差任务看板</h3>
+    <div class="body">
+      <div class="kanban">
+        <div class="kcol"><h4>待生成 <span>2</span></h4>
+          <div class="kcard"><b>知识点 2 · 小组补差</b>张小雨、李明、陈可欣<span class="tiny">来自矩阵批量选择</span></div>
+          <div class="kcard"><b>知识点 3 · 王浩</b><span class="tiny">来自 AI 分析确认</span></div>
+        </div>
+        <div class="kcol"><h4>待教师确认 <span>1</span></h4>
+          <div class="kcard" style="border-color:var(--brand)"><b>张小雨 · 竖式对位</b>AI 已出 6 题<span class="tiny">↓ 见下方编辑区</span></div>
+        </div>
+        <div class="kcol"><h4>已安排 <span>3</span></h4>
+          <div class="kcard"><b>刘星宇 · 知识点 5</b><span class="tiny">7-26 下发，4 题</span></div>
+        </div>
+        <div class="kcol"><h4>待复测 <span>2</span></h4>
+          <div class="kcard" style="border-color:var(--amber)"><b>王浩 · 知识点 1</b><span class="tiny" style="color:var(--amber)">今日到期（补差后 6 天）</span></div>
+          <div class="kcard"><b>陈可欣 · 知识点 2</b><span class="tiny">3 天后</span></div>
+        </div>
+        <div class="kcol"><h4>已完成 <span>8</span></h4>
+          <div class="kcard"><b>张小雨 · 知识点 5</b><span class="tiny">基本掌握 → 已掌握</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <h3>补差题编辑 · 张小雨 · 知识点 2<span class="spacer"></span><span class="pill p-blue">待教师确认</span></h3>
+        <div class="body">
+          <div class="tiny" style="margin-bottom:10px">生成依据：错误类型「竖式对位规则未内化」· 个性化项「单位书写不完整」· 最近证据 7-27 第 2、7 题 · 教师补充：无</div>
+
+          <div class="layer">
+            <h5>① 基础修正 <span class="pill p-blue">3 题</span> <span class="tiny">针对核心概念与直接错误</span><span style="flex:1"></span><label class="tiny"><input type="checkbox" checked> 使用</label></h5>
+            <div class="qq"><div class="qtx">1. 用竖式计算 68÷2，并<b>用横线标出商应写的位置</b>。</div><button class="btn ghost sm">改</button><button class="btn ghost sm">换一题</button></div>
+            <div class="qq"><div class="qtx">2. 下面竖式哪里错了？把错误圈出来并改正。（给出对位错误的范例）</div><button class="btn ghost sm">改</button><button class="btn ghost sm">换一题</button></div>
+            <div class="qq"><div class="qtx">3. 用竖式计算 84÷4。</div><button class="btn ghost sm">改</button><button class="btn ghost sm">换一题</button></div>
+          </div>
+
+          <div class="layer">
+            <h5>② 巩固应用 <span class="pill p-blue">2 题</span> <span class="tiny">换数字与情境，检验是否稳定</span><span style="flex:1"></span><label class="tiny"><input type="checkbox" checked> 使用</label></h5>
+            <div class="qq"><div class="qtx">4. 3 盒糖果共 96 颗，每盒多少颗？<b>（列竖式，答句写完整单位）</b><span class="pill p-amber">已注入个性化项</span></div><button class="btn ghost sm">改</button></div>
+            <div class="qq"><div class="qtx">5. 用竖式计算 75÷5，并写出验算过程。</div><button class="btn ghost sm">改</button></div>
+          </div>
+
+          <div class="layer" style="opacity:.55">
+            <h5>③ 迁移提升 <span class="pill p-gray">1 题</span> <span class="tiny">AI 判断本次不必要</span><span style="flex:1"></span><label class="tiny"><input type="checkbox"> 使用</label></h5>
+            <div class="qq"><div class="qtx">6. 综合变式题…（教师可按需开启，不强制三层套用）</div></div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn primary">确认并下发</button>
+            <button class="btn">＋ 教师自拟题</button>
+            <button class="btn">生成学生版 PDF</button>
+            <button class="btn">生成教师答案版</button>
+            <button class="btn">存为可复用资源</button>
+          </div>
+          <div class="tiny" style="margin-top:6px">未经教师确认的题目不进入正式补差记录。</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:360px;flex:none">
+      <div class="card">
+        <h3>复测闭环 · 王浩 · 知识点 1</h3>
+        <div class="body">
+          <div class="tiny" style="margin-bottom:8px">补差完成 7-21 · 系统建议复测日 7-27（今日）</div>
+          <table>
+            <thead><tr><th></th><th>补差前</th><th>复测后</th></tr></thead>
+            <tbody>
+              <tr><td>状态</td><td><span class="pill p-red">待提升</span></td><td><span class="pill p-amber">基本掌握</span></td></tr>
+              <tr><td>证据</td><td class="tiny">前测 2、3 题错</td><td class="tiny">复测 1、3 题对，2 题过程仍不稳</td></tr>
+              <tr><td>用时</td><td class="tiny">—</td><td class="tiny">—</td></tr>
+            </tbody>
+          </table>
+          <div class="tiny" style="margin:9px 0"><b>AI 比较结论：</b>有改善但未稳定，建议标记「基本掌握」并 7 天后再测一次。</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn primary sm">确认为基本掌握</button>
+            <button class="btn sm">确认为已掌握</button>
+            <button class="btn sm">保持待提升</button>
+            <button class="btn sm">证据不足，暂不更新</button>
+          </div>
+          <div class="ann" style="margin-top:10px"><b>复测排期：</b>不由教师记，由系统按稳定度自动排。稳定度越高间隔越长；连续两次通过后自动拉长到单元末复查。</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>状态变化历史（不可覆盖）</h3>
+        <div class="body"><div class="tl">
+          <div class="ev"><b>7-27 已掌握</b><div class="tiny">依据：单元复测第 4 题 · 教师确认 ✓</div></div>
+          <div class="ev"><b>7-20 基本掌握</b><div class="tiny">依据：补差练习 1、2 题 · 教师确认 ✓</div></div>
+          <div class="ev"><b>7-15 待提升</b><div class="tiny">依据：前测第 2、3 题 · 教师确认 ✓</div></div>
+          <div class="ev"><b>7-10 未评价</b></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 页面 7：知识清单导入（新方案） ==================== -->
+<section class="page" id="p-import">
+  <div class="note"><b>方案变更（v0.4）：</b>平台<b>不再预置</b>各教材版本知识点目录。教师上传自己本学期的 Excel 知识清单，勾选实际要用的知识点即可开始。好处：零内容运营、天然适配任何教材版本与教师自定义体系。代价：需要一个足够傻瓜的导入流程 + 模板，且知识点 ID 必须稳定（改名不丢历史证据）。</div>
+
+  <div class="card">
+    <h3>导入知识清单</h3>
+    <div class="body">
+      <div class="steps">
+        <div class="s done">1 上传 Excel ✓</div>
+        <div class="s cur">2 认列</div>
+        <div class="s">3 预览与勾选</div>
+        <div class="s">4 完成</div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <b>第 1 步 · 上传</b>
+          <div style="border:2px dashed var(--line);border-radius:8px;padding:20px;text-align:center;margin:8px 0;background:#fbfcfd">
+            <div style="font-size:15px">拖入 Excel / CSV 文件</div>
+            <div class="tiny" style="margin-top:4px">已上传：三上数学知识清单.xlsx（62 行）</div>
+            <button class="btn sm" style="margin-top:8px">下载空白模板</button>
+          </div>
+          <div class="tiny">模板只要三列，第一行是表头即可：</div>
+          <table style="margin-top:6px">
+            <thead><tr><th>单元</th><th>序号</th><th>知识点</th></tr></thead>
+            <tbody>
+              <tr><td>第一单元 乘除法初步</td><td>1</td><td>两位数乘一位数（不进位）</td></tr>
+              <tr><td>第一单元 乘除法初步</td><td>2</td><td>一位数除法竖式</td></tr>
+              <tr><td>第二单元 万以内加减法</td><td>1</td><td>三位数加法进位</td></tr>
+            </tbody>
+          </table>
+
+          <b style="display:block;margin-top:16px">第 2 步 · 认列</b>
+          <div class="tiny" style="margin:4px 0 8px">系统已按表头猜测，教师确认即可。不要求教师改自己的表格格式。</div>
+          <div class="grid2">
+            <div>单元列 <select class="sel"><option>A 列：单元</option><option>B 列</option></select></div>
+            <div>知识点列 <select class="sel"><option>C 列：知识点</option></select></div>
+            <div>序号列（可选）<select class="sel"><option>B 列：序号</option><option>不使用</option></select></div>
+            <div>学期标识 <select class="sel"><option>三年级上册</option></select></div>
+          </div>
+          <div class="tiny" style="margin-top:8px">⚠ 检测到 2 行知识点为空、1 行单元名疑似错别字 —— 将在预览中高亮，可直接在预览里改，不必回去改 Excel。</div>
+        </div>
+
+        <div style="width:400px;flex:none">
+          <b>第 3 步 · 预览与勾选本学期启用</b>
+          <div class="tiny" style="margin:4px 0 8px">共解析 62 个知识点。<b>勾选你这学期真的要跟踪的</b> —— 没勾的不会出现在矩阵里，随时可再启用。</div>
+          <div style="border:1px solid var(--line);border-radius:6px;max-height:320px;overflow:auto">
+            <div style="padding:7px 10px;background:#fbfcfd;border-bottom:1px solid var(--line2);font-size:12.5px"><label><input type="checkbox" checked> 全选 · 已选 <b>18</b> / 62</label></div>
+            <div style="padding:7px 10px;border-bottom:1px solid var(--line2);font-weight:600;font-size:13px"><label><input type="checkbox" checked> 第一单元 乘除法初步（5）</label></div>
+            <div style="padding:5px 10px 5px 28px;font-size:13px"><label><input type="checkbox" checked> 1 两位数乘一位数（不进位）</label></div>
+            <div style="padding:5px 10px 5px 28px;font-size:13px"><label><input type="checkbox" checked> 2 一位数除法竖式</label></div>
+            <div style="padding:5px 10px 5px 28px;font-size:13px"><label><input type="checkbox" checked> 3 有余数除法的验算</label></div>
+            <div style="padding:5px 10px 5px 28px;font-size:13px"><label><input type="checkbox" checked> 4 倍的认识</label></div>
+            <div style="padding:5px 10px 5px 28px;font-size:13px"><label><input type="checkbox" checked> 5 求一个数是另一个数的几倍</label></div>
+            <div style="padding:7px 10px;border-bottom:1px solid var(--line2);border-top:1px solid var(--line2);font-weight:600;font-size:13px"><label><input type="checkbox" checked> 第二单元 万以内加减法（7）</label></div>
+            <div style="padding:5px 10px 5px 28px;font-size:13px;background:#fffbe9"><label><input type="checkbox"> <span style="color:var(--red)">（知识点为空，第 14 行）</span> <button class="btn ghost sm">补填</button></label></div>
+            <div style="padding:5px 10px 5px 28px;font-size:13px"><label><input type="checkbox" checked> 1 三位数加法进位</label></div>
+            <div style="padding:5px 10px 5px 28px;font-size:13px" class="muted"><label><input type="checkbox"> 2 三位数减法退位</label></div>
+            <div style="padding:7px 10px;border-top:1px solid var(--line2);font-weight:600;font-size:13px" class="muted"><label><input type="checkbox"> 第三单元 …（6）</label></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn primary">导入并应用到 三年级 2 班</button>
+            <button class="btn">同时应用到 三5班</button>
+          </div>
+
+          <div class="ann" style="margin-top:12px"><b>三条必须实现的技术约束（教师不感知，但决定长期不出事）：</b><br>
+            ① 每个知识点导入时生成<b>稳定内部 ID</b>，学生状态绑 ID 不绑名字 —— 教师改知识点措辞、调顺序，历史证据不丢。<br>
+            ② 重新导入时做<b>差异比对</b>：新增 / 改名 / 删除三类分别处理，删除只做"停用"不做物理删除，避免带走证据。<br>
+            ③ 清单是<b>教师私有副本</b>，一人修改不影响他人；同校教师可"复制他人清单"作为起点。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ============ 证据抽屉 ============ -->
+<div class="drawer" id="drawer">
+  <header><span style="flex:1">知识点 2 · 一位数除法竖式 — 张小雨</span><button class="btn sm" id="dclose">关闭</button></header>
+  <div class="dbody">
+    <div style="margin-bottom:12px"><span class="pill p-red">当前：待提升</span> <span class="tiny">证据强度 ●●○○ · 最近评价 7-27</span></div>
+    <b style="font-size:13px">判断依据</b>
+    <div class="qrow err" style="margin-top:6px"><b>7-27 第一单元练习 · 第 2 题</b><div class="tiny">86÷2 竖式 · 学生答 43（结果对，商位置写错）</div><div class="tiny" style="color:var(--brand)">AI 分析：竖式对位规则未内化 · 教师已确认并修改为「待提升」</div></div>
+    <div class="qrow err"><b>7-27 第一单元练习 · 第 7 题</b><div class="tiny">应用题 3×8＝24，缺单位</div></div>
+    <b style="font-size:13px">状态变化历史</b>
+    <div class="tl" style="margin-top:8px">
+      <div class="ev"><b>7-27 基本掌握 → 待提升</b><div class="tiny">依据：单元练习 2、7 题 · 教师确认 ✓ · <span style="color:var(--red)">与历史冲突，教师已复核</span></div></div>
+      <div class="ev"><b>7-20 待提升 → 基本掌握</b><div class="tiny">依据：补差练习 1、2 题 · 教师确认 ✓</div></div>
+      <div class="ev"><b>7-15 未评价 → 待提升</b><div class="tiny">依据：前测 2、3 题 · 教师确认 ✓</div></div>
+    </div>
+    <b style="font-size:13px">相关</b>
+    <div class="tiny" style="margin:6px 0 10px">个性化提升项：单位书写不完整 · 已生成补差题 6 道（待确认）· 复测：未安排</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn sm">手动修改状态</button>
+      <button class="btn primary sm" data-go="remedy">生成补差题</button>
+      <button class="btn sm">安排复测</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var titles={today:'今日',matrix:'学情 · 班级知识矩阵',student:'班级 · 学生档案 · 张小雨',assess:'学情 · 评价任务与上传',review:'学情 · AI 分析确认',remedy:'学情 · 精准补差与复测',import:'学情 · 知识清单导入'};
+  function go(id){
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+    var el=document.getElementById('p-'+id); if(el) el.classList.add('active');
+    document.getElementById('crumb').textContent=titles[id]||id;
+    document.querySelectorAll('.nav-item,.nav-sub').forEach(function(n){n.classList.toggle('active',n.dataset.go===id)});
+    window.scrollTo(0,0);
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('[data-go]');
+    if(t){e.preventDefault();go(t.dataset.go);return;}
+    var mt=e.target.closest('[data-mtab]');
+    if(mt){
+      document.querySelectorAll('[data-mtab]').forEach(function(x){x.classList.remove('active')});
+      mt.classList.add('active');
+      document.getElementById('m-teach').classList.toggle('hidden',mt.dataset.mtab!=='teach');
+      document.getElementById('m-grid').classList.toggle('hidden',mt.dataset.mtab!=='grid');
+      return;
+    }
+    var st=e.target.closest('[data-stab]');
+    if(st){
+      document.querySelectorAll('[data-stab]').forEach(function(x){x.classList.remove('active')});
+      st.classList.add('active');
+      ['s1','s2','s3','s4','s5'].forEach(function(k){
+        document.getElementById('s-'+k).classList.toggle('hidden',k!==st.dataset.stab);
+      });
+      return;
+    }
+    var c=e.target.closest('[data-cell]');
+    if(c){document.getElementById('drawer').classList.add('open');return;}
+    if(e.target.id==='dclose'){document.getElementById('drawer').classList.remove('open');}
+  });
+})();
+</script>
+</body>
+</html>
