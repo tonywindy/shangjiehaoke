@@ -170,6 +170,9 @@ button{color:inherit}
 .dialog-kicker{margin:0 0 7px;color:var(--green);font-size:13px;font-weight:700;letter-spacing:.14em}
 .access-dialog h2{margin:0;font-size:30px}
 .dialog-description{max-width:500px;margin:15px auto 25px;color:var(--muted);line-height:1.8}
+.dialog-qr-card{width:min(360px,100%);margin:0 auto 22px;padding:14px 18px;border:1px solid #dce9e0;border-radius:18px;display:flex;align-items:center;justify-content:center;gap:16px;background:#f6faf7;text-align:left}
+.dialog-qr-card img{width:104px;height:104px;flex:none;border-radius:10px;background:#fff;object-fit:contain}
+.dialog-qr-card p{margin:0;line-height:1.45}.dialog-qr-card strong{display:block;color:var(--ink);font-size:14px}.dialog-qr-card small{display:block;margin-top:7px;color:var(--muted);font-size:12px;line-height:1.55}
 .dialog-steps{padding:20px;border-radius:17px;display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:8px;background:#f7f8f5}
 .dialog-steps>div{display:flex;align-items:center;justify-content:center;gap:10px;text-align:left}
 .dialog-steps>div>span{width:29px;height:29px;flex:none;border-radius:50%;display:grid;place-items:center;background:#e1f1e7;color:var(--green);font-size:12px;font-weight:800}
@@ -230,7 +233,7 @@ body.dialog-open{overflow:hidden}
   .data-section{padding-bottom:80px}.data-card{padding:50px 25px;grid-template-columns:1fr;gap:42px}.data-illustration{transform:scale(.86);margin:-20px 0}
   .access-section{padding-bottom:40px}.access-panel{min-height:370px;padding:43px 28px;border-radius:22px}.access-actions{width:100%;flex-direction:column}.access-actions .button{width:100%}
   .site-footer{padding-bottom:34px;grid-template-columns:1fr}.copyright{text-align:left}.site-footer>p:not(.copyright){display:none}
-  .access-dialog{padding:38px 22px 26px}.access-dialog h2{font-size:25px}.dialog-steps{grid-template-columns:1fr;gap:10px}.dialog-steps i{display:none}.dialog-steps>div{justify-content:flex-start}.dialog-actions{align-items:stretch;flex-direction:column}.dialog-actions .button{width:100%}
+  .access-dialog{padding:38px 22px 26px}.access-dialog h2{font-size:25px}.dialog-qr-card{padding:12px}.dialog-qr-card img{width:90px;height:90px}.dialog-steps{grid-template-columns:1fr;gap:10px}.dialog-steps i{display:none}.dialog-steps>div{justify-content:flex-start}.dialog-actions{align-items:stretch;flex-direction:column}.dialog-actions .button{width:100%}
 }
 
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
