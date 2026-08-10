@@ -22,6 +22,7 @@ export type WorkspaceAuthEnv = {
 type UserRow = {
   id: string;
   username: string;
+  display_name: string | null;
   password_hash: string;
   role: 'user' | 'admin';
   status: 'active' | 'disabled';
@@ -268,12 +269,17 @@ function publicUser(user: UserRow) {
   return {
     id: user.id,
     username: user.username,
+    displayName: user.display_name || '',
     role: user.role,
     status: user.status,
     mustChangePassword: Boolean(user.must_change_password),
     createdAt: user.created_at,
     lastLoginAt: user.last_login_at,
   };
+}
+
+function normalizeDisplayName(value: unknown): string {
+  return String(value || '').trim().replace(/[\u0000-\u001f\u007f]/g, '');
 }
 
 async function authorization(env: WorkspaceAuthEnv, user: UserRow) {
@@ -544,6 +550,33 @@ async function handleChangePassword(request: Request, env: WorkspaceAuthEnv): Pr
   return json(request, { ok: true, message: '密码已修改，其他设备上的登录已经退出。' });
 }
 
+async function handleUpdateProfile(request: Request, env: WorkspaceAuthEnv): Promise<Response> {
+  const user = await requireSession(request, env);
+  if (isResponse(user)) return user;
+  let input: { displayName?: string };
+  try {
+    input = await bodyJson(request);
+  } catch {
+    return failure(request, 400, '个人资料格式不正确。', 'INVALID_REQUEST');
+  }
+  const displayName = normalizeDisplayName(input.displayName);
+  if (displayName.length > 24) {
+    return failure(request, 400, '主页称呼不能超过24个字。', 'INVALID_DISPLAY_NAME');
+  }
+  const timestamp = nowIso();
+  await env.AUTH_DB.batch([
+    env.AUTH_DB.prepare('UPDATE users SET display_name = ?, updated_at = ? WHERE id = ?')
+      .bind(displayName || null, timestamp, user.id),
+    await auditStatement(request, env, user.id, 'user.profile_updated', 'user', user.id, {
+      hasDisplayName: Boolean(displayName),
+    }),
+  ]);
+  return json(request, {
+    ...(await sessionPayload(env, { ...user, display_name: displayName || null, updated_at: timestamp })),
+    message: '个人信息已保存。',
+  });
+}
+
 async function handleRenew(request: Request, env: WorkspaceAuthEnv): Promise<Response> {
   const user = await requireSession(request, env);
   if (isResponse(user)) return user;
@@ -562,7 +595,7 @@ async function handleRenew(request: Request, env: WorkspaceAuthEnv): Promise<Res
     SELECT id FROM license_codes
     WHERE redeemed_by = ? AND status = 'redeemed' AND expires_at IS NULL LIMIT 1
   `).bind(user.id).first();
-  if (activePermanent) return failure(request, 409, '当前账号已经是长期授权，无需续费。', 'ALREADY_PERMANENT');
+  if (activePermanent) return failure(request, 409, '当前账号已经是长期会员，无需续费。', 'ALREADY_PERMANENT');
   const codeHash = await licenseHash(code, env);
   const license = await env.AUTH_DB.prepare('SELECT * FROM license_codes WHERE code_hash = ?')
     .bind(codeHash).first<LicenseRow>();
@@ -597,7 +630,7 @@ async function handleRenew(request: Request, env: WorkspaceAuthEnv): Promise<Res
   await (await auditStatement(request, env, user.id, 'license.renewed', 'license', license.id, { expiresAt })).run();
   return json(request, {
     ok: true,
-    message: expiresAt ? `续费成功，授权有效期至${new Date(expiresAt).toLocaleDateString('zh-CN')}。` : '续费成功，已升级为长期授权。',
+    message: expiresAt ? `续费成功，会员有效期至${new Date(expiresAt).toLocaleDateString('zh-CN')}。` : '续费成功，已升级为长期会员。',
     ...(await authorization(env, user)),
   });
 }
@@ -680,11 +713,11 @@ async function handleAdminCreateLicenses(request: Request, env: WorkspaceAuthEnv
     return failure(request, 400, '授权码参数不正确。', 'INVALID_REQUEST');
   }
   const count = Math.min(100, Math.max(1, Number(input.count || 1)));
-  const plan = ['authorized', 'yearly', 'permanent'].includes(String(input.plan))
-    ? String(input.plan) as LicenseRow['plan']
-    : 'authorized';
-  const requestedDays = Math.max(0, Math.min(3650, Number(input.durationDays ?? 365)));
-  const durationDays = plan === 'permanent' ? 0 : plan === 'yearly' ? 365 : requestedDays;
+  if (!['yearly', 'permanent'].includes(String(input.plan))) {
+    return failure(request, 400, '请选择一年会员或长期会员。', 'INVALID_PLAN');
+  }
+  const plan = String(input.plan) as LicenseRow['plan'];
+  const durationDays = plan === 'permanent' ? 0 : 365;
   const redeemBeforeDays = Math.max(0, Math.min(3650, Number(input.redeemBeforeDays ?? 30)));
   const timestamp = nowIso();
   const redeemBefore = redeemBeforeDays
@@ -874,6 +907,7 @@ export async function handleWorkspaceRequest(
     if (url.pathname === `${API_PREFIX}/auth/register` && request.method === 'POST') return handleRegister(request, env);
     if (url.pathname === `${API_PREFIX}/auth/login` && request.method === 'POST') return handleLogin(request, env);
     if (url.pathname === `${API_PREFIX}/auth/change-password` && request.method === 'POST') return handleChangePassword(request, env);
+    if (url.pathname === `${API_PREFIX}/auth/profile` && request.method === 'POST') return handleUpdateProfile(request, env);
     if (url.pathname === `${API_PREFIX}/auth/renew` && request.method === 'POST') return handleRenew(request, env);
     if (url.pathname === `${API_PREFIX}/auth/logout` && request.method === 'POST') {
       const token = readCookie(request, SESSION_COOKIE);

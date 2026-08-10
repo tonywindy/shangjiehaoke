@@ -51,8 +51,7 @@
             <section class="admin-card"><div class="admin-card-head"><div><h2>生成授权码</h2><p>完整授权码只会在生成这一次显示，请立即保存。</p></div></div><div class="card-content">
               <form class="generate-form" id="generateForm">
                 <label class="field"><span>生成数量</span><input name="count" type="number" min="1" max="100" value="1" required></label>
-                <label class="field"><span>授权类型</span><select name="plan"><option value="authorized">标准授权</option><option value="yearly">年度授权</option><option value="permanent">长期授权</option></select></label>
-                <label class="field"><span>授权有效天数</span><input name="durationDays" type="number" min="0" max="3650" value="365"><small>从用户注册当天起算；0 表示长期有效</small></label>
+                <label class="field"><span>会员类型</span><select name="plan"><option value="yearly">一年会员</option><option value="permanent">长期会员</option></select><small>一年会员从兑换当天起有效365天；长期会员不设置到期日</small></label>
                 <label class="field"><span>授权码注册期限</span><input name="redeemBeforeDays" type="number" min="0" max="3650" value="30"><small>生成后多少天内必须注册；0 表示不限期</small></label>
                 <button class="button button-primary" type="submit">生成授权码</button>
               </form>

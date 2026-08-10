@@ -60,6 +60,7 @@ export default defineConfig({
         teacherWorkspaceAccount: resolve(projectRoot, 'teacher-workspace/account.html'),
         teacherWorkspaceAdmin: resolve(projectRoot, 'teacher-workspace/admin.html'),
         teacherWorkspaceTerms: resolve(projectRoot, 'teacher-workspace/terms.html'),
+        teacherWorkspaceProfile: resolve(projectRoot, 'teacher-workspace/profile.html'),
         teacherWorkspaceToday: resolve(projectRoot, 'teacher-workspace/today.html'),
         teacherWorkspaceTasks: resolve(projectRoot, 'teacher-workspace/tasks.html'),
         teacherWorkspaceClass: resolve(projectRoot, 'teacher-workspace/class.html'),
