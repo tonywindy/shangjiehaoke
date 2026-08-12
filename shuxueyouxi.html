@@ -12,7 +12,21 @@
 </head>
 <body>
 
-    <div id="game-container">
+    <section id="admin-access-gate" class="admin-access-gate" aria-live="polite">
+        <div class="admin-access-card">
+            <span class="admin-access-icon" aria-hidden="true">🔐</span>
+            <p class="admin-access-kicker">管理员专用</p>
+            <h1 id="admin-access-title">正在验证工作台管理员身份</h1>
+            <p id="admin-access-message">AI故事与情境生图会产生调用费用，仅向教师工作台管理员开放。</p>
+            <div class="admin-access-actions">
+                <a id="admin-login-link" href="/teacher-workspace/account.html" target="_blank" rel="noopener">登录工作台管理员</a>
+                <button id="admin-access-retry" type="button">我已登录，重新验证</button>
+            </div>
+            <a class="admin-access-home" href="/">返回上节好课</a>
+        </div>
+    </section>
+
+    <div id="game-container" hidden>
         <!-- 阶段一：知识点和情景选择界面 -->
         <div id="theme-selection-screen">
             <h1>🎯 选择你的数学冒险</h1>
@@ -443,7 +457,7 @@
     </div>
 
     <!-- AI伙伴容器 -->
-    <div id="ai-partner-container">
+    <div id="ai-partner-container" hidden>
         <div class="partner-avatar-container">
             <img id="partner-avatar" src="/images/wukong_default.png" alt="悟空">
             <!-- 语音控制按钮 -->

@@ -7,11 +7,8 @@ import {
   type LearningLayer,
 } from './ai/glm';
 import {
-  generateStoryImage,
-  ZhipuImageError,
   ZHIPU_IMAGE_MODEL,
 } from './ai/zhipu-image';
-import { generateMathStory, ZhipuStoryError } from './ai/zhipu-story';
 import {
   clearSessionCookie,
   issueSessionToken,
@@ -832,114 +829,6 @@ export default {
         model: ZHIPU_IMAGE_MODEL,
         configured: Boolean(env.GLM_API_KEY),
       }, env.GLM_API_KEY ? 200 : 503);
-    }
-
-    if (request.method === 'POST' && url.pathname === '/api/generate-image') {
-      if (!originAllowed(request)) {
-        return json(request, {
-          ok: false,
-          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
-        }, 403);
-      }
-      if (!env.GLM_API_KEY) {
-        return json(request, {
-          ok: false,
-          error: { code: 'IMAGE_AI_NOT_CONFIGURED', message: 'AI生图服务尚未完成配置' },
-        }, 503);
-      }
-
-      try {
-        const body = await request.json<{ prompt?: string }>();
-        const prompt = typeof body.prompt === 'string' ? body.prompt : '';
-        const rateLimit = await checkRateLimit(request, env);
-        if (!rateLimit.allowed) {
-          return json(request, {
-            ok: false,
-            error: { code: 'DAILY_LIMIT_REACHED', message: '今天的AI生图次数已达到上限，请明天再试' },
-          }, 429, { 'Retry-After': String(rateLimit.retryAfter) });
-        }
-
-        const result = await generateStoryImage({ apiKey: env.GLM_API_KEY, prompt });
-        return json(request, {
-          ok: true,
-          imageUrl: result.imageUrl,
-          provider: 'zhipu',
-          model: result.model,
-        });
-      } catch (error) {
-        if (error instanceof ZhipuImageError) {
-          return json(request, {
-            ok: false,
-            error: {
-              code: error.providerCode || 'IMAGE_PROVIDER_ERROR',
-              message: error.message,
-            },
-          }, error.status);
-        }
-        return json(request, {
-          ok: false,
-          error: { code: 'IMAGE_GENERATION_FAILED', message: '图片生成失败，请稍后重试' },
-        }, 500);
-      }
-    }
-
-    if (request.method === 'POST' && url.pathname === '/api/generate-story') {
-      if (!originAllowed(request)) {
-        return json(request, {
-          ok: false,
-          error: { code: 'ORIGIN_NOT_ALLOWED', message: '请求来源不受信任' },
-        }, 403);
-      }
-      if (!env.GLM_API_KEY) {
-        return json(request, {
-          ok: false,
-          error: { code: 'STORY_AI_NOT_CONFIGURED', message: 'AI故事服务尚未完成配置' },
-        }, 503);
-      }
-
-      try {
-        const body = await request.json<{ messages?: unknown; max_tokens?: number }>();
-        const rateLimit = await checkRateLimit(request, env);
-        if (!rateLimit.allowed) {
-          return json(request, {
-            ok: false,
-            error: { code: 'DAILY_LIMIT_REACHED', message: '今天的AI故事次数已达到上限，请明天再试' },
-          }, 429, { 'Retry-After': String(rateLimit.retryAfter) });
-        }
-
-        const result = await generateMathStory({
-          apiKey: env.GLM_API_KEY,
-          messages: body.messages,
-          maxTokens: body.max_tokens,
-        });
-        return json(request, {
-          choices: [
-            {
-              message: {
-                role: 'assistant',
-                content: result.content,
-              },
-            },
-          ],
-          provider: 'zhipu',
-          model: result.model,
-          usage: result.usage,
-        });
-      } catch (error) {
-        if (error instanceof ZhipuStoryError) {
-          return json(request, {
-            ok: false,
-            error: {
-              code: error.providerCode || 'STORY_PROVIDER_ERROR',
-              message: error.message,
-            },
-          }, error.status);
-        }
-        return json(request, {
-          ok: false,
-          error: { code: 'STORY_GENERATION_FAILED', message: '故事生成失败，请稍后重试' },
-        }, 500);
-      }
     }
 
     if (request.method === 'POST' && url.pathname === '/api/diagnoses/analyze') {

@@ -15,6 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
     performanceMonitor.mark('DOM加载开始');
 
     // --- DOM 元素获取（优化：一次性缓存所有元素） ---
+    const adminAccessGate = document.getElementById('admin-access-gate');
+    const adminAccessTitle = document.getElementById('admin-access-title');
+    const adminAccessMessage = document.getElementById('admin-access-message');
+    const adminAccessRetry = document.getElementById('admin-access-retry');
+    const adminLoginLink = document.getElementById('admin-login-link');
+    const gameContainer = document.getElementById('game-container');
+    const aiPartnerContainer = document.getElementById('ai-partner-container');
     const themeSelectionScreen = document.getElementById('theme-selection-screen');
     const storyScreen = document.getElementById('story-screen');
     const knowledgeUnits = document.querySelectorAll('.knowledge-unit');
@@ -67,7 +74,74 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSceneDescription = ''; // 当前场景描述，用于生成图片
 
     // --- API 配置 ---
-    const AI_API_URL = 'https://api.shangjiehaoke.com';
+    const WORKSPACE_API_URL = 'https://api.shangjiehaoke.com/api/workspace';
+    const ADMIN_AI_API_URL = `${WORKSPACE_API_URL}/admin/ai`;
+
+    function showAdminAccessGate(title, message) {
+        adminAccessTitle.textContent = title;
+        adminAccessMessage.textContent = message;
+        adminAccessGate.hidden = false;
+        gameContainer.hidden = true;
+        aiPartnerContainer.hidden = true;
+    }
+
+    function apiErrorMessage(data, fallback) {
+        return data?.message || data?.error?.message || fallback;
+    }
+
+    function handleAdminApiFailure(response, data) {
+        if (response.status === 401 || response.status === 403) {
+            showAdminAccessGate(
+                '需要工作台管理员登录',
+                response.status === 403
+                    ? '当前登录的不是管理员账号，或管理员首次密码还未修改。请使用工作台管理员账号。'
+                    : '管理员登录已失效，请重新登录后再使用AI故事。'
+            );
+        }
+    }
+
+    async function verifyAdminAccess() {
+        adminAccessRetry.disabled = true;
+        adminAccessRetry.textContent = '正在验证…';
+        adminAccessTitle.textContent = '正在验证工作台管理员身份';
+        adminAccessMessage.textContent = 'AI故事与情境生图会产生调用费用，仅向教师工作台管理员开放。';
+        try {
+            const response = await fetch(`${WORKSPACE_API_URL}/auth/session`, {
+                credentials: 'include',
+                headers: { Accept: 'application/json' }
+            });
+            const session = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(apiErrorMessage(session, '管理员身份验证失败'));
+            const isAdmin = session.authenticated
+                && session.authorized
+                && session.user?.role === 'admin'
+                && !session.user?.mustChangePassword;
+            if (!isAdmin) {
+                const signedInAsUser = session.authenticated && session.user?.role !== 'admin';
+                showAdminAccessGate(
+                    '仅限工作台管理员使用',
+                    signedInAsUser
+                        ? '当前登录的是普通工作台账号。请先退出，再使用管理员账号登录。'
+                        : '请先在教师工作台登录管理员账号。登录页面会在新窗口打开，完成后回到这里重新验证。'
+                );
+                return false;
+            }
+            adminAccessGate.hidden = true;
+            gameContainer.hidden = false;
+            aiPartnerContainer.hidden = false;
+            return true;
+        } catch (error) {
+            showAdminAccessGate('暂时无法验证管理员身份', error.message || '请检查网络后重试。');
+            return false;
+        } finally {
+            adminAccessRetry.disabled = false;
+            adminAccessRetry.textContent = '我已登录，重新验证';
+        }
+    }
+
+    adminLoginLink.href = '/teacher-workspace/account.html';
+    adminAccessRetry.addEventListener('click', verifyAdminAccess);
+    void verifyAdminAccess();
 
     // --- AI伙伴数据结构 ---
     const partnerData = {
@@ -1143,8 +1217,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let imageUrl = '';
             try {
-                const response = await fetch(`${AI_API_URL}/api/generate-image`, {
+                const response = await fetch(`${ADMIN_AI_API_URL}/generate-image`, {
                     method: 'POST',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -1157,7 +1232,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new Error(`图片生成API请求失败: ${errorData.error?.message || response.statusText}`);
+                    handleAdminApiFailure(response, errorData);
+                    throw new Error(`图片生成API请求失败: ${apiErrorMessage(errorData, response.statusText)}`);
                 }
 
                 const data = await response.json();
@@ -1283,7 +1359,7 @@ document.addEventListener('DOMContentLoaded', () => {
         storyHistory.push({ "role": "user", "content": userPrompt });
 
         try {
-            console.log('即将请求的文本生成API地址是：', `${AI_API_URL}/api/generate-story`);
+            console.log('即将请求的文本生成API地址是：', `${ADMIN_AI_API_URL}/generate-story`);
 
             // 使用重试机制包装API调用
             const result = await retryWithBackoff(async () => {
@@ -1292,8 +1368,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const timeoutId = setTimeout(() => controller.abort(), 120000); // 120秒超时
 
                 try {
-                    const response = await fetch(`${AI_API_URL}/api/generate-story`, {
+                    const response = await fetch(`${ADMIN_AI_API_URL}/generate-story`, {
                         method: 'POST',
+                        credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json',
                         },
@@ -1308,7 +1385,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        throw new Error(`AI故事请求失败: ${errorData.error?.message || response.statusText}`);
+                        handleAdminApiFailure(response, errorData);
+                        throw new Error(`AI故事请求失败: ${apiErrorMessage(errorData, response.statusText)}`);
                     }
 
                     return response;

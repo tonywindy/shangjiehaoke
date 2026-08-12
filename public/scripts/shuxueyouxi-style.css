@@ -3,6 +3,110 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+[hidden] {
+    display: none !important;
+}
+
+.admin-access-gate {
+    width: min(92%, 720px);
+    margin: auto;
+    padding: 36px 0;
+}
+
+.admin-access-card {
+    padding: 48px 36px;
+    border: 1px solid rgba(18, 73, 112, 0.12);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 18px 55px rgba(22, 72, 105, 0.14);
+    text-align: center;
+}
+
+.admin-access-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    margin-bottom: 12px;
+    border-radius: 20px;
+    background: #eaf6ff;
+    font-size: 34px;
+}
+
+.admin-access-kicker {
+    margin: 0 0 8px;
+    color: #2878ad;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+}
+
+.admin-access-card h1 {
+    margin: 0 0 14px;
+    color: #143b56;
+    font-size: clamp(26px, 4vw, 38px);
+}
+
+.admin-access-card > p:not(.admin-access-kicker) {
+    max-width: 520px;
+    margin: 0 auto;
+    color: #5c7180;
+    line-height: 1.75;
+}
+
+.admin-access-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+}
+
+.admin-access-actions a,
+.admin-access-actions button {
+    min-height: 46px;
+    padding: 12px 20px;
+    border: 0;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.admin-access-actions a {
+    background: #176d9e;
+    color: #fff;
+}
+
+.admin-access-actions button {
+    background: #eaf3f8;
+    color: #245a79;
+}
+
+.admin-access-actions button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.admin-access-home {
+    display: inline-block;
+    margin-top: 22px;
+    color: #6c7f8b;
+    text-underline-offset: 4px;
+}
+
+@media (max-width: 560px) {
+    .admin-access-card {
+        padding: 36px 20px;
+        border-radius: 18px;
+    }
+
+    .admin-access-actions {
+        flex-direction: column;
+    }
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     background-color: #f0f8ff; /* 爱丽丝蓝 */

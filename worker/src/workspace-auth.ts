@@ -1,4 +1,6 @@
 import { verifyPassword } from './auth';
+import { generateStoryImage, ZhipuImageError } from './ai/zhipu-image';
+import { generateMathStory, ZhipuStoryError } from './ai/zhipu-story';
 
 const API_PREFIX = '/api/workspace';
 const SESSION_COOKIE = 'sjhk_workspace_session';
@@ -12,6 +14,7 @@ const encoder = new TextEncoder();
 
 export type WorkspaceAuthEnv = {
   AUTH_DB: D1Database;
+  GLM_API_KEY?: string;
   WORKSPACE_ADMIN_USERNAME?: string;
   WORKSPACE_ADMIN_PASSWORD_HASH?: string;
   WORKSPACE_SESSION_SECRET?: string;
@@ -877,6 +880,101 @@ async function handleAdminResetPassword(
   return json(request, { ok: true, message: '临时密码已设置；用户下次登录后必须修改密码。' });
 }
 
+async function handleAdminGenerateImage(
+  request: Request,
+  env: WorkspaceAuthEnv,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env);
+  if (isResponse(admin)) return admin;
+  if (!env.GLM_API_KEY) return failure(request, 503, 'AI生图服务尚未完成配置。', 'IMAGE_AI_NOT_CONFIGURED');
+  if (!(await checkRateLimit(request, env, `admin-ai-image:${admin.id}`, 15, 24 * 60 * 60_000))) {
+    return failure(request, 429, '今天的AI生图次数已达到15次，请明天再试。', 'DAILY_LIMIT_REACHED');
+  }
+
+  let input: { prompt?: string };
+  try {
+    input = await bodyJson(request);
+  } catch {
+    return failure(request, 400, '图片描述格式不正确。', 'INVALID_REQUEST');
+  }
+
+  try {
+    const result = await generateStoryImage({
+      apiKey: env.GLM_API_KEY,
+      prompt: typeof input.prompt === 'string' ? input.prompt : '',
+    });
+    await (await auditStatement(request, env, admin.id, 'ai.image_generated', 'ai_model', result.model)).run();
+    return json(request, {
+      ok: true,
+      imageUrl: result.imageUrl,
+      provider: 'zhipu',
+      model: result.model,
+    });
+  } catch (error) {
+    if (error instanceof ZhipuImageError) {
+      return failure(
+        request,
+        error.status,
+        error.message,
+        error.providerCode || 'IMAGE_PROVIDER_ERROR',
+      );
+    }
+    return failure(request, 500, '图片生成失败，请稍后重试。', 'IMAGE_GENERATION_FAILED');
+  }
+}
+
+async function handleAdminGenerateStory(
+  request: Request,
+  env: WorkspaceAuthEnv,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env);
+  if (isResponse(admin)) return admin;
+  if (!env.GLM_API_KEY) return failure(request, 503, 'AI故事服务尚未完成配置。', 'STORY_AI_NOT_CONFIGURED');
+  if (!(await checkRateLimit(request, env, `admin-ai-story:${admin.id}`, 5, 24 * 60 * 60_000))) {
+    return failure(request, 429, '今天的AI故事次数已达到5次，请明天再试。', 'DAILY_LIMIT_REACHED');
+  }
+
+  let input: { messages?: unknown; max_tokens?: number };
+  try {
+    input = await bodyJson(request);
+  } catch {
+    return failure(request, 400, '故事请求格式不正确。', 'INVALID_REQUEST');
+  }
+
+  try {
+    const result = await generateMathStory({
+      apiKey: env.GLM_API_KEY,
+      messages: input.messages,
+      maxTokens: input.max_tokens,
+    });
+    await (await auditStatement(request, env, admin.id, 'ai.story_generated', 'ai_model', result.model)).run();
+    return json(request, {
+      ok: true,
+      choices: [
+        {
+          message: {
+            role: 'assistant',
+            content: result.content,
+          },
+        },
+      ],
+      provider: 'zhipu',
+      model: result.model,
+      usage: result.usage,
+    });
+  } catch (error) {
+    if (error instanceof ZhipuStoryError) {
+      return failure(
+        request,
+        error.status,
+        error.message,
+        error.providerCode || 'STORY_PROVIDER_ERROR',
+      );
+    }
+    return failure(request, 500, '故事生成失败，请稍后重试。', 'STORY_GENERATION_FAILED');
+  }
+}
+
 export async function handleWorkspaceRequest(
   request: Request,
   env: WorkspaceAuthEnv,
@@ -920,6 +1018,8 @@ export async function handleWorkspaceRequest(
       return json(request, { ok: true }, 200, { 'Set-Cookie': clearSessionCookie(request) });
     }
     if (url.pathname === `${API_PREFIX}/admin/overview` && request.method === 'GET') return handleAdminOverview(request, env);
+    if (url.pathname === `${API_PREFIX}/admin/ai/generate-image` && request.method === 'POST') return handleAdminGenerateImage(request, env);
+    if (url.pathname === `${API_PREFIX}/admin/ai/generate-story` && request.method === 'POST') return handleAdminGenerateStory(request, env);
     if (url.pathname === `${API_PREFIX}/admin/licenses` && request.method === 'GET') return handleAdminLicenseList(request, env, url);
     if (url.pathname === `${API_PREFIX}/admin/licenses` && request.method === 'POST') return handleAdminCreateLicenses(request, env);
     const licenseRevoke = url.pathname.match(/^\/api\/workspace\/admin\/licenses\/([^/]+)\/revoke$/);
