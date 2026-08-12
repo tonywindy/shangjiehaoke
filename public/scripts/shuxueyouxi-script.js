@@ -66,8 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedChoice = null; // 存储选择题的选中答案
     let currentSceneDescription = ''; // 当前场景描述，用于生成图片
 
-    // --- API 配置 (不变) ---
+    // --- API 配置 ---
     const PROXY_API_URL = 'https://api.shangjiehaoke.top';
+    const IMAGE_API_URL = 'https://api.shangjiehaoke.com';
     const API_URL = PROXY_API_URL;
     const API_KEY = 'dummy-key'; // 代理服务器不需要真实的API Key
 
@@ -1075,8 +1076,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const scenarioPrompt = scenarioPromptMap[scenario] || 'cute math adventure scene';
 
-        // Pollinations 对过长或复杂的提示词不稳定，这里压缩成短英文提示词。
-        return `${scenarioPrompt}${scenarioElements}, child-friendly cartoon illustration, bright colors`;
+        const chapterScene = String(sceneDescription || '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 300);
+
+        return `${scenarioPrompt}${scenarioElements}, ${chapterScene}, child-friendly cartoon illustration, bright colors, clear composition`;
     }
 
     function useFallbackSceneImage(cacheKey) {
@@ -1141,7 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let imageUrl = '';
             try {
-                const response = await fetch(`${PROXY_API_URL}/api/generate-image`, {
+                const response = await fetch(`${IMAGE_API_URL}/api/generate-image`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1155,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new Error(`图片生成API请求失败: ${errorData.error || response.statusText}`);
+                    throw new Error(`图片生成API请求失败: ${errorData.error?.message || response.statusText}`);
                 }
 
                 const data = await response.json();
