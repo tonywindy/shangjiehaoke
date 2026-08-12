@@ -25,8 +25,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -34,10 +35,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Copy HTML files to dist
+      - name: Verify Pages artifact
         run: |
-          cp *.html dist/
-          cp -r public dist/
+          test -f dist/index.html
+          ! grep -q '/src/main.jsx' dist/index.html
+          touch dist/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
