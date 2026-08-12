@@ -67,10 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSceneDescription = ''; // 当前场景描述，用于生成图片
 
     // --- API 配置 ---
-    const PROXY_API_URL = 'https://api.shangjiehaoke.top';
-    const IMAGE_API_URL = 'https://api.shangjiehaoke.com';
-    const API_URL = PROXY_API_URL;
-    const API_KEY = 'dummy-key'; // 代理服务器不需要真实的API Key
+    const AI_API_URL = 'https://api.shangjiehaoke.com';
 
     // --- AI伙伴数据结构 ---
     const partnerData = {
@@ -1146,7 +1143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let imageUrl = '';
             try {
-                const response = await fetch(`${IMAGE_API_URL}/api/generate-image`, {
+                const response = await fetch(`${AI_API_URL}/api/generate-image`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1286,7 +1283,7 @@ document.addEventListener('DOMContentLoaded', () => {
         storyHistory.push({ "role": "user", "content": userPrompt });
 
         try {
-            console.log('即将请求的文本生成API地址是：', `${PROXY_API_URL}/api/generate-story`);
+            console.log('即将请求的文本生成API地址是：', `${AI_API_URL}/api/generate-story`);
 
             // 使用重试机制包装API调用
             const result = await retryWithBackoff(async () => {
@@ -1295,7 +1292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const timeoutId = setTimeout(() => controller.abort(), 120000); // 120秒超时
 
                 try {
-                    const response = await fetch(`${PROXY_API_URL}/api/generate-story`, {
+                    const response = await fetch(`${AI_API_URL}/api/generate-story`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1311,7 +1308,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        throw new Error(`中转服务器请求失败: ${errorData.error || response.statusText}`);
+                        throw new Error(`AI故事请求失败: ${errorData.error?.message || response.statusText}`);
                     }
 
                     return response;
