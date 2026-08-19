@@ -1,5 +1,5 @@
-import miwenCover from '../../miwen/fm.png';
-import teacherWorkspaceCover from '../../teacher-workspace/assets/teacher-workspace-landing-hero.png';
+const coverPath = (name) => import.meta.env.BASE_URL + 'works-covers/' + name;
+
 
 /**
  * 页面与作品统一数据源
@@ -43,7 +43,7 @@ export const WORKS_DATA = [
   {
     id: 'teacher-workspace',
     title: '上节好课 · 教师工作台',
-    cover: teacherWorkspaceCover,
+    cover: coverPath('teacher-workspace.webp'),
     path: '/teacher-workspace/index.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['班级管理', '教学记录'],
@@ -61,7 +61,7 @@ export const WORKS_DATA = [
   {
     id: 'chufa',
     title: '分松果学除法',
-    cover: '/images/chufa.png',
+    cover: coverPath('chufa.webp'),
     path: '/chufa/index.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['除法', '互动学习'],
@@ -70,7 +70,7 @@ export const WORKS_DATA = [
   {
     id: 'zhouchangpingyi',
     title: '平移变换与周长变化',
-    cover: '/images/zhouchangpingyi.png',
+    cover: coverPath('zhouchangpingyi.webp'),
     path: '/zhouchangpingyi.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['图形几何', '动画演示'],
@@ -79,7 +79,7 @@ export const WORKS_DATA = [
   {
     id: 'laocheng-zhouchangtanmi',
     title: '源城小卫士 · 周长探险',
-    cover: '/laocheng/fengmian.png',
+    cover: coverPath('laocheng-fengmian.webp'),
     path: '/laocheng/zhouchangtanmi.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['周长', '情境闯关'],
@@ -88,7 +88,7 @@ export const WORKS_DATA = [
   {
     id: 'shuxueyouxi',
     title: '一人一世界数学情境答题游戏',
-    cover: '/images/shijie.jpeg',
+    cover: coverPath('shijie.webp'),
     path: '/shuxueyouxi.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['AI故事', '数学游戏'],
@@ -97,7 +97,7 @@ export const WORKS_DATA = [
   {
     id: 'santitg',
     title: '三题通关精准计算训练营',
-    cover: '/images/santtg.png',
+    cover: coverPath('santtg.webp'),
     path: '/santitg.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['计算训练', '闯关'],
@@ -106,7 +106,7 @@ export const WORKS_DATA = [
   {
     id: 'caiqi',
     title: '校园装饰师挑战',
-    cover: '/images/caiqi.png',
+    cover: coverPath('caiqi.webp'),
     path: '/caiqi/index.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['周期规律', '彩旗推理'],
@@ -115,7 +115,7 @@ export const WORKS_DATA = [
   {
     id: 'miwen',
     title: '中文密信生成器',
-    cover: miwenCover,
+    cover: coverPath('miwen-fm.webp'),
     path: '/miwen/index.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['文字游戏', '加密生成'],
@@ -124,7 +124,7 @@ export const WORKS_DATA = [
   {
     id: 'climb',
     title: '两位数乘法登山挑战游戏',
-    cover: '/images/dengshan.jpeg',
+    cover: coverPath('dengshan.webp'),
     path: '/climb.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['乘法', '游戏化'],
@@ -132,7 +132,7 @@ export const WORKS_DATA = [
   {
     id: 'zhouchang',
     title: '周长的探索之旅',
-    cover: '/images/zhouchang.jpeg',
+    cover: coverPath('zhouchang.webp'),
     path: '/zhouchang.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['周长', '可视化'],
@@ -140,7 +140,7 @@ export const WORKS_DATA = [
   {
     id: 'danweihuansuan',
     title: '长度单位换算交互式学习工具',
-    cover: '/images/danweihuansuan.png',
+    cover: coverPath('danweihuansuan.webp'),
     path: '/danweihuansuan.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['单位换算', '练习工具'],
@@ -148,7 +148,7 @@ export const WORKS_DATA = [
   {
     id: 'renshixiaoshu',
     title: '认识小数：元角分大探险',
-    cover: '/images/renshixiaoshu.png',
+    cover: coverPath('renshixiaoshu.webp'),
     path: '/renshixiaoshu.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['小数', '情境学习'],
@@ -156,7 +156,7 @@ export const WORKS_DATA = [
   {
     id: 'recite',
     title: '背诵冒险记',
-    cover: '/images/beisong-background.jpg',
+    cover: coverPath('beisong-background.webp'),
     path: '/recite/index.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['背诵', '冒险'],
@@ -164,7 +164,7 @@ export const WORKS_DATA = [
   {
     id: 'shudui',
     title: '数对四子棋游戏',
-    cover: '/images/shudui.png',
+    cover: coverPath('shudui.webp'),
     path: '/shudui.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['数对', '对战'],
@@ -172,7 +172,7 @@ export const WORKS_DATA = [
   {
     id: 'zuoweibiao',
     title: '班级座位表管理系统',
-    cover: '/images/zuoweibiao.png',
+    cover: coverPath('zuoweibiao.webp'),
     path: '/zuoweibiao.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['班级管理', '实用工具'],
@@ -180,7 +180,7 @@ export const WORKS_DATA = [
   {
     id: 'yingbi',
     title: '抛硬币频率分析模拟器',
-    cover: '/images/yingbifengmian.png',
+    cover: coverPath('yingbifengmian.webp'),
     path: '/yingbi.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['概率', '模拟实验'],
@@ -188,7 +188,7 @@ export const WORKS_DATA = [
   {
     id: 'shizhen',
     title: '时钟夹角工具',
-    cover: '/images/shizhong1.png',
+    cover: coverPath('shizhong1.webp'),
     path: '/shizhen.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['时钟', '几何'],
@@ -196,7 +196,7 @@ export const WORKS_DATA = [
   {
     id: 'lucheng',
     title: '完美停车（路程问题）',
-    cover: '/images/lucheng.png',
+    cover: coverPath('lucheng.webp'),
     path: '/lucheng/index.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['路程问题', '互动练习'],
@@ -204,7 +204,7 @@ export const WORKS_DATA = [
   {
     id: 'duichen',
     title: '轴对称探索画板',
-    cover: '/images/duicheng.png',
+    cover: coverPath('duicheng.webp'),
     path: '/duichen.html',
     pageType: PAGE_TYPES.TOOL,
     tags: ['轴对称', '画板'],
