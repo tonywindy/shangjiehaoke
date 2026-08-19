@@ -5,6 +5,7 @@ import { copyFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const projectRoot = fileURLToPath(new URL('.', import.meta.url));
+const basePath = process.env.VITE_BASE_PATH || '/';
 
 function copyStaticGameScripts() {
   return {
@@ -24,7 +25,7 @@ function copyStaticGameScripts() {
 
 export default defineConfig({
   plugins: [react(), copyStaticGameScripts()],
-  base: '/',
+  base: basePath,
   publicDir: 'public',
   server: {
     proxy: {

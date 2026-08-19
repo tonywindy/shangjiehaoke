@@ -17,6 +17,8 @@
 }
 
 .background-video {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -37,7 +39,7 @@
   align-items: center;
   background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
   color: white;
-  z-index: 1;
+  z-index: 2;
 }
 
 .loading-spinner {
@@ -68,7 +70,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: 0;
 }
 
 .fallback-bg {
@@ -82,30 +84,13 @@
     #533483 75%,
     #7209b7 100%
   );
-  background-size: 400% 400%;
-  animation: gradientMove 8s ease infinite;
+  background-size: cover;
 }
 
 @keyframes gradientMove {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
-}
-
-/* 视频遮罩层 */
-.video-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0.4) 50%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
-  z-index: -1;
 }
 
 /* 中央Logo容器 */
@@ -170,44 +155,6 @@
 .logo-image:hover {
   filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.8));
   transform: scale(1.05);
-}
-
-/* Logo装饰元素 */
-.logo-decoration {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  opacity: 0.7;
-}
-
-.decoration-line {
-  width: 60px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #00d4ff, transparent);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.decoration-dots {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.decoration-dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #00d4ff;
-  animation: dotPulse 1.5s ease-in-out infinite;
-}
-
-.decoration-dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.decoration-dots span:nth-child(3) {
-  animation-delay: 0.4s;
 }
 
 /* 导航栏 */
@@ -326,30 +273,6 @@
   line-height: 1.4;
 }
 
-/* 底部信息 */
-.bottom-info {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  z-index: 10;
-}
-
-.scroll-indicator {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
-  font-weight: 300;
-  letter-spacing: 0.1em;
-}
-
-.scroll-arrow {
-  font-size: 1.5rem;
-  margin-top: 0.5rem;
-  animation: bounce 2s ease-in-out infinite;
-  color: #00d4ff;
-}
-
 /* 动画效果 */
 @keyframes gradientShift {
   0%, 100% {
@@ -357,40 +280,6 @@
   }
   50% {
     background-position: 100% 50%;
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scaleX(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scaleX(1.2);
-  }
-}
-
-@keyframes dotPulse {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-10px);
-  }
-  60% {
-    transform: translateY(-5px);
   }
 }
 
@@ -710,10 +599,6 @@
     font-size: clamp(0.8rem, 3vw, 1.2rem);
   }
   
-  .decoration-line {
-    width: 40px;
-  }
-
   .section {
     padding: 60px 0;
   }
@@ -745,20 +630,6 @@
   }
 }
 
-@media (max-width: 480px) {
-  .nav-menu {
-    display: none;
-  }
-  
-  .logo-decoration {
-    gap: 0.5rem;
-  }
-  
-  .decoration-line {
-    width: 30px;
-  }
-}
-
 /* 视频加载状态 */
 .background-video {
   opacity: 0;
@@ -772,10 +643,7 @@
 /* 无障碍性 */
 @media (prefers-reduced-motion: reduce) {
   .logo-wrapper,
-  .background-video,
-  .scroll-arrow,
-  .decoration-line,
-  .decoration-dots span {
+  .background-video {
     animation: none;
     transition: none;
   }
@@ -790,10 +658,6 @@
 
 /* 高对比度模式 */
 @media (prefers-contrast: high) {
-  .video-overlay {
-    background: rgba(0, 0, 0, 0.8);
-  }
-  
   .nav-link {
     color: #ffffff;
   }

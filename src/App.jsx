@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Navbar from './components/Navbar'
 import { FEATURED_WORKS } from './data/works-data'
+import { withBasePath } from './utils/basePath.js'
 import './App.css'
-import videoSrc from '/videos/your-video.mp4';
+
+const heroVideoWebm = withBasePath('/videos/hero-background-v2.webm')
+const heroVideoMp4 = withBasePath('/videos/hero-background-v2.mp4')
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -15,16 +18,14 @@ function App() {
 
   const handleVideoLoad = () => {
     setVideoLoaded(true)
-    console.log('视频加载成功')
   }
 
-  const handleVideoError = (e) => {
+  const handleVideoError = () => {
     setVideoError(true)
-    console.error('视频加载失败:', e)
   }
 
   return (
-    <>
+    <main id="main-content">
       <div className="app">
         {/* 视频背景 */}
         <div className="video-background">
@@ -35,30 +36,27 @@ function App() {
             </div>
           )}
           
-          {videoError && (
-            <div className="video-fallback">
-              <div className="fallback-bg"></div>
-            </div>
-          )}
+          <div className="video-fallback" aria-hidden="true">
+            <div className="fallback-bg"></div>
+          </div>
           
-          <video 
-            autoPlay 
-            muted 
-            loop 
+          <video
+            autoPlay
+            muted
+            loop
             playsInline
+            preload="auto"
             className="background-video"
             onLoadedData={handleVideoLoad}
             onError={handleVideoError}
             style={{ opacity: videoLoaded ? 1 : 0 }}
+            aria-hidden="true"
+            tabIndex={-1}
           >
-            {/* 你可以替换这个视频源为你自己的视频文件 */}
-            <source src={videoSrc} type="video/mp4" />
-            {/* 如果浏览器不支持视频，显示备用内容 */}
+            <source src={heroVideoWebm} type="video/webm" />
+            <source src={heroVideoMp4} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          
-          {/* 视频遮罩层 */}
-          <div className="video-overlay"></div>
         </div>
 
         {/* 中央Logo区域 */}
@@ -74,35 +72,17 @@ function App() {
             */}
             
             {/* 使用图片logo */}
-            <img 
-              src="/images/logo1.png" 
-              alt="上节好课 Logo" 
+            <img
+              src={withBasePath('/images/logo1.png')}
+              alt="上节好课"
               className="logo-image"
             />
-          </div>
-          
-          {/* 可选的装饰元素 */}
-          <div className="logo-decoration">
-            <div className="decoration-line"></div>
-            <div className="decoration-dots">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-            <div className="decoration-line"></div>
           </div>
         </div>
 
         {/* 导航栏 */}
         <Navbar currentPage="home" />
 
-        {/* 底部信息 */}
-        <div className="bottom-info">
-          <div className="scroll-indicator">
-            <span>向下滚动探索更多</span>
-            <div className="scroll-arrow">↓</div>
-          </div>
-        </div>
       </div>
 
       {/* 滚动内容区域 */}
@@ -138,11 +118,11 @@ function App() {
           <div className="section-container">
             <div className="section-content">
               <h2 className="section-title">继续探索</h2>
-              <p className="section-subtitle">首页推荐区直接读取统一作品数据，后续新增卡片时不再需要同步改多处。</p>
+              <p className="section-subtitle">从课堂互动到 AI 辅助分析，选择一个工具开始体验。</p>
 
               <div className="featured-works-grid">
                 {FEATURED_WORKS.map((work) => (
-                  <a href={work.path} className="featured-work-card" key={work.id}>
+                  <a href={withBasePath(work.path)} className="featured-work-card" key={work.id}>
                     <div className="featured-work-image">
                       <img src={work.cover} alt={work.title} loading="lazy" />
                     </div>
@@ -163,7 +143,7 @@ function App() {
 
 
       </div>
-    </>
+    </main>
   )
 }
 
