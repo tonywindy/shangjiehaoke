@@ -1,5 +1,6 @@
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);
-const API_ORIGIN = LOCAL_HOSTS.has(location.hostname) ? '' : 'https://api.shangjiehaoke.com';
+const API_HOSTNAME = typeof location === 'undefined' ? 'localhost' : location.hostname;
+const API_ORIGIN = LOCAL_HOSTS.has(API_HOSTNAME) ? '' : 'https://api.shangjiehaoke.com';
 
 export function workspaceApiUrl(path) {
   const suffix = path.startsWith('/') ? path : `/${path}`;

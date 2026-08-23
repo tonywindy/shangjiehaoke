@@ -1,6 +1,11 @@
 import { verifyPassword } from './auth';
 import { generateStoryImage, ZhipuImageError } from './ai/zhipu-image';
 import { generateMathStory, ZhipuStoryError } from './ai/zhipu-story';
+import {
+  generateWorkspaceAi,
+  MimoWorkspaceError,
+  type WorkspaceAiFeature,
+} from './ai/mimo-workspace';
 
 const API_PREFIX = '/api/workspace';
 const SESSION_COOKIE = 'sjhk_workspace_session';
@@ -15,6 +20,7 @@ const encoder = new TextEncoder();
 export type WorkspaceAuthEnv = {
   AUTH_DB: D1Database;
   GLM_API_KEY?: string;
+  MIMO_API_KEY?: string;
   WORKSPACE_ADMIN_USERNAME?: string;
   WORKSPACE_ADMIN_PASSWORD_HASH?: string;
   WORKSPACE_SESSION_SECRET?: string;
@@ -975,6 +981,65 @@ async function handleAdminGenerateStory(
   }
 }
 
+async function handleAdminWorkspaceAi(
+  request: Request,
+  env: WorkspaceAuthEnv,
+  feature: WorkspaceAiFeature,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env);
+  if (isResponse(admin)) return admin;
+  if (!env.MIMO_API_KEY) {
+    return failure(request, 503, 'MiMo智能整理服务尚未完成配置。', 'MIMO_AI_NOT_CONFIGURED');
+  }
+  const limits: Record<WorkspaceAiFeature, number> = {
+    organize: 60,
+    'daily-summary': 12,
+    review: 12,
+    'learning-insights': 12,
+  };
+  if (!(await checkRateLimit(request, env, `admin-workspace-ai:${feature}:${admin.id}`, limits[feature], 24 * 60 * 60_000))) {
+    return failure(request, 429, '今天这项AI功能的使用次数已达到上限，请明天再试。', 'DAILY_LIMIT_REACHED');
+  }
+  let payload: unknown;
+  try {
+    payload = await bodyJson(request);
+  } catch {
+    return failure(request, 400, 'AI请求内容格式不正确。', 'INVALID_REQUEST');
+  }
+  try {
+    const generated = await generateWorkspaceAi({
+      apiKey: env.MIMO_API_KEY,
+      feature,
+      payload,
+    });
+    await (await auditStatement(
+      request,
+      env,
+      admin.id,
+      `ai.workspace_${feature.replace('-', '_')}`,
+      'ai_model',
+      generated.model,
+    )).run();
+    return json(request, {
+      ok: true,
+      result: generated.result,
+      provider: 'xiaomi-mimo',
+      model: generated.model,
+      usage: generated.usage,
+    });
+  } catch (error) {
+    if (error instanceof MimoWorkspaceError) {
+      return failure(
+        request,
+        error.status,
+        error.message,
+        error.providerCode || 'MIMO_PROVIDER_ERROR',
+      );
+    }
+    return failure(request, 500, 'AI整理失败，请稍后重试。', 'AI_GENERATION_FAILED');
+  }
+}
+
 export async function handleWorkspaceRequest(
   request: Request,
   env: WorkspaceAuthEnv,
@@ -1020,6 +1085,10 @@ export async function handleWorkspaceRequest(
     if (url.pathname === `${API_PREFIX}/admin/overview` && request.method === 'GET') return handleAdminOverview(request, env);
     if (url.pathname === `${API_PREFIX}/admin/ai/generate-image` && request.method === 'POST') return handleAdminGenerateImage(request, env);
     if (url.pathname === `${API_PREFIX}/admin/ai/generate-story` && request.method === 'POST') return handleAdminGenerateStory(request, env);
+    if (url.pathname === `${API_PREFIX}/admin/ai/organize` && request.method === 'POST') return handleAdminWorkspaceAi(request, env, 'organize');
+    if (url.pathname === `${API_PREFIX}/admin/ai/daily-summary` && request.method === 'POST') return handleAdminWorkspaceAi(request, env, 'daily-summary');
+    if (url.pathname === `${API_PREFIX}/admin/ai/review` && request.method === 'POST') return handleAdminWorkspaceAi(request, env, 'review');
+    if (url.pathname === `${API_PREFIX}/admin/ai/learning-insights` && request.method === 'POST') return handleAdminWorkspaceAi(request, env, 'learning-insights');
     if (url.pathname === `${API_PREFIX}/admin/licenses` && request.method === 'GET') return handleAdminLicenseList(request, env, url);
     if (url.pathname === `${API_PREFIX}/admin/licenses` && request.method === 'POST') return handleAdminCreateLicenses(request, env);
     const licenseRevoke = url.pathname.match(/^\/api\/workspace\/admin\/licenses\/([^/]+)\/revoke$/);

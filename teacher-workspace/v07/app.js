@@ -2,6 +2,7 @@ import { readSheet } from 'read-excel-file/browser';
 import { pinyin } from 'pinyin-pro';
 import { BNUP_G4S1_KPS, BNUP_G4S1_TEMPLATE_META } from './bnup-grade4-sem1-kps.js';
 import bnuKnowledgeTemplateUrl from '../assets/北师大版四年级上册数学知识点清单.xlsx?url';
+import { isAdminAiUser, runAdminAi } from '../ai-client.js';
 
 let DB_NAME = 'shangjiehaoke-teacher-workspace-v07';
 const DB_VERSION = 5;
@@ -1278,6 +1279,56 @@ function jumpToKp(kpId) {
   toast(`已回到“${kp.name}”所在单元`);
 }
 
+function renderAiInsights(result) {
+  const panel = $('#aiInsightsPanel');
+  const cards = result.insights.map((item) => `<article class="ai-insight"><h3>${escapeHTML(item.knowledgePoint)}</h3><p><b>发现：</b>${escapeHTML(item.finding)}</p><p><b>依据：</b>${escapeHTML(item.evidence)}</p><p><b>建议：</b>${escapeHTML(item.suggestion)}</p></article>`).join('');
+  panel.innerHTML = `<div class="ai-insights-head"><span class="mark">✦</span><div><h2>MiMo 学情建议</h2><p>${escapeHTML(result.overview)} · 仅根据已确认判断生成，不会修改矩阵</p></div></div>
+    <div class="ai-insights-grid">${cards || '<article class="ai-insight"><h3>记录不足</h3><p>继续完成知识点判断并补充错因后再试。</p></article>'}</div>
+    ${result.cautions.length ? `<div class="ai-cautions">谨慎解读：${result.cautions.map(escapeHTML).join('；')}</div>` : ''}`;
+  panel.classList.remove('hidden');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function generateLearningInsights() {
+  const button = $('#aiLearningInsights');
+  const kps = state.kps.filter((kp) => !kp.archivedAt && kp.unitName === state.activeUnit);
+  if (!kps.length || !state.students.length) return toast('当前单元还没有足够的学情记录');
+  const knowledgePoints = kps.map((kp) => {
+    const statuses = state.students.map((student) => ({
+      status: currentStatus(student.id, kp.id),
+      reason: currentNote(student.id, kp.id),
+    }));
+    const reasonCounts = statuses.reduce((counts, item) => {
+      if (item.status === 'needs_support' && item.reason) counts[item.reason] = (counts[item.reason] || 0) + 1;
+      return counts;
+    }, {});
+    return {
+      name: kp.name,
+      mastered: statuses.filter((item) => item.status === 'mastered').length,
+      needsSupport: statuses.filter((item) => item.status === 'needs_support').length,
+      unassessed: statuses.filter((item) => item.status === 'unassessed').length,
+      commonReasons: Object.entries(reasonCounts).sort((left, right) => right[1] - left[1]).slice(0, 8).map(([reason, count]) => ({ reason, count })),
+    };
+  });
+  if (!knowledgePoints.some((item) => item.mastered || item.needsSupport)) return toast('请先完成一些学情判断再生成建议');
+  button.disabled = true;
+  button.textContent = '✦ 正在分析…';
+  try {
+    const result = await runAdminAi('learning-insights', {
+      unitName: state.activeUnit,
+      studentCount: state.students.length,
+      knowledgePoints,
+    });
+    renderAiInsights(result);
+    toast('AI学情建议已生成，请结合课堂判断');
+  } catch (error) {
+    toast(error.message || 'AI学情建议生成失败');
+  } finally {
+    button.disabled = false;
+    button.textContent = '✦ AI 学情建议';
+  }
+}
+
 function bindEvents() {
   $('.sub-nav').addEventListener('click', (event) => {
     const button = event.target.closest('[data-view]');
@@ -1288,8 +1339,11 @@ function bindEvents() {
   $('#unitSelect').addEventListener('change', (event) => {
     state.activeUnit = event.target.value;
     clearSelection();
+    $('#aiInsightsPanel').classList.add('hidden');
     renderMatrix();
   });
+
+  $('#aiLearningInsights')?.addEventListener('click', generateLearningInsights);
 
   $('#matrixBody').addEventListener('click', async (event) => {
     const cycle = event.target.closest('[data-cycle-status]');
@@ -1568,6 +1622,7 @@ function bindEvents() {
 async function init() {
   try {
     await window.TeacherWorkspaceAccess?.ready;
+    if (isAdminAiUser()) $('#aiLearningInsights')?.classList.add('on');
     DB_NAME = window.TeacherWorkspaceAccess?.databaseName || DB_NAME;
     await window.TeacherClassManager?.ready;
     state.db = await openDatabase();

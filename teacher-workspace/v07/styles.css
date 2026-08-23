@@ -215,6 +215,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .summary-icon.amber { color: var(--amber); background: var(--amber-soft); }
 .summary-card strong { display: block; font-size: 21px; line-height: 1.1; }
 .summary-card span:last-child { color: var(--muted); font-size: 12px; }
+.admin-ai-only { display: none; }
+.admin-ai-only.on { display: inline-flex; align-items: center; gap: 6px; }
+.admin-ai-only:disabled { opacity: .55; cursor: wait; }
+.ai-insights { margin-bottom: 16px; overflow: hidden; border-color: #cce3d4; background: linear-gradient(135deg, #f5fbf7, #fff); }
+.ai-insights-head { display: flex; align-items: flex-start; gap: 11px; padding: 16px 18px; border-bottom: 1px solid #dfece3; }
+.ai-insights-head .mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; color: #fff; background: var(--green); }
+.ai-insights-head h2 { margin: 0; font-size: 16px; }
+.ai-insights-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+.ai-insights-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 14px; }
+.ai-insight { padding: 13px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+.ai-insight h3 { margin: 0 0 7px; color: var(--green-dark); font-size: 13px; }
+.ai-insight p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+.ai-insight b { color: var(--ink); }
+.ai-cautions { margin: 0 14px 14px; padding: 10px 12px; border-radius: 9px; color: #8a6415; background: var(--amber-soft); font-size: 12px; }
 
 .matrix-layout { display: grid; grid-template-columns: minmax(560px, 1fr) 360px; gap: 16px; align-items: start; }
 .panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -752,6 +766,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   .unit-picker select { max-width: 150px; }
   .view { padding: 14px 12px 28px; }
   .summary-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ai-insights-grid { grid-template-columns: 1fr; }
   .summary-card { min-height: 66px; padding: 11px; }
   .summary-icon { width: 31px; height: 31px; }
   .summary-card strong { font-size: 18px; }

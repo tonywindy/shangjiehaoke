@@ -1,3 +1,5 @@
+import { createStudentMask, isAdminAiUser, runAdminAi } from './ai-client.js';
+
 let BACKUP_DB_NAME = 'shangjiehaoke-teacher-workspace-v07';
 const BACKUP_DB_VERSION = 5;
 const DEFAULT_CLASS_ID = 'class-local';
@@ -673,6 +675,107 @@ function renderRealStudentEvaluation(student, records) {
   notify('真实评价已生成');
 }
 
+function bulletList(items = []) {
+  return items.length
+    ? `<ul class="bullets">${items.map((item) => `<li>${escapeText(item)}</li>`).join('')}</ul>`
+    : '<p>当前记录中没有可确认的补充内容。</p>';
+}
+
+async function generateAiClassReview(classRecord, records) {
+  const button = $('#genAiReview');
+  const mask = createStudentMask(records.students || []);
+  const statuses = latestStatuses(records.judgements || []);
+  const kpById = Object.fromEntries((records.kps || []).map((kp) => [kp.id, kp]));
+  const learning = Object.values(statuses.reduce((groups, item) => {
+    const name = kpById[item.kpId]?.name || '相关知识点';
+    groups[name] ||= { knowledgePoint: name, mastered: 0, needsSupport: 0, reasons: [] };
+    if (item.status === 'mastered') groups[name].mastered += 1;
+    if (item.status === 'needs_support') {
+      groups[name].needsSupport += 1;
+      if (item.note) groups[name].reasons.push(mask.maskText(item.note));
+    }
+    return groups;
+  }, {})).slice(0, 30);
+  button.disabled = true;
+  button.textContent = '✦ 正在生成…';
+  try {
+    const result = await runAdminAi('review', {
+      mode: 'class',
+      classFacts: {
+        studentCount: records.students?.length || 0,
+        noteCount: records.notes?.length || 0,
+        homeworkCount: records.homeworks?.length || 0,
+        taskCount: records.followupTasks?.length || 0,
+        completedTaskCount: (records.followupTasks || []).filter((item) => item.status === 'completed').length,
+      },
+      learning,
+      recentRecords: (records.notes || []).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 12).map((note) => ({
+        category: note.category,
+        body: mask.maskText(note.body || note.title || ''),
+      })),
+    });
+    const paper = $('#reviewDoc .paper');
+    paper.innerHTML = `<div class="hd"><div class="k">AI 辅 助 · 教 师 已 确 认 记 录</div><h3>${escapeText(classRecord.name)} · ${localDateStamp()}</h3><div class="m">MiMo 生成草稿，打印前请由教师复核</div></div>
+      <div class="bd"><div class="sec"><h4><span class="d"></span>阶段概况 <span class="ai-badge">MiMo</span></h4><p>${escapeText(mask.unmaskText(result.overview))}</p></div>
+      <div class="sec"><h4><span class="d"></span>学情推进</h4><p>${escapeText(mask.unmaskText(result.learningProgress))}</p></div>
+      <div class="sec"><h4><span class="d"></span>客观亮点</h4>${bulletList(result.highlights.map(mask.unmaskText))}</div>
+      <div class="sec"><h4><span class="d"></span>下一步建议</h4>${bulletList(result.nextSteps.map(mask.unmaskText))}</div>
+      <div class="sec"><h4><span class="d" style="background:var(--text-3)"></span>说明</h4><p>本草稿只使用当前浏览器中的已确认记录；AI没有修改任何学情状态。</p></div></div>`;
+    $('#reviewDoc').classList.remove('hide');
+    $('#reviewDoc').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    notify('AI班级回顾已生成，请教师复核');
+  } catch (error) {
+    notify(error.message || 'AI班级回顾生成失败');
+  } finally {
+    button.disabled = false;
+    button.textContent = '✦ AI 生成回顾';
+  }
+}
+
+async function generateAiStudentReview(student, records) {
+  const button = $('#genAiStu');
+  const mask = createStudentMask(records.students || []);
+  const statuses = latestStatuses((records.judgements || []).filter((item) => item.studentId === student.id));
+  const kpById = Object.fromEntries((records.kps || []).map((kp) => [kp.id, kp]));
+  const entries = (records.homeworkEntries || []).filter((entry) => entry.studentId === student.id);
+  button.disabled = true;
+  button.textContent = '✦ 正在生成…';
+  try {
+    const result = await runAdminAi('review', {
+      mode: 'student',
+      studentToken: mask.tokensForIds([student.id])[0] || '学生本人',
+      knowledge: statuses.map((item) => ({
+        knowledgePoint: kpById[item.kpId]?.name || '相关知识点',
+        status: item.status,
+        reason: mask.maskText(item.note || ''),
+      })).slice(0, 40),
+      homework: {
+        total: entries.length,
+        completed: entries.filter((entry) => entry.outcome === 'completed').length,
+        partial: entries.filter((entry) => entry.outcome === 'partial').length,
+        incomplete: entries.filter((entry) => entry.outcome === 'incomplete').length,
+      },
+      records: (records.notes || []).filter((note) => (note.studentIds || []).includes(student.id)).slice(0, 16).map((note) => ({
+        category: note.category,
+        body: mask.maskText(note.body || note.title || ''),
+      })),
+    });
+    $('#stuT').textContent = `${student.name} · AI阶段评价`;
+    const container = $('#stuDoc > div:last-child');
+    container.innerHTML = `<div class="vs"><div class="vsc me"><div class="t">教师内部版 <span class="ai-badge">MiMo</span></div><div class="c">${escapeText(mask.unmaskText(result.teacherSummary))}</div>${result.nextSteps.length ? `<div class="t" style="margin-top:14px">下一步建议</div>${bulletList(result.nextSteps.map(mask.unmaskText))}` : ''}</div>
+      <div class="vsc pa"><div class="t">给家长看的版本</div><div class="c">${escapeText(mask.unmaskText(result.parentSummary))}</div></div></div>
+      <div class="vsnote">内容来自已确认的学情、作业和个人档案记录；这是AI草稿，使用前请由教师复核。</div>`;
+    $('#stuDoc').classList.remove('hide');
+    $('#stuDoc').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    notify('AI学生评价已生成，请教师复核');
+  } catch (error) {
+    notify(error.message || 'AI学生评价生成失败');
+  } finally {
+    button.disabled = false;
+    button.textContent = '✦ AI 生成评价';
+  }
+}
+
 async function initializeRealReports() {
   const workspace = await readWorkspace();
   const classRecord = workspace.classes.find((item) => item.id === workspace.activeClassId);
@@ -696,6 +799,19 @@ async function initializeRealReports() {
     }
     renderRealStudentEvaluation(student, records);
   };
+  if (isAdminAiUser()) {
+    $('#genAiReview')?.classList.add('on');
+    $('#genAiStu')?.classList.add('on');
+    $('#genAiReview').onclick = () => {
+      if (!classRecord) return notify('请先创建班级并导入学生');
+      generateAiClassReview(classRecord, records);
+    };
+    $('#genAiStu').onclick = () => {
+      const student = records.students.find((item) => item.id === select.value);
+      if (!student) return notify('请先导入学生名单');
+      generateAiStudentReview(student, records);
+    };
+  }
 }
 
 initializeBackupPanel()
