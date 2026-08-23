@@ -57,12 +57,15 @@ export const useQuotes = () => {
   const initializeQuote = useCallback((quotesData, firstQuote) => {
     setQuotes(quotesData);
     setCurrentQuote(firstQuote);
-    
-    // 将首次展示的金句添加到已展示列表
-    if (firstQuote && !shownQuoteIds.includes(firstQuote.id)) {
-      setShownQuoteIds(prev => [...prev, firstQuote.id]);
+
+    if (firstQuote) {
+      setShownQuoteIds((previousIds) => (
+        previousIds.includes(firstQuote.id)
+          ? previousIds
+          : [...previousIds, firstQuote.id]
+      ));
     }
-  }, [shownQuoteIds, setShownQuoteIds]);
+  }, [setShownQuoteIds]);
 
   /**
    * 初始化加载金句数据
@@ -81,7 +84,7 @@ export const useQuotes = () => {
     };
 
     loadQuotes();
-  }, []); // 只在组件挂载时执行一次
+  }, [initializeQuote]);
 
   /**
    * 显示新金句的动画效果
@@ -166,4 +169,3 @@ export const useQuotes = () => {
     toggleFavorite,
   };
 };
-

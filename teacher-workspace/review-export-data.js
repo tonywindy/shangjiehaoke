@@ -230,21 +230,70 @@ function normalizeBackup(raw) {
   if (raw.version != null && (!Number.isInteger(raw.version) || raw.version < 1 || raw.version > BACKUP_DB_VERSION)) {
     throw new Error('备份版本不受支持，请先升级工作台');
   }
+  const validId = (value) => (
+    (typeof value === 'string' && value.trim().length > 0)
+    || (typeof value === 'number' && Number.isFinite(value))
+  );
   const validateRecords = (records) => {
     SCOPED_STORES.forEach((store) => {
       const values = records[store] || [];
-      if (!Array.isArray(values) || values.length > 200000 || values.some((item) => !item || typeof item !== 'object' || Array.isArray(item))) {
+      if (!Array.isArray(values) || values.length > 200000) {
         throw new Error(`备份中的${store}记录不完整`);
       }
+      const recordIds = new Set();
+      values.forEach((item) => {
+        if (!item || typeof item !== 'object' || Array.isArray(item) || !validId(item.id)) {
+          throw new Error(`备份中的${store}记录缺少有效ID`);
+        }
+        const recordId = `${typeof item.id}:${item.id}`;
+        if (recordIds.has(recordId)) throw new Error(`备份中的${store}存在重复记录`);
+        recordIds.add(recordId);
+        if (item.classId != null && !validId(item.classId)) {
+          throw new Error(`备份中的${store}班级关联无效`);
+        }
+      });
     });
   };
   if (raw?.scope === 'all-classes' && Array.isArray(raw.classes) && raw.records) {
-    if (raw.classes.length > 500 || raw.classes.some((item) => !item || typeof item !== 'object' || !String(item.name || '').trim())) {
+    if (raw.classes.length === 0 || raw.classes.length > 500 || raw.classes.some((item) => (
+      !item
+      || typeof item !== 'object'
+      || Array.isArray(item)
+      || !validId(item.id)
+      || !String(item.name || '').trim()
+    ))) {
       throw new Error('备份中的班级记录不完整');
     }
+    const classIds = new Set();
+    const classNames = new Set();
+    raw.classes.forEach((item) => {
+      const classId = `${typeof item.id}:${item.id}`;
+      const className = String(item.name).trim();
+      if (classIds.has(classId)) throw new Error('备份中存在重复班级ID');
+      if (classNames.has(className)) throw new Error('备份中存在重复班级名称');
+      classIds.add(classId);
+      classNames.add(className);
+    });
     const validStores = SCOPED_STORES.every((store) => Array.isArray(raw.records[store] || []));
     if (!validStores) throw new Error('备份记录结构不完整');
     validateRecords(raw.records);
+    if (raw.classMeta != null && !Array.isArray(raw.classMeta)) throw new Error('备份中的班级设置不完整');
+    SCOPED_STORES.forEach((store) => {
+      (raw.records[store] || []).forEach((item) => {
+        const classId = item.classId || DEFAULT_CLASS_ID;
+        if (!classIds.has(`${typeof classId}:${classId}`)) {
+          throw new Error(`备份中的${store}包含未知班级数据`);
+        }
+      });
+    });
+    (raw.classMeta || []).forEach((item) => {
+      if (!item || typeof item !== 'object' || Array.isArray(item) || !validId(item.classId)) {
+        throw new Error('备份中的班级设置不完整');
+      }
+      if (!classIds.has(`${typeof item.classId}:${item.classId}`)) {
+        throw new Error('备份中的班级设置关联了未知班级');
+      }
+    });
     return {
       scope: 'all-classes',
       classes: raw.classes,
@@ -256,13 +305,17 @@ function normalizeBackup(raw) {
   if (Array.isArray(raw?.students) && Array.isArray(raw?.kps) && Array.isArray(raw?.judgements)) {
     const records = Object.fromEntries(SCOPED_STORES.map((store) => [store, raw[store] || []]));
     validateRecords(records);
+    const classRecord = raw.class || {
+      id: raw.classId || DEFAULT_CLASS_ID,
+      name: raw.className || '备份班级',
+      status: 'active',
+    };
+    if (!classRecord || typeof classRecord !== 'object' || Array.isArray(classRecord) || !String(classRecord.name || '').trim()) {
+      throw new Error('备份中的班级记录不完整');
+    }
     return {
       scope: 'current-class',
-      class: raw.class || {
-        id: raw.classId || DEFAULT_CLASS_ID,
-        name: raw.className || '备份班级',
-        status: 'active',
-      },
+      class: classRecord,
       records,
       seatConfig: raw.seatConfig || { rows: 6, desks: 3, seatsPerDesk: 2 },
       seatAssignments: raw.seatAssignments || {},
@@ -296,16 +349,16 @@ function renderRestoreDialog() {
     <b>${escapeText(summary.title)}</b>
     <span>${escapeText(date)}备份 · ${counts.students} 名学生 · ${counts.judgements} 条学情判断 · ${counts.homeworks} 次作业登记 · ${counts.homeworkEntries} 条学生作业状态</span>`;
   if (pendingRestore.scope === 'current-class') {
-    const activeName = workspaceContext.classes.find((item) => item.id === workspaceContext.activeClassId)?.name || '当前班级';
+    const activeClass = workspaceContext.classes.find((item) => item.id === workspaceContext.activeClassId);
     $('#workspaceRestoreOptions').innerHTML = `
       <label class="restore-option">
         <input type="radio" name="restoreMode" value="create" checked>
         <span><b>创建为新班级（推荐）</b><i>生成“${escapeText(pendingRestore.class?.name || '备份班级')}（恢复）”，现有班级不会改变。</i></span>
-      </label>
-      <label class="restore-option">
-        <input type="radio" name="restoreMode" value="overwrite">
-        <span><b>覆盖当前班级</b><i>用备份替换“${escapeText(activeName)}”中的学生、座位、学情、作业和任务。</i></span>
-      </label>`;
+      </label>${activeClass ? `
+        <label class="restore-option">
+          <input type="radio" name="restoreMode" value="overwrite">
+          <span><b>覆盖当前班级</b><i>用备份替换“${escapeText(activeClass.name)}”中的学生、座位、学情、作业和任务。</i></span>
+        </label>` : ''}`;
   } else {
     $('#workspaceRestoreOptions').innerHTML = `
       <label class="restore-option">
@@ -387,10 +440,12 @@ function remapClassDataset(records, seatAssignments, targetClassId) {
   return { records: remapped, seatAssignments: remappedSeats };
 }
 
-async function restoreDatasetToClass(source, targetClassId) {
+async function restoreDatasetToClass(source, targetClassId, classRecord = null) {
   const remapped = remapClassDataset(source.records, source.seatAssignments, targetClassId);
   await new Promise((resolve, reject) => {
-    const transaction = backupDb.transaction([...SCOPED_STORES, 'meta'], 'readwrite');
+    const stores = [...SCOPED_STORES, 'meta'];
+    if (classRecord) stores.push('classes');
+    const transaction = backupDb.transaction(stores, 'readwrite');
     let pendingDeletes = SCOPED_STORES.length;
     const queueWrites = () => {
       SCOPED_STORES.forEach((storeName) => {
@@ -404,6 +459,7 @@ async function restoreDatasetToClass(source, targetClassId) {
       });
       meta.put({ id: `seat-assignments:${targetClassId}`, value: remapped.seatAssignments });
       meta.put({ id: `initialized:${targetClassId}`, value: source.initialized ?? true });
+      if (classRecord) transaction.objectStore('classes').put(classRecord);
     };
     SCOPED_STORES.forEach((storeName) => {
       const cursor = transaction.objectStore(storeName).openCursor();
@@ -424,7 +480,65 @@ async function restoreDatasetToClass(source, targetClassId) {
   });
 }
 
-async function createRestoredClass(sourceClass, classes, suffix = '（恢复）') {
+async function restoreDatasetsToClasses(plans, database = backupDb) {
+  const preparedPlans = plans.map((plan) => ({
+    ...plan,
+    remapped: remapClassDataset(plan.source.records, plan.source.seatAssignments, plan.targetClassId),
+  }));
+  const targetClassIds = new Set(preparedPlans.map((plan) => String(plan.targetClassId)));
+
+  await new Promise((resolve, reject) => {
+    const transaction = database.transaction([...SCOPED_STORES, 'meta', 'classes'], 'readwrite');
+    let pendingDeletes = SCOPED_STORES.length;
+    const queueWrites = () => {
+      try {
+        preparedPlans.forEach((plan) => {
+          SCOPED_STORES.forEach((storeName) => {
+            const store = transaction.objectStore(storeName);
+            (plan.remapped.records[storeName] || []).forEach((record) => store.put(record));
+          });
+          const meta = transaction.objectStore('meta');
+          meta.put({
+            id: `seat-config:${plan.targetClassId}`,
+            value: plan.source.seatConfig || { rows: 6, desks: 3, seatsPerDesk: 2 },
+          });
+          meta.put({
+            id: `seat-assignments:${plan.targetClassId}`,
+            value: plan.remapped.seatAssignments,
+          });
+          meta.put({
+            id: `initialized:${plan.targetClassId}`,
+            value: plan.source.initialized ?? true,
+          });
+          if (plan.classRecord) transaction.objectStore('classes').put(plan.classRecord);
+        });
+      } catch (error) {
+        transaction.abort();
+        reject(error);
+      }
+    };
+
+    SCOPED_STORES.forEach((storeName) => {
+      const cursor = transaction.objectStore(storeName).openCursor();
+      cursor.onsuccess = () => {
+        const item = cursor.result;
+        if (item) {
+          const classId = item.value.classId || DEFAULT_CLASS_ID;
+          if (targetClassIds.has(String(classId))) item.delete();
+          item.continue();
+          return;
+        }
+        pendingDeletes -= 1;
+        if (pendingDeletes === 0) queueWrites();
+      };
+    });
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error || new Error('批量恢复事务已取消'));
+  });
+}
+
+function createRestoredClass(sourceClass, classes, suffix = '（恢复）') {
   const name = uniqueClassName(`${sourceClass?.name || '备份班级'}${suffix}`, classes);
   const timestamp = Date.now();
   const classRecord = {
@@ -434,8 +548,6 @@ async function createRestoredClass(sourceClass, classes, suffix = '（恢复）'
     createdAt: timestamp,
     updatedAt: timestamp,
   };
-  await putRecord('classes', classRecord);
-  classes.push(classRecord);
   return classRecord;
 }
 
@@ -456,39 +568,50 @@ function sourceForAllClass(backup, sourceClass) {
 
 async function restoreCurrentClassBackup(mode, workspace) {
   if (mode === 'overwrite') {
+    if (!workspace.activeClassId || !workspace.classes.some((item) => item.id === workspace.activeClassId)) {
+      throw new Error('当前没有可覆盖的班级');
+    }
     await restoreDatasetToClass(pendingRestore, workspace.activeClassId);
     return { activeClassId: workspace.activeClassId, message: '当前班级已从备份恢复' };
   }
-  const sourceClass = await createRestoredClass(pendingRestore.class, workspace.classes);
-  await restoreDatasetToClass(pendingRestore, sourceClass.id);
+  const sourceClass = createRestoredClass(pendingRestore.class, workspace.classes);
+  await restoreDatasetToClass(pendingRestore, sourceClass.id, sourceClass);
+  workspace.classes.push(sourceClass);
   return { activeClassId: sourceClass.id, message: `${sourceClass.name}已创建并恢复` };
 }
 
 async function restoreAllClassBackup(mode, workspace) {
   let firstRestoredId = null;
+  const candidateClasses = [...workspace.classes];
+  const plans = [];
   for (const sourceClass of pendingRestore.classes) {
     const source = sourceForAllClass(pendingRestore, sourceClass);
     let targetClass;
+    let classRecord = null;
     if (mode === 'merge') {
-      targetClass = workspace.classes.find((item) => item.name === sourceClass.name);
+      targetClass = candidateClasses.find((item) => item.name === sourceClass.name);
       if (!targetClass) {
         const timestamp = Date.now();
         targetClass = {
           id: newClassId(),
-          name: uniqueClassName(sourceClass.name || '备份班级', workspace.classes),
+          name: uniqueClassName(sourceClass.name || '备份班级', candidateClasses),
           status: sourceClass.status === 'archived' ? 'archived' : 'active',
           createdAt: timestamp,
           updatedAt: timestamp,
         };
-        await putRecord('classes', targetClass);
-        workspace.classes.push(targetClass);
+        classRecord = targetClass;
+        candidateClasses.push(targetClass);
       }
     } else {
-      targetClass = await createRestoredClass(sourceClass, workspace.classes);
+      targetClass = createRestoredClass(sourceClass, candidateClasses);
+      classRecord = targetClass;
+      candidateClasses.push(targetClass);
     }
-    await restoreDatasetToClass(source, targetClass.id);
+    plans.push({ source, targetClassId: targetClass.id, classRecord });
     firstRestoredId ||= targetClass.id;
   }
+  await restoreDatasetsToClasses(plans);
+  workspace.classes = candidateClasses;
   return {
     activeClassId: mode === 'create-all' ? firstRestoredId : workspace.activeClassId,
     message: `已恢复 ${pendingRestore.classes.length} 个班级`,
@@ -516,7 +639,7 @@ async function confirmRestore() {
     }, 450);
   } catch (error) {
     console.error(error);
-    notify('恢复未完成；当前班级会自动回滚，多班级恢复请检查是否已有部分新副本');
+    notify('恢复未完成，原有数据已自动回滚');
     button.disabled = false;
     button.textContent = '确认恢复';
   }
@@ -814,13 +937,17 @@ async function initializeRealReports() {
   }
 }
 
-initializeBackupPanel()
-  .then(() => {
-    hidePrototypeOnlySections();
-    return initializeRealReports();
-  })
-  .catch((error) => {
-    console.error(error);
-    $('#backupScopeCopy').textContent = '暂时无法读取本机班级数据，请刷新页面后重试。';
-    notify('回顾数据暂时无法读取');
-  });
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  initializeBackupPanel()
+    .then(() => {
+      hidePrototypeOnlySections();
+      return initializeRealReports();
+    })
+    .catch((error) => {
+      console.error(error);
+      $('#backupScopeCopy').textContent = '暂时无法读取本机班级数据，请刷新页面后重试。';
+      notify('回顾数据暂时无法读取');
+    });
+}
+
+export { normalizeBackup, remapClassDataset, restoreDatasetsToClasses };

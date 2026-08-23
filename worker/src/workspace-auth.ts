@@ -1,4 +1,4 @@
-import { verifyPassword } from './auth';
+import { hashPepperedPassword, verifyPassword, verifyPepperedPassword } from './auth';
 import { generateStoryImage, ZhipuImageError } from './ai/zhipu-image';
 import { generateMathStory, ZhipuStoryError } from './ai/zhipu-story';
 import {
@@ -155,9 +155,7 @@ function timingSafeTextEqual(left: string, right: string): boolean {
 }
 
 async function hashWorkspacePassword(password: string, env: WorkspaceAuthEnv): Promise<string> {
-  const salt = randomToken(16);
-  const digest = await hmac(`${salt}\u0000${password}`, env.WORKSPACE_PASSWORD_PEPPER || '');
-  return `hmac_sha256$${salt}$${digest}`;
+  return hashPepperedPassword(password, env.WORKSPACE_PASSWORD_PEPPER || '');
 }
 
 async function verifyWorkspacePassword(
@@ -166,10 +164,19 @@ async function verifyWorkspacePassword(
   env: WorkspaceAuthEnv,
 ): Promise<boolean> {
   const [algorithm, salt, expected, extra] = encodedHash.split('$');
-  if (algorithm !== 'hmac_sha256') return verifyPassword(password, encodedHash);
+  if (algorithm !== 'hmac_sha256') {
+    if (algorithm === 'pbkdf2_sha256') {
+      return verifyPepperedPassword(password, encodedHash, env.WORKSPACE_PASSWORD_PEPPER || '');
+    }
+    return verifyPassword(password, encodedHash);
+  }
   if (!salt || !expected || extra) return false;
   const actual = await hmac(`${salt}\u0000${password}`, env.WORKSPACE_PASSWORD_PEPPER || '');
   return timingSafeTextEqual(actual, expected);
+}
+
+function passwordHashNeedsUpgrade(encodedHash: string): boolean {
+  return !encodedHash.startsWith('pbkdf2_sha256$');
 }
 
 function readCookie(request: Request, name: string): string | null {
@@ -515,12 +522,19 @@ async function handleLogin(request: Request, env: WorkspaceAuthEnv): Promise<Res
   }
   if (user.status !== 'active') return failure(request, 403, '这个账号已停用，请联系管理员。', 'ACCOUNT_DISABLED');
   const timestamp = nowIso();
-  await env.AUTH_DB.batch([
+  const statements = [
     env.AUTH_DB.prepare('UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?')
       .bind(timestamp, timestamp, user.id),
     await auditStatement(request, env, user.id, 'user.logged_in', 'user', user.id),
-  ]);
-  const loggedIn = { ...user, last_login_at: timestamp };
+  ];
+  let passwordHash = user.password_hash;
+  if (passwordHashNeedsUpgrade(passwordHash)) {
+    passwordHash = await hashWorkspacePassword(password, env);
+    statements.push(env.AUTH_DB.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
+      .bind(passwordHash, timestamp, user.id));
+  }
+  await env.AUTH_DB.batch(statements);
+  const loggedIn = { ...user, password_hash: passwordHash, last_login_at: timestamp };
   const token = await createSession(request, env, user.id);
   return json(request, await sessionPayload(env, loggedIn), 200, {
     'Set-Cookie': sessionCookie(request, token),
@@ -648,8 +662,12 @@ async function handleAdminOverview(request: Request, env: WorkspaceAuthEnv): Pro
   const admin = await requireAdmin(request, env);
   if (isResponse(admin)) return admin;
   const timestamp = nowIso();
-  await env.AUTH_DB.prepare("UPDATE license_codes SET status = 'expired' WHERE status IN ('available','redeemed') AND ((status = 'available' AND redeem_before IS NOT NULL AND redeem_before <= ?) OR (status = 'redeemed' AND expires_at IS NOT NULL AND expires_at <= ?))")
-    .bind(timestamp, timestamp).run();
+  await env.AUTH_DB.batch([
+    env.AUTH_DB.prepare("UPDATE license_codes SET status = 'expired' WHERE status IN ('available','redeemed') AND ((status = 'available' AND redeem_before IS NOT NULL AND redeem_before <= ?) OR (status = 'redeemed' AND expires_at IS NOT NULL AND expires_at <= ?))")
+      .bind(timestamp, timestamp),
+    env.AUTH_DB.prepare('DELETE FROM rate_limits WHERE expires_at <= ?').bind(timestamp),
+    env.AUTH_DB.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(timestamp),
+  ]);
   const [users, activeUsers, available, redeemed, events] = await Promise.all([
     env.AUTH_DB.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'user'").first<{ count: number }>(),
     env.AUTH_DB.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'user' AND status = 'active'").first<{ count: number }>(),

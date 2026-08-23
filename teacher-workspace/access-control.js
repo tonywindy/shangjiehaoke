@@ -347,11 +347,11 @@
 
   document.addEventListener('click', function (event) {
     if (authorized) return;
-    var target = event.target.closest('#importStudents,#studentExcelFile,#importKps,#kpFile,#applyBnupTemplate,#exportBackup,#exportQuick,#exportWorkspaceBackup,#workspaceRestoreFile,#exportHomeworkRecord,[onclick*="window.print"]');
+    var target = event.target.closest('a[href*="onboarding=students"],#importStudents,#studentExcelFile,#importKps,#kpFile,#applyBnupTemplate,#exportBackup,#exportQuick,#exportWorkspaceBackup,#workspaceRestoreFile,#exportHomeworkRecord,[onclick*="window.print"]');
     if (!target) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    var feature = target.matches('#importStudents,#studentExcelFile') ? 'studentImport'
+    var feature = target.matches('a[href*="onboarding=students"],#importStudents,#studentExcelFile') ? 'studentImport'
       : target.matches('#importKps,#kpFile,#applyBnupTemplate') ? 'knowledgeImport'
         : 'exportBackup';
     showLocked(feature);

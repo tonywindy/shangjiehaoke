@@ -434,6 +434,7 @@ function studentRowsFromSheet(rows) {
 }
 
 async function saveClassOnboarding(form) {
+  if (ACCESS_CONTROL && !ACCESS_CONTROL.requireFeature('studentImport')) return;
   const values = new FormData(form);
   const name = String(values.get('className') || '').trim();
   const imported = parseStudentText(values.get('studentPaste'));
@@ -441,7 +442,6 @@ async function saveClassOnboarding(form) {
     form.querySelector('[data-onboarding-error]').textContent = !name ? '请填写班级名称。' : '请至少导入1名学生。';
     return;
   }
-  if (ACCESS_CONTROL && !ACCESS_CONTROL.requireFeature('studentImport')) return;
   const current = activeClass();
   const classId = current?.id || `class-${crypto.randomUUID?.() || Date.now()}`;
   const existing = (await storeAll(classContext.db, 'students')).filter((item) => (item.classId || DEFAULT_CLASS_ID) === classId);
@@ -483,6 +483,7 @@ async function saveClassOnboarding(form) {
 function openClassOnboarding() {
   closeClassPopover();
   closeClassModal();
+  if (ACCESS_CONTROL && !ACCESS_CONTROL.requireFeature('studentImport')) return;
   const current = activeClass();
   classModal = document.createElement('div');
   classModal.className = 'class-modal-backdrop';

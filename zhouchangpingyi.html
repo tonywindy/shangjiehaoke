@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>交互式周长平移实验室</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -42,11 +42,11 @@
         </div>
         
         <div class="flex items-center gap-2">
-            <button id="lock-btn" onclick="lockShape()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-2">
+            <button id="lock-btn" onclick="lockShape()" aria-label="确定图形" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                 <span class="hidden md:inline">确定图形</span>
             </button>
-            <button onclick="clearBoard()" class="bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-2">
+            <button onclick="clearBoard()" aria-label="清空画布" class="bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 <span class="hidden md:inline">清空画布</span>
             </button>
@@ -66,7 +66,7 @@
     <main class="w-full h-full pt-16 flex items-center justify-center p-4 md:p-8 pl-24">
        <div class="w-full h-full max-w-[1600px] bg-white rounded-[2rem] shadow-2xl border border-gray-200 relative flex items-center justify-center overflow-hidden" id="grid-wrapper">
            <!-- touch container specifically for events -->
-           <div id="board" class="relative bg-gray-50 shadow-inner cursor-crosshair select-none touch-none rounded-xl">
+           <div id="board" role="img" aria-label="周长平移实验画布：点击网格生成图形，确定后拖拽凹陷线段进行平移" class="relative bg-gray-50 shadow-inner cursor-crosshair select-none touch-none rounded-xl">
                <div id="blocks-container" class="absolute inset-0 pointer-events-none"></div>
                <div id="edges-container" class="absolute inset-0 pointer-events-none"></div>
            </div>
@@ -102,6 +102,7 @@
             'bg-pink-400', 'bg-rose-400', 'bg-orange-400', 
             'bg-emerald-400', 'bg-cyan-400'
         ];
+        const colorNames = ['蓝色', '靛蓝色', '紫色', '粉色', '玫红色', '橙色', '翠绿色', '青色'];
         let currentColor = colors[0];
 
         let cellSize = 60; // 60px per grid cell
@@ -161,9 +162,12 @@
         function renderColors() {
             const container = document.getElementById('color-palette');
             container.innerHTML = '';
-            colors.forEach(color => {
+            colors.forEach((color, index) => {
                 const btn = document.createElement('button');
                 btn.className = `w-12 h-12 rounded-2xl transition-all duration-200 ${color} ${currentColor === color ? 'ring-4 ring-offset-2 ring-blue-500 scale-110 shadow-lg' : 'hover:scale-105 shadow-sm opacity-80 hover:opacity-100'} border-2 border-white/50`;
+                btn.type = 'button';
+                btn.setAttribute('aria-label', `选择${colorNames[index]}`);
+                btn.setAttribute('aria-pressed', String(currentColor === color));
                 btn.onclick = () => {
                     currentColor = color;
                     renderColors();

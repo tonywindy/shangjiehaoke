@@ -110,7 +110,24 @@
         </div>
     </div>
 
+    <script type="module" src="./avatar-assets.js"></script>
     <script>
+        const AVATAR_FILE_NAMES = Array.from({ length: 16 }, (_, index) => `avatar${index + 1}.png`);
+
+        function getAvatarFileName(avatarPath) {
+            const match = String(avatarPath || '').match(/avatar(1[0-6]|[1-9])(?:-[A-Za-z0-9_-]+)?\.png(?:[?#].*)?$/i);
+            return match ? `avatar${Number(match[1])}.png` : '';
+        }
+
+        function getAvatarUrl(fileName) {
+            return window.RECITE_AVATAR_ASSETS?.[fileName] || `images/${fileName}`;
+        }
+
+        function getStoredAvatarPath(avatarPath) {
+            const fileName = getAvatarFileName(avatarPath) || 'avatar1.png';
+            return `images/${fileName}`;
+        }
+
         function allowDrop(ev) {
             ev.preventDefault();
             // 获取放置区域
@@ -228,20 +245,17 @@
             avatarGrid.innerHTML = '';
             
             // 添加所有头像选项
-            const avatars = [
-                'avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png',
-                'avatar5.png', 'avatar6.png', 'avatar7.png', 'avatar8.png',
-                'avatar9.png', 'avatar10.png', 'avatar11.png', 'avatar12.png',
-                'avatar13.png', 'avatar14.png', 'avatar15.png', 'avatar16.png'
-            ];
-            
-            avatars.forEach(avatar => {
+            AVATAR_FILE_NAMES.forEach(avatar => {
+                const avatarUrl = getAvatarUrl(avatar);
                 const avatarOption = document.createElement('div');
                 avatarOption.className = 'avatar-option';
-                avatarOption.innerHTML = `<img src="images/${avatar}" alt="头像选项">`;
-                avatarOption.onclick = function() {
-                    changeAvatar(`images/${avatar}`);
-                };
+                const avatarImage = document.createElement('img');
+                avatarImage.src = avatarUrl;
+                avatarImage.alt = '头像选项';
+                avatarOption.appendChild(avatarImage);
+                avatarOption.addEventListener('click', function() {
+                    changeAvatar(avatarUrl);
+                });
                 avatarGrid.appendChild(avatarOption);
             });
             
@@ -278,9 +292,7 @@
             setTimeout(() => {
                 avatarImg.src = newAvatarPath;
                 
-                // 提取头像文件名
-                const fileName = newAvatarPath.split('/').pop();
-                const standardPath = `images/${fileName}`;
+                const standardPath = getStoredAvatarPath(newAvatarPath);
                 
                 // 更新全局头像信息
                 updateGlobalStudentAvatar(studentId, studentName, standardPath);
@@ -427,58 +439,37 @@
 
         // 修改获取头像的函数，改为随机分配而不是循环分配
         function getNextAvatar() {
-            const avatars = [
-                'avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png',
-                'avatar5.png', 'avatar6.png', 'avatar7.png', 'avatar8.png',
-                'avatar9.png', 'avatar10.png', 'avatar11.png', 'avatar12.png',
-                'avatar13.png', 'avatar14.png', 'avatar15.png', 'avatar16.png'
-            ];
-            const randomIndex = Math.floor(Math.random() * avatars.length);
-            const avatarPath = `images/${avatars[randomIndex]}`;
-            return avatarPath;
+            const randomIndex = Math.floor(Math.random() * AVATAR_FILE_NAMES.length);
+            return getAvatarUrl(AVATAR_FILE_NAMES[randomIndex]);
         }
 
         // 创建学生元素函数，优化头像处理
-        function createStudentElement(student) {
+        function createStudentElement(student = {}) {
             const characterCard = document.createElement('div');
             characterCard.className = 'character-card';
             characterCard.draggable = true;
             characterCard.id = student.id || 'student' + Date.now() + Math.random().toString(36).substr(2, 9);
             
-            // 确保头像路径正确
-            let avatarPath = student.avatar;
-            
-            if (!avatarPath) {
-                // 如果没有头像，随机分配一个
-                avatarPath = getNextAvatar();
-            } else if (typeof avatarPath === 'string') {
-                // 处理头像路径，统一格式为 images/avatarX.png
-                if (avatarPath.includes('/')) {
-                    // 从完整URL中提取文件名
-                    const fileName = avatarPath.split('/').pop();
-                    if (fileName && fileName.match(/avatar\d+\.png/)) {
-                        avatarPath = `images/${fileName}`;
-                    } else {
-                        avatarPath = getNextAvatar();
-                    }
-                } else if (avatarPath.match(/avatar\d+\.png/)) {
-                    // 如果只有文件名，添加路径前缀
-                    avatarPath = `images/${avatarPath}`;
-                } else {
-                    avatarPath = getNextAvatar();
-                }
-            } else {
-                avatarPath = getNextAvatar();
-            }
-            
-            characterCard.innerHTML = `
-                <div class="character-avatar">
-                    <img src="${avatarPath}" 
-                         alt="角色头像" 
-                         onerror="this.src='images/avatar1.png'">
-                </div>
-                <span class="character-name">${student.name}</span>
-            `;
+            // localStorage 中只保存稳定文件名，页面展示使用 Vite 生成的真实资源 URL。
+            const avatarFileName = getAvatarFileName(student.avatar);
+            const avatarPath = avatarFileName ? getAvatarUrl(avatarFileName) : getNextAvatar();
+
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'character-avatar';
+            const avatarImage = document.createElement('img');
+            avatarImage.src = avatarPath;
+            avatarImage.alt = '角色头像';
+            avatarImage.addEventListener('error', function handleAvatarError() {
+                if (avatarImage.dataset.fallbackApplied === 'true') return;
+                avatarImage.dataset.fallbackApplied = 'true';
+                avatarImage.src = getAvatarUrl('avatar1.png');
+            });
+            avatarContainer.appendChild(avatarImage);
+
+            const name = document.createElement('span');
+            name.className = 'character-name';
+            name.textContent = typeof student.name === 'string' ? student.name : '';
+            characterCard.append(avatarContainer, name);
             
             characterCard.ondragstart = function(event) {
                 drag(event);
@@ -608,22 +599,35 @@
             }
         }
 
+        function escapeCsvCell(value) {
+            const text = String(value ?? '');
+            // 表格软件会把以公式前缀开头的单元格当作公式执行。
+            const neutralized = /^[\u0000-\u0020]*[=+\-@]/.test(text) ? `'${text}` : text;
+            return `"${neutralized.replace(/"/g, '""')}"`;
+        }
+
+        function getStudentCsvRow(status, studentElement) {
+            const studentName = studentElement.querySelector('.character-name')?.textContent || '';
+            const avatarSrc = studentElement.querySelector('.character-avatar img')?.src || '';
+            return [status, studentName, avatarSrc].map(escapeCsvCell).join(',');
+        }
+
         // 导出数据为CSV文件
         function exportData() {
             const completed = document.getElementById('completed');
             const pending = document.getElementById('pending');
             
-            let csvContent = "状态,学生姓名,头像\n";
+            const rows = ['状态,学生姓名,头像'];
             
             Array.from(completed.children).forEach(student => {
-                csvContent += `已背诵,${student.innerText},${student.querySelector('.character-avatar img').src}\n`;
+                rows.push(getStudentCsvRow('已背诵', student));
             });
             
             Array.from(pending.children).forEach(student => {
-                csvContent += `未背诵,${student.innerText},${student.querySelector('.character-avatar img').src}\n`;
+                rows.push(getStudentCsvRow('未背诵', student));
             });
             
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob([`\uFEFF${rows.join('\r\n')}`], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             
@@ -889,35 +893,18 @@
                 currentTaskId = null;
                 
                 // 清空已完成区域
-                document.getElementById('completed').innerHTML = '';
+                document.getElementById('completed').replaceChildren();
                 
                 // 重置未完成区域为初始状态
-                document.getElementById('pending').innerHTML = `
-                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student1">
-                        <div class="character-avatar">
-                            <img src="images/avatar1.png" alt="角色头像">
-                        </div>
-                        <span class="character-name">张三</span>
-                    </div>
-                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student2">
-                        <div class="character-avatar">
-                            <img src="images/avatar2.png" alt="角色头像">
-                        </div>
-                        <span class="character-name">李四</span>
-                    </div>
-                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student3">
-                        <div class="character-avatar">
-                            <img src="images/avatar3.png" alt="角色头像">
-                        </div>
-                        <span class="character-name">王五</span>
-                    </div>
-                    <div class="character-card" draggable="true" ondragstart="drag(event)" id="student4">
-                        <div class="character-avatar">
-                            <img src="images/avatar4.png" alt="角色头像">
-                        </div>
-                        <span class="character-name">赵六</span>
-                    </div>
-                `;
+                const initialStudents = [
+                    { id: 'student1', name: '张三', avatar: 'images/avatar1.png' },
+                    { id: 'student2', name: '李四', avatar: 'images/avatar2.png' },
+                    { id: 'student3', name: '王五', avatar: 'images/avatar3.png' },
+                    { id: 'student4', name: '赵六', avatar: 'images/avatar4.png' }
+                ];
+                document.getElementById('pending').replaceChildren(
+                    ...initialStudents.map(createStudentElement)
+                );
                 
                 // 更新当前任务显示
                 updateCurrentTaskDisplay();
@@ -963,13 +950,10 @@
                 
                 // 从所有学生创建标准格式的数据
                 const allStudents = [...completedStudents, ...pendingStudents].map(el => {
-                    const avatarSrc = el.querySelector('img').src;
-                    // 提取头像文件名
-                    const fileName = avatarSrc.split('/').pop();
                     return {
                         id: el.id,
                         name: el.querySelector('.character-name').textContent,
-                        avatar: `images/${fileName}`
+                        avatar: getStoredAvatarPath(el.querySelector('img').src)
                     };
                 });
                 
@@ -1009,25 +993,49 @@
 
         function loadTasks() {
             const taskList = document.getElementById('taskList');
-            const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
-            
-            taskList.innerHTML = tasks.map(task => `
-                <div class="task-item ${currentTaskId === task.id ? 'active' : ''}">
-                    <div class="task-info">
-                        <span class="task-name">${task.name}</span>
-                        <span class="task-date">${task.date}</span>
-                        <div class="task-stats">
-                            已完成: ${task.completed.length} / 总人数: ${task.completed.length + task.pending.length}
-                        </div>
-                    </div>
-                    <div class="task-actions">
-                        <button onclick="switchToTask(${task.id})" class="game-btn switch-btn">
-                            ${currentTaskId === task.id ? '当前任务' : '切换至此任务'}
-                        </button>
-                        <button onclick="deleteTask(${task.id})" class="game-btn delete-btn">删除</button>
-                    </div>
-                </div>
-            `).join('');
+            const storedTasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
+            const tasks = Array.isArray(storedTasks) ? storedTasks : [];
+            taskList.replaceChildren();
+
+            tasks.forEach(task => {
+                if (!task || typeof task !== 'object') return;
+
+                const isCurrentTask = currentTaskId === task.id;
+                const completedCount = Array.isArray(task.completed) ? task.completed.length : 0;
+                const pendingCount = Array.isArray(task.pending) ? task.pending.length : 0;
+                const taskItem = document.createElement('div');
+                taskItem.className = `task-item${isCurrentTask ? ' active' : ''}`;
+
+                const taskInfo = document.createElement('div');
+                taskInfo.className = 'task-info';
+                const taskName = document.createElement('span');
+                taskName.className = 'task-name';
+                taskName.textContent = typeof task.name === 'string' ? task.name : '未命名任务';
+                const taskDate = document.createElement('span');
+                taskDate.className = 'task-date';
+                taskDate.textContent = typeof task.date === 'string' ? task.date : '';
+                const taskStats = document.createElement('div');
+                taskStats.className = 'task-stats';
+                taskStats.textContent = `已完成: ${completedCount} / 总人数: ${completedCount + pendingCount}`;
+                taskInfo.append(taskName, taskDate, taskStats);
+
+                const taskActions = document.createElement('div');
+                taskActions.className = 'task-actions';
+                const switchButton = document.createElement('button');
+                switchButton.type = 'button';
+                switchButton.className = 'game-btn switch-btn';
+                switchButton.textContent = isCurrentTask ? '当前任务' : '切换至此任务';
+                switchButton.addEventListener('click', () => switchToTask(task.id));
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = 'game-btn delete-btn';
+                deleteButton.textContent = '删除';
+                deleteButton.addEventListener('click', () => deleteTask(task.id));
+                taskActions.append(switchButton, deleteButton);
+
+                taskItem.append(taskInfo, taskActions);
+                taskList.appendChild(taskItem);
+            });
         }
 
         // 修改切换任务函数，确保全局一致的头像处理
@@ -1096,25 +1104,19 @@
                 // 保存当前状态
                 const completed = Array.from(document.getElementById('completed').children)
                     .map(el => {
-                        const avatarSrc = el.querySelector('img').src;
-                        // 提取头像文件名
-                        const fileName = avatarSrc.split('/').pop();
                         return {
                             id: el.id,
                             name: el.querySelector('.character-name').textContent,
-                            avatar: `images/${fileName}`
+                            avatar: getStoredAvatarPath(el.querySelector('img').src)
                         };
                     });
                     
                 const pending = Array.from(document.getElementById('pending').children)
                     .map(el => {
-                        const avatarSrc = el.querySelector('img').src;
-                        // 提取头像文件名
-                        const fileName = avatarSrc.split('/').pop();
                         return {
                             id: el.id,
                             name: el.querySelector('.character-name').textContent,
-                            avatar: `images/${fileName}`
+                            avatar: getStoredAvatarPath(el.querySelector('img').src)
                         };
                     });
                 
@@ -1151,21 +1153,23 @@
         // 添加更新当前任务显示的函数
         function updateCurrentTaskDisplay() {
             const display = document.getElementById('currentTaskDisplay');
+            const label = document.createElement('span');
+            label.className = 'task-label';
+            label.textContent = '当前任务:';
+            const taskName = document.createElement('span');
+            taskName.className = 'task-name';
+
             if (currentTaskId) {
                 const tasks = JSON.parse(localStorage.getItem('recitationTasks') || '[]');
                 const currentTask = tasks.find(t => t.id === currentTaskId);
                 if (currentTask) {
-                    display.innerHTML = `
-                        <span class="task-label">当前任务:</span>
-                        <span class="task-name">${currentTask.name}</span>
-                    `;
+                    taskName.textContent = typeof currentTask.name === 'string' ? currentTask.name : '未命名任务';
+                    display.replaceChildren(label, taskName);
+                    return;
                 }
-            } else {
-                display.innerHTML = `
-                    <span class="task-label">当前任务:</span>
-                    <span class="task-name">未选择任务</span>
-                `;
             }
+            taskName.textContent = '未选择任务';
+            display.replaceChildren(label, taskName);
         }
 
         // 确保在页面加载完成后再添加事件监听

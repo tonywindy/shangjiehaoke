@@ -5,11 +5,13 @@ import App from './App.jsx'
 import WorksPage from './pages/WorksPage.jsx'
 import QuotesPage from './pages/QuotesPage.jsx'
 import ShizhenPage from './pages/ShizhenPage.jsx'
+import NotFoundPage from './pages/NotFoundPage.jsx'
+import { routerBasename } from './utils/basePath.js'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Router>
+    <Router basename={routerBasename}>
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/works" element={<WorksPage />} />
@@ -21,6 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/contact.html" element={<QuotesPage />} />
         <Route path="/index.html" element={<App />} />
         <Route path="/shizhen.html" element={<ShizhenPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   </React.StrictMode>,

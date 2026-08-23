@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { withBasePath } from '../utils/basePath.js';
 
 const KNOWLEDGE_OPTIONS = [
   { value: 'perimeter-concept', label: '周长的认识' },
@@ -110,7 +111,7 @@ const LoginScreen = ({ onLogin }) => {
   return (
     <main className="login-shell">
       <section className="login-story">
-        <a className="login-brand" href="/">
+        <a className="login-brand" href={withBasePath('/')}>
           <span className="brand-mark"><span>π</span></span>
           <span><strong>上节好课</strong><small>AI 精准教学</small></span>
         </a>
@@ -458,7 +459,7 @@ const Sidebar = ({ activeView, setActiveView }) => {
 
   return (
     <aside className="math-sidebar">
-    <a className="assistant-brand" href="/" aria-label="返回上节好课首页">
+    <a className="assistant-brand" href={withBasePath('/')} aria-label="返回上节好课首页">
       <span className="brand-mark"><span>π</span></span>
       <span className="brand-copy">
         <strong>上节好课</strong>
@@ -494,7 +495,7 @@ const Sidebar = ({ activeView, setActiveView }) => {
       </div>
     </div>
 
-    <a className="back-home" href="/works.html"><Icon name="home" size={17} /> 返回作品集</a>
+    <a className="back-home" href={withBasePath('/works.html')}><Icon name="home" size={17} /> 返回作品集</a>
     </aside>
   );
 };
@@ -534,9 +535,11 @@ const DiagnosisView = ({
   rosterStatus,
   onManageRoster,
   onAnalysisStarted,
+  contextSession,
 }) => {
   const inputRef = useRef(null);
   const abortRef = useRef(null);
+  const profileAbortRef = useRef(null);
   const [uploadedImage, setUploadedImage] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -550,7 +553,10 @@ const DiagnosisView = ({
   const selectedClass = classes.find((item) => item.id === selectedClassId);
   const selectedStudent = selectedClass?.students.find((item) => item.id === selectedStudentId);
 
-  useEffect(() => () => abortRef.current?.abort(), []);
+  useEffect(() => () => {
+    abortRef.current?.abort();
+    profileAbortRef.current?.abort();
+  }, []);
 
   const analyzeFile = async (file) => {
     onAnalysisStarted();
@@ -649,11 +655,16 @@ const DiagnosisView = ({
 
   const handleGenerateProfile = async () => {
     if (!confirmed || !diagnosisId || layeringStatus === 'loading') return;
+    profileAbortRef.current?.abort();
+    const controller = new AbortController();
+    profileAbortRef.current = controller;
+    const requestSession = contextSession;
     setLayeringStatus('loading');
     setAnalysisError('');
     try {
       const response = await apiFetch(`/api/diagnoses/${encodeURIComponent(diagnosisId)}/layering`, {
         method: 'POST',
+        signal: controller.signal,
       });
       const payload = await response.json();
       if (response.status === 401) {
@@ -663,11 +674,15 @@ const DiagnosisView = ({
       if (!response.ok || !payload.ok || !payload.profile) {
         throw new Error(payload.error?.message || '学习画像生成失败');
       }
+      if (controller.signal.aborted) return;
       setLayeringStatus('ready');
-      onContinue(payload.profile);
+      onContinue(payload.profile, requestSession);
     } catch (profileError) {
+      if (profileError.name === 'AbortError') return;
       setLayeringStatus('error');
       setAnalysisError(profileError.message || '学习画像生成失败，请稍后重试');
+    } finally {
+      if (profileAbortRef.current === controller) profileAbortRef.current = null;
     }
   };
 
@@ -1060,6 +1075,15 @@ const AIMathAssistantPage = () => {
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [rosterStatus, setRosterStatus] = useState('idle');
   const [layeringProfile, setLayeringProfile] = useState(null);
+  const diagnosisContextRef = useRef({ key: '', session: 0 });
+  const diagnosisContextKey = `${knowledge}:${selectedClassId}:${selectedStudentId}`;
+  if (diagnosisContextRef.current.key !== diagnosisContextKey) {
+    diagnosisContextRef.current = {
+      key: diagnosisContextKey,
+      session: diagnosisContextRef.current.session + 1,
+    };
+  }
+  const diagnosisContextSession = diagnosisContextRef.current.session;
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [activeView]);
@@ -1139,6 +1163,13 @@ const AIMathAssistantPage = () => {
     setLayeringProfile(null);
   };
 
+  const handleKnowledgeChange = (nextKnowledge) => {
+    if (nextKnowledge === knowledge) return;
+    setKnowledge(nextKnowledge);
+    setLayeringProfile(null);
+    setActiveView('diagnosis');
+  };
+
   const handleLogin = (loggedInTeacher) => {
     setTeacher(loggedInTeacher);
     setAuthStatus('authenticated');
@@ -1166,7 +1197,7 @@ const AIMathAssistantPage = () => {
       <main className="assistant-main">
         <header className="assistant-topbar">
           <div className="mobile-brand"><span className="brand-mark"><span>π</span></span><strong>AI 精准教学</strong></div>
-          <CurriculumSelector knowledge={knowledge} setKnowledge={setKnowledge} />
+          <CurriculumSelector knowledge={knowledge} setKnowledge={handleKnowledgeChange} />
           <div className="teacher-profile">
             <span className="teacher-avatar">{teacher.displayName?.slice(0, 1) || '师'}</span>
             <span><strong>{teacher.displayName}</strong><small>三年级数学</small></span>
@@ -1180,8 +1211,13 @@ const AIMathAssistantPage = () => {
           <div className="prototype-banner"><span>GLM 联调版</span><p>已接入 GLM-4.6V-FlashX；AI诊断仅作建议，须由教师确认。</p></div>
           {activeView === 'diagnosis' && (
             <DiagnosisView
+              key={`${diagnosisContextSession}:${diagnosisContextKey}`}
               knowledge={knowledge}
-              onContinue={(profile) => { setLayeringProfile(profile); setActiveView('layering'); }}
+              onContinue={(profile, profileSession) => {
+                if (profileSession !== diagnosisContextRef.current.session) return;
+                setLayeringProfile(profile);
+                setActiveView('layering');
+              }}
               onAuthExpired={handleAuthExpired}
               classes={classes}
               selectedClassId={selectedClassId}
@@ -1191,6 +1227,7 @@ const AIMathAssistantPage = () => {
               rosterStatus={rosterStatus}
               onManageRoster={() => setClassManagerOpen(true)}
               onAnalysisStarted={() => setLayeringProfile(null)}
+              contextSession={diagnosisContextSession}
             />
           )}
           {activeView === 'layering' && (

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import './ShizhenPage.css';
 
@@ -23,11 +23,6 @@ const ShizhenPage = () => {
     useEffect(() => {
         drawFace();
     }, []);
-
-    // Update clock when hours or minutes change
-    useEffect(() => {
-        updateClock();
-    }, [hours, minutes, showAngle]);
 
     const drawFace = () => {
         const ticksContainer = document.getElementById('ticksContainer');
@@ -74,21 +69,7 @@ const ShizhenPage = () => {
         setMinutes(m);
     };
 
-    const updateClock = () => {
-        const minuteAngle = minutes * 6;
-        const hourAngle = ((hours % 12) * 30) + (minutes * 0.5);
-
-        if (minuteHandRef.current) {
-            minuteHandRef.current.style.transform = `rotate(${minuteAngle}deg)`;
-        }
-        if (hourHandRef.current) {
-            hourHandRef.current.style.transform = `rotate(${hourAngle}deg)`;
-        }
-
-        updateAngleVisualization(hourAngle, minuteAngle);
-    };
-
-    const updateAngleVisualization = (hAngle, mAngle) => {
+    const updateAngleVisualization = useCallback((hAngle, mAngle) => {
         let ha = hAngle % 360;
         let ma = mAngle % 360;
         if (ha < 0) ha += 360;
@@ -156,7 +137,25 @@ const ShizhenPage = () => {
 
         angleTextRef.current.setAttribute("x", tx);
         angleTextRef.current.setAttribute("y", ty);
-    };
+    }, [showAngle]);
+
+    const updateClock = useCallback(() => {
+        const minuteAngle = minutes * 6;
+        const hourAngle = ((hours % 12) * 30) + (minutes * 0.5);
+
+        if (minuteHandRef.current) {
+            minuteHandRef.current.style.transform = `rotate(${minuteAngle}deg)`;
+        }
+        if (hourHandRef.current) {
+            hourHandRef.current.style.transform = `rotate(${hourAngle}deg)`;
+        }
+
+        updateAngleVisualization(hourAngle, minuteAngle);
+    }, [hours, minutes, updateAngleVisualization]);
+
+    useEffect(() => {
+        updateClock();
+    }, [updateClock]);
 
     const handleSetTime = () => {
         const h = parseInt(document.getElementById('inputHour').value) || 12;
@@ -182,12 +181,12 @@ const ShizhenPage = () => {
         setActiveHand(handType);
     };
 
-    const stopDrag = () => {
+    const stopDrag = useCallback(() => {
         setIsDragging(false);
         setActiveHand(null);
-    };
+    }, []);
 
-    const drag = (e) => {
+    const drag = useCallback((e) => {
         if (!isDragging || !clockContainerRef.current) return;
         e.preventDefault();
 
@@ -230,7 +229,7 @@ const ShizhenPage = () => {
             document.getElementById('inputHour').value = h;
             document.getElementById('inputMinute').value = m;
         }
-    };
+    }, [activeHand, isDragging]);
 
     useEffect(() => {
         window.addEventListener('mousemove', drag);
@@ -244,7 +243,7 @@ const ShizhenPage = () => {
             window.removeEventListener('touchmove', drag);
             window.removeEventListener('touchend', stopDrag);
         };
-    }, [isDragging, activeHand, hours, minutes]);
+    }, [drag, stopDrag]);
 
     return (
         <div className="shizhen-page">

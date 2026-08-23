@@ -104,7 +104,7 @@ document.getElementById('userSearch').addEventListener('input', renderUsers);
 
 document.getElementById('licenseRows').addEventListener('click', async (event) => {
   const button = event.target.closest('[data-revoke]'); if (!button) return;
-  if (!confirm('确定停用这枚授权码吗？如果已经被兑换，对应账号将失去授权功能。')) return;
+  if (!confirm('确定停用这枚授权码吗？如果已经被兑换，对应账号会立即退出登录；若账号还有其他有效授权，重新登录后仍可继续使用。需要完全停止使用时，请到“账号”中停用账号。')) return;
   try { const result = await api(`/admin/licenses/${button.dataset.revoke}/revoke`, { method: 'POST', body: '{}' }); notify(result.message); await Promise.all([loadLicenses(), loadOverview()]); } catch (error) { notify(error.message); }
 });
 

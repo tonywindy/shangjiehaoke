@@ -102,6 +102,20 @@ export async function hashPassword(password: string, iterations = 100_000): Prom
   return `pbkdf2_sha256$${iterations}$${bytesToBase64Url(salt)}$${bytesToBase64Url(new Uint8Array(derived))}`;
 }
 
+export async function hashPepperedPassword(password: string, pepper: string): Promise<string> {
+  return hashPassword(`${password}\u0000${pepper}`);
+}
+
+export async function verifyPepperedPassword(
+  password: string,
+  encodedHash: string,
+  pepper: string,
+): Promise<boolean> {
+  if (await verifyPassword(`${password}\u0000${pepper}`, encodedHash)) return true;
+  // 管理员初始密码和迁移前的 PBKDF2 记录可能尚未加入 pepper。
+  return verifyPassword(password, encodedHash);
+}
+
 export async function issueSessionToken(
   sessionSecret: string,
   teacher: Omit<TeacherSession, 'exp'>,

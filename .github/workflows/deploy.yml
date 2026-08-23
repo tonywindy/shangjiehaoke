@@ -27,17 +27,34 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            worker/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Worker dependencies
+        run: npm --prefix worker ci
+
+      - name: Check frontend runtime
+        run: npm run lint
+
+      - name: Test teacher workspace critical flows
+        run: npm run test:workspace
+
+      - name: Check Worker types
+        run: npm --prefix worker run check
+
       - name: Build
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build
 
       - name: Verify Pages artifact
         run: |
           test -f dist/index.html
+          test -f dist/404.html
           ! grep -q '/src/main.jsx' dist/index.html
           touch dist/.nojekyll
 
