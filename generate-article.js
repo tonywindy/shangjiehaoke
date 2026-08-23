@@ -35,7 +35,7 @@ function markdownToHtml(markdown) {
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     
     // 图片转换
-    .replace(/!\[([^\]]*?)\]\(([^\)]*?)\)/g, '<img src="$2" alt="$1" />')
+    .replace(/!\[([^\]]*?)\]\(([^)]*?)\)/g, '<img src="$2" alt="$1" />')
     
     // 段落转换（改进处理）
     .split('\n\n')
