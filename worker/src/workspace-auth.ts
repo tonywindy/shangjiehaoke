@@ -1,6 +1,11 @@
-import { verifyPassword } from './auth';
+import { hashPepperedPassword, verifyPassword, verifyPepperedPassword } from './auth';
 import { generateStoryImage, ZhipuImageError } from './ai/zhipu-image';
 import { generateMathStory, ZhipuStoryError } from './ai/zhipu-story';
+import {
+  generateWorkspaceAi,
+  MimoWorkspaceError,
+  type WorkspaceAiFeature,
+} from './ai/mimo-workspace';
 
 const API_PREFIX = '/api/workspace';
 const SESSION_COOKIE = 'sjhk_workspace_session';
@@ -15,6 +20,7 @@ const encoder = new TextEncoder();
 export type WorkspaceAuthEnv = {
   AUTH_DB: D1Database;
   GLM_API_KEY?: string;
+  MIMO_API_KEY?: string;
   WORKSPACE_ADMIN_USERNAME?: string;
   WORKSPACE_ADMIN_PASSWORD_HASH?: string;
   WORKSPACE_SESSION_SECRET?: string;
@@ -149,9 +155,7 @@ function timingSafeTextEqual(left: string, right: string): boolean {
 }
 
 async function hashWorkspacePassword(password: string, env: WorkspaceAuthEnv): Promise<string> {
-  const salt = randomToken(16);
-  const digest = await hmac(`${salt}\u0000${password}`, env.WORKSPACE_PASSWORD_PEPPER || '');
-  return `hmac_sha256$${salt}$${digest}`;
+  return hashPepperedPassword(password, env.WORKSPACE_PASSWORD_PEPPER || '');
 }
 
 async function verifyWorkspacePassword(
@@ -160,10 +164,19 @@ async function verifyWorkspacePassword(
   env: WorkspaceAuthEnv,
 ): Promise<boolean> {
   const [algorithm, salt, expected, extra] = encodedHash.split('$');
-  if (algorithm !== 'hmac_sha256') return verifyPassword(password, encodedHash);
+  if (algorithm !== 'hmac_sha256') {
+    if (algorithm === 'pbkdf2_sha256') {
+      return verifyPepperedPassword(password, encodedHash, env.WORKSPACE_PASSWORD_PEPPER || '');
+    }
+    return verifyPassword(password, encodedHash);
+  }
   if (!salt || !expected || extra) return false;
   const actual = await hmac(`${salt}\u0000${password}`, env.WORKSPACE_PASSWORD_PEPPER || '');
   return timingSafeTextEqual(actual, expected);
+}
+
+function passwordHashNeedsUpgrade(encodedHash: string): boolean {
+  return !encodedHash.startsWith('pbkdf2_sha256$');
 }
 
 function readCookie(request: Request, name: string): string | null {
@@ -509,12 +522,19 @@ async function handleLogin(request: Request, env: WorkspaceAuthEnv): Promise<Res
   }
   if (user.status !== 'active') return failure(request, 403, '这个账号已停用，请联系管理员。', 'ACCOUNT_DISABLED');
   const timestamp = nowIso();
-  await env.AUTH_DB.batch([
+  const statements = [
     env.AUTH_DB.prepare('UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?')
       .bind(timestamp, timestamp, user.id),
     await auditStatement(request, env, user.id, 'user.logged_in', 'user', user.id),
-  ]);
-  const loggedIn = { ...user, last_login_at: timestamp };
+  ];
+  let passwordHash = user.password_hash;
+  if (passwordHashNeedsUpgrade(passwordHash)) {
+    passwordHash = await hashWorkspacePassword(password, env);
+    statements.push(env.AUTH_DB.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
+      .bind(passwordHash, timestamp, user.id));
+  }
+  await env.AUTH_DB.batch(statements);
+  const loggedIn = { ...user, password_hash: passwordHash, last_login_at: timestamp };
   const token = await createSession(request, env, user.id);
   return json(request, await sessionPayload(env, loggedIn), 200, {
     'Set-Cookie': sessionCookie(request, token),
@@ -642,8 +662,12 @@ async function handleAdminOverview(request: Request, env: WorkspaceAuthEnv): Pro
   const admin = await requireAdmin(request, env);
   if (isResponse(admin)) return admin;
   const timestamp = nowIso();
-  await env.AUTH_DB.prepare("UPDATE license_codes SET status = 'expired' WHERE status IN ('available','redeemed') AND ((status = 'available' AND redeem_before IS NOT NULL AND redeem_before <= ?) OR (status = 'redeemed' AND expires_at IS NOT NULL AND expires_at <= ?))")
-    .bind(timestamp, timestamp).run();
+  await env.AUTH_DB.batch([
+    env.AUTH_DB.prepare("UPDATE license_codes SET status = 'expired' WHERE status IN ('available','redeemed') AND ((status = 'available' AND redeem_before IS NOT NULL AND redeem_before <= ?) OR (status = 'redeemed' AND expires_at IS NOT NULL AND expires_at <= ?))")
+      .bind(timestamp, timestamp),
+    env.AUTH_DB.prepare('DELETE FROM rate_limits WHERE expires_at <= ?').bind(timestamp),
+    env.AUTH_DB.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(timestamp),
+  ]);
   const [users, activeUsers, available, redeemed, events] = await Promise.all([
     env.AUTH_DB.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'user'").first<{ count: number }>(),
     env.AUTH_DB.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'user' AND status = 'active'").first<{ count: number }>(),
@@ -975,6 +999,65 @@ async function handleAdminGenerateStory(
   }
 }
 
+async function handleAdminWorkspaceAi(
+  request: Request,
+  env: WorkspaceAuthEnv,
+  feature: WorkspaceAiFeature,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env);
+  if (isResponse(admin)) return admin;
+  if (!env.MIMO_API_KEY) {
+    return failure(request, 503, 'MiMo智能整理服务尚未完成配置。', 'MIMO_AI_NOT_CONFIGURED');
+  }
+  const limits: Record<WorkspaceAiFeature, number> = {
+    organize: 60,
+    'daily-summary': 12,
+    review: 12,
+    'learning-insights': 12,
+  };
+  if (!(await checkRateLimit(request, env, `admin-workspace-ai:${feature}:${admin.id}`, limits[feature], 24 * 60 * 60_000))) {
+    return failure(request, 429, '今天这项AI功能的使用次数已达到上限，请明天再试。', 'DAILY_LIMIT_REACHED');
+  }
+  let payload: unknown;
+  try {
+    payload = await bodyJson(request);
+  } catch {
+    return failure(request, 400, 'AI请求内容格式不正确。', 'INVALID_REQUEST');
+  }
+  try {
+    const generated = await generateWorkspaceAi({
+      apiKey: env.MIMO_API_KEY,
+      feature,
+      payload,
+    });
+    await (await auditStatement(
+      request,
+      env,
+      admin.id,
+      `ai.workspace_${feature.replace('-', '_')}`,
+      'ai_model',
+      generated.model,
+    )).run();
+    return json(request, {
+      ok: true,
+      result: generated.result,
+      provider: 'xiaomi-mimo',
+      model: generated.model,
+      usage: generated.usage,
+    });
+  } catch (error) {
+    if (error instanceof MimoWorkspaceError) {
+      return failure(
+        request,
+        error.status,
+        error.message,
+        error.providerCode || 'MIMO_PROVIDER_ERROR',
+      );
+    }
+    return failure(request, 500, 'AI整理失败，请稍后重试。', 'AI_GENERATION_FAILED');
+  }
+}
+
 export async function handleWorkspaceRequest(
   request: Request,
   env: WorkspaceAuthEnv,
@@ -1020,6 +1103,10 @@ export async function handleWorkspaceRequest(
     if (url.pathname === `${API_PREFIX}/admin/overview` && request.method === 'GET') return handleAdminOverview(request, env);
     if (url.pathname === `${API_PREFIX}/admin/ai/generate-image` && request.method === 'POST') return handleAdminGenerateImage(request, env);
     if (url.pathname === `${API_PREFIX}/admin/ai/generate-story` && request.method === 'POST') return handleAdminGenerateStory(request, env);
+    if (url.pathname === `${API_PREFIX}/admin/ai/organize` && request.method === 'POST') return handleAdminWorkspaceAi(request, env, 'organize');
+    if (url.pathname === `${API_PREFIX}/admin/ai/daily-summary` && request.method === 'POST') return handleAdminWorkspaceAi(request, env, 'daily-summary');
+    if (url.pathname === `${API_PREFIX}/admin/ai/review` && request.method === 'POST') return handleAdminWorkspaceAi(request, env, 'review');
+    if (url.pathname === `${API_PREFIX}/admin/ai/learning-insights` && request.method === 'POST') return handleAdminWorkspaceAi(request, env, 'learning-insights');
     if (url.pathname === `${API_PREFIX}/admin/licenses` && request.method === 'GET') return handleAdminLicenseList(request, env, url);
     if (url.pathname === `${API_PREFIX}/admin/licenses` && request.method === 'POST') return handleAdminCreateLicenses(request, env);
     const licenseRevoke = url.pathname.match(/^\/api\/workspace\/admin\/licenses\/([^/]+)\/revoke$/);

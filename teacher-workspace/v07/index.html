@@ -7,7 +7,7 @@
   <title>上节好课 · 教师工作台 v0.8</title>
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="../workspace-shell.css">
-  <script src="../access-control.js?v=20260810"></script>
+  <script src="../access-control.js?v=20260813"></script>
   <script type="module" src="../workspace-shell.js"></script>
 </head>
 <body>
@@ -90,6 +90,7 @@
           <span>单元</span>
           <select id="unitSelect" aria-label="选择单元"></select>
         </label>
+        <button class="button secondary admin-ai-only" id="aiLearningInsights" type="button">✦ AI 学情建议</button>
         <button class="button secondary" id="exportQuick">导出备份</button>
       </div>
 
@@ -112,6 +113,8 @@
             <div><strong id="noteCount">0</strong><span>已记录错因</span></div>
           </article>
         </div>
+
+        <section class="panel ai-insights hidden" id="aiInsightsPanel" aria-live="polite"></section>
 
         <div class="matrix-layout">
           <section class="panel matrix-panel">

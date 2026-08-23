@@ -1,3 +1,11 @@
+const SHUXUEYOUXI_BASE_URL = document.currentScript?.src
+    ? new URL('../', document.currentScript.src)
+    : new URL('./', window.location.href);
+
+function shuxueyouxiAssetUrl(path) {
+    return new URL(String(path).replace(/^\/+/, ''), SHUXUEYOUXI_BASE_URL).href;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // 性能监控
     const performanceMonitor = {
@@ -139,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    adminLoginLink.href = '/teacher-workspace/account.html';
+    adminLoginLink.href = shuxueyouxiAssetUrl('teacher-workspace/account.html');
     adminAccessRetry.addEventListener('click', verifyAdminAccess);
     void verifyAdminAccess();
 
@@ -147,9 +155,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const partnerData = {
         name: '悟空',
         images: {
-            default: '/images/wukong_default.png',
-            happy: '/images/wukong_happy.png',
-            thinking: '/images/wukong_thinking.png'
+            default: shuxueyouxiAssetUrl('images/wukong_default.png'),
+            happy: shuxueyouxiAssetUrl('images/wukong_happy.png'),
+            thinking: shuxueyouxiAssetUrl('images/wukong_thinking.png')
         },
         dialogues: {
             correct: [
@@ -944,7 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentAnswer = null;
 
         // 重置UI状态
-        knowledgeItems.forEach(item => item.classList.remove('selected'));
+        knowledgeUnits.forEach(item => item.classList.remove('selected'));
         scenarioCards.forEach(card => card.classList.remove('selected'));
         updateSelectionDisplay();
         updateStartButtonState();
@@ -957,7 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 返回作品按钮事件监听器
     backToWorksBtn.addEventListener('click', () => {
         // 跳转到作品页面
-        window.location.href = '/works';
+        window.location.href = new URL('works', window.location.href).href;
     });
 
     // 提示按钮事件监听器 - 修改为集成到AI伙伴对话框
@@ -1155,8 +1163,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${scenarioPrompt}${scenarioElements}, ${chapterScene}, child-friendly cartoon illustration, bright colors, clear composition`;
     }
 
-    function useFallbackSceneImage(cacheKey) {
-        const fallbackUrl = '/images/shijie.jpeg';
+    function getFallbackSceneImage(cacheKey) {
+        const fallbackUrl = shuxueyouxiAssetUrl('images/shijie.jpeg');
         imageCache.set(cacheKey, fallbackUrl);
         sceneImage.src = fallbackUrl;
         sceneImage.classList.remove('hidden');
@@ -1253,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await loadSceneImage(imageUrl, cacheKey);
             } catch (imageLoadError) {
                 console.warn('在线图片加载失败，使用本地兜底图:', imageLoadError.message);
-                useFallbackSceneImage(cacheKey);
+                getFallbackSceneImage(cacheKey);
             }
 
             return { success: true };
@@ -1466,12 +1474,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseAndDisplayStoryStages(text) {
         try {
             // 预处理清理 markdown 标记
-            let cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const cleanedText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
 
             // 尝试解析JSON格式
             const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
-                const storyData = JSON.parse(jsonMatch[0].replace(/\n/g, "\\n").replace(/\r/g, "").replace(/\t/g, "\\t").replace(/\\n/g, "\n").replace(/\\t/g, "\t"));
+                const storyData = JSON.parse(jsonMatch[0]);
                 console.log('解析到的故事数据:', storyData);
 
                 // 检查是否是新的多章节格式
@@ -1481,9 +1489,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentChapterIndex = 0;
                     console.log('多章节格式，章节数量:', allChapters.length);
 
-                    // 验证第一章节数据
-                    if (!allChapters[0] || !allChapters[0].story || !allChapters[0].question) {
-                        throw new Error('第一章节数据格式不完整');
+                    if (allChapters.length === 0 || allChapters.some((chapter) => (
+                        !chapter
+                        || typeof chapter !== 'object'
+                        || !String(chapter.story || '').trim()
+                        || !String(chapter.question || '').trim()
+                        || chapter.answer == null
+                    ))) {
+                        throw new Error('故事章节数据格式不完整');
                     }
 
                     // 存储当前章节数据
@@ -1509,8 +1522,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('解析故事数据失败:', error);
-            // 回退到旧格式解析
-            parseAndDisplayStoryLegacy(text);
+            if (/<q>[\s\S]*<\/q>/.test(text) && /<a>[\s\S]*<\/a>/.test(text)) {
+                parseAndDisplayStoryLegacy(text);
+                return;
+            }
+            throw new Error('故事格式不完整，请重新生成');
         }
     }
 

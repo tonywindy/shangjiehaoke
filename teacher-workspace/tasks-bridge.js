@@ -1,3 +1,5 @@
+import { createStudentMask, isAdminAiUser, runAdminAi } from './ai-client.js';
+
 let DB_NAME = 'shangjiehaoke-teacher-workspace-v07';
 const DB_VERSION = 5;
 const STORES = [
@@ -14,6 +16,8 @@ const state = {
   tasks: [],
   filter: '今天',
   activeTaskId: '',
+  aiParsedTask: null,
+  aiParsedInput: '',
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -218,6 +222,7 @@ function renderQuickInputState() {
   const input = $('#qi');
   const row = $('#qrow2');
   const addButton = $('#qadd');
+  const aiButton = $('#qai');
   const wrapper = $('#qa');
   if (!input || !row || !addButton || !wrapper) return;
   const value = input.value.trim();
@@ -225,18 +230,63 @@ function renderQuickInputState() {
   addButton.classList.toggle('off', !value);
   if (!value) {
     row.innerHTML = '<span class="pc" style="opacity:.55">输入内容后会在这里显示识别结果</span>';
+    if (aiButton) row.append(aiButton);
     row.append(addButton);
     return;
   }
-  const parsed = parseQuickTask(value);
+  const usingAi = state.aiParsedTask && state.aiParsedInput === value;
+  const parsed = usingAi ? state.aiParsedTask : parseQuickTask(value);
   const chips = [];
-  if (/明天|后天|\d{1,2}月\d{1,2}日/.test(value) || /([01]?\d|2[0-3]):([0-5]\d)/.test(value)) {
+  if (usingAi) chips.push('<span class="pc d">✦ MiMo 已解析</span>');
+  if (usingAi || /明天|后天|\d{1,2}月\d{1,2}日/.test(value) || /([01]?\d|2[0-3]):([0-5]\d)/.test(value)) {
     chips.push(`<span class="pc d">${escapeHTML(shortDate(parsed.dueDate))}${parsed.dueTime ? ` ${escapeHTML(parsed.dueTime)}` : ''}</span>`);
   }
   parsed.studentNames.forEach((name) => chips.push(`<span class="pc s">@${escapeHTML(name)}</span>`));
   if (parsed.fragment) chips.push('<span class="pc s">≤ 3 分钟</span>');
   row.innerHTML = chips.join('') || '<span class="pc s">仅标题 · 会进收件箱</span>';
+  if (aiButton) row.append(aiButton);
   row.append(addButton);
+}
+
+async function parseTaskWithAi() {
+  const input = $('#qi');
+  const value = input?.value.trim() || '';
+  if (!value) return notify('请先输入任务内容');
+  if (!state.classId) return notify('请先创建班级并导入学生');
+  const button = $('#qai');
+  const mask = createStudentMask(state.students);
+  button.disabled = true;
+  button.textContent = '✦ 正在解析…';
+  try {
+    const result = await runAdminAi('organize', {
+      text: mask.maskText(value),
+      currentDate: localDate(),
+      studentTokens: mask.studentTokens,
+      selectedStudentTokens: [],
+      taskOnly: true,
+    });
+    const task = result.tasks?.[0];
+    if (!task) throw new Error('没有识别到明确的待办，请换一种说法');
+    const students = mask.studentsForTokens(task.studentTokens);
+    state.aiParsedInput = value;
+    state.aiParsedTask = {
+      title: mask.unmaskText(task.title),
+      dueDate: task.dueDate || localDate(),
+      dueTime: task.dueTime || '',
+      list: task.list || '收件箱',
+      studentIds: students.map((item) => item.id),
+      studentNames: students.map((item) => item.name),
+      fragment: Boolean(task.fragment),
+      aiSource: { model: result._meta.model, rawInput: value, suggestedText: mask.unmaskText(task.title) },
+    };
+    renderQuickInputState();
+    notify('AI解析完成，请确认后添加');
+  } catch (error) {
+    notify(error.message || 'AI任务解析失败');
+  } finally {
+    button.disabled = false;
+    button.textContent = '✦ AI 解析';
+  }
 }
 
 async function addTaskFromQuickInput() {
@@ -254,15 +304,16 @@ async function addTaskFromQuickInput() {
     access.requireFeature('unlimitedTasks');
     return;
   }
-  const parsed = parseQuickTask(value);
+  const usingAi = state.aiParsedTask && state.aiParsedInput === value;
+  const parsed = usingAi ? state.aiParsedTask : parseQuickTask(value);
   const timestamp = Date.now();
   const record = normalizeTask({
     id: uid('task'),
     classId: state.classId,
     type: 'manual',
     status: 'pending',
-    source: '我添加',
-    list: '收件箱',
+    source: usingAi ? 'MiMo AI解析（教师确认）' : '我添加',
+    list: parsed.list || '收件箱',
     createdAt: timestamp,
     updatedAt: timestamp,
     ...parsed,
@@ -270,6 +321,8 @@ async function addTaskFromQuickInput() {
   await putTask(record);
   state.tasks.unshift(record);
   input.value = '';
+  state.aiParsedTask = null;
+  state.aiParsedInput = '';
   renderQuickInputState();
   state.filter = record.fragment ? '碎片清单' : (record.dueDate <= localDate() ? '今天' : '即将到来');
   renderTasks();
@@ -356,12 +409,18 @@ async function handleTaskAction(action) {
 }
 
 function bindEvents() {
-  $('#qi')?.addEventListener('input', renderQuickInputState);
+  $('#qi')?.addEventListener('input', () => {
+    state.aiParsedTask = null;
+    state.aiParsedInput = '';
+    renderQuickInputState();
+  });
   $('#qclr')?.addEventListener('click', (event) => {
     event.preventDefault();
     const input = $('#qi');
     if (!input) return;
     input.value = '';
+    state.aiParsedTask = null;
+    state.aiParsedInput = '';
     renderQuickInputState();
     input.focus();
   });
@@ -378,6 +437,12 @@ function bindEvents() {
       event.preventDefault();
       event.stopImmediatePropagation();
       addTaskFromQuickInput().catch(() => notify('任务保存失败'));
+      return;
+    }
+    if (event.target.closest('#qai')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      parseTaskWithAi();
       return;
     }
     const row = event.target.closest('.persist-task');
@@ -439,6 +504,7 @@ async function init() {
   const scoped = (item) => Boolean(state.classId) && (item.classId || 'class-local') === state.classId;
   state.students = students.filter(scoped).sort((a, b) => a.sortOrder - b.sortOrder);
   state.tasks = tasks.filter(scoped).map(normalizeTask);
+  if (isAdminAiUser()) $('#qai')?.classList.add('on');
   bindEvents();
   renderTasks();
   renderQuickInputState();

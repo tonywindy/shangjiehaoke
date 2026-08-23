@@ -1,3 +1,5 @@
+import { createStudentMask, isAdminAiUser, runAdminAi } from './ai-client.js';
+
 let DB_NAME = 'shangjiehaoke-teacher-workspace-v07';
 const DB_VERSION = 5;
 const STORES = [
@@ -18,6 +20,7 @@ const state = {
   tasks: [],
   notes: [],
   selectedNoteStudentIds: new Set(),
+  aiDraft: null,
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -234,6 +237,178 @@ function renderSummary() {
   if (done) done.textContent = completed;
 }
 
+function mountAdminAi() {
+  if (!isAdminAiUser()) return;
+  $('#aiOrganizeBtn')?.classList.add('on');
+  $('#aiSummaryBtn')?.classList.add('on');
+}
+
+function closeAiDraft() {
+  state.aiDraft = null;
+  const panel = $('#aiDraft');
+  if (panel) {
+    panel.hidden = true;
+    panel.innerHTML = '';
+  }
+}
+
+function aiStudentNames(tokens = []) {
+  return state.aiDraft?.mask.studentsForTokens(tokens).map((item) => item.name) || [];
+}
+
+function renderAiDraft() {
+  const panel = $('#aiDraft');
+  const draft = state.aiDraft;
+  if (!panel || !draft) return closeAiDraft();
+  const categoryOptions = ['活动', '表扬', '提醒', '沟通', '通知'];
+  const listOptions = ['收件箱', '班级管理', '学情评价', '家校沟通'];
+  const records = draft.records.map((record, index) => {
+    const names = aiStudentNames(record.studentTokens);
+    return `<label class="ai-draft-item">
+      <input type="checkbox" data-ai-record="${index}" checked aria-label="保存这条记录">
+      <span class="ai-draft-fields">
+        <input data-ai-record-body="${index}" maxlength="500" value="${escapeHTML(draft.mask.unmaskText(record.body))}" aria-label="记录内容">
+        <select data-ai-record-category="${index}" aria-label="记录类别">${categoryOptions.map((category) => `<option ${category === record.category ? 'selected' : ''}>${category}</option>`).join('')}</select>
+        <span class="ai-draft-meta">记录${names.length ? ` · 关联 ${escapeHTML(names.join('、'))}` : ' · 班级公共记录'}</span>
+      </span>
+    </label>`;
+  }).join('');
+  const tasks = draft.tasks.map((task, index) => {
+    const names = aiStudentNames(task.studentTokens);
+    return `<label class="ai-draft-item">
+      <input type="checkbox" data-ai-task="${index}" checked aria-label="保存这条任务">
+      <span class="ai-draft-fields">
+        <input data-ai-task-title="${index}" maxlength="160" value="${escapeHTML(draft.mask.unmaskText(task.title))}" aria-label="任务内容">
+        <input data-ai-task-date="${index}" type="date" value="${escapeHTML(task.dueDate)}" aria-label="任务日期">
+        <select data-ai-task-list="${index}" aria-label="任务清单">${listOptions.map((list) => `<option ${list === task.list ? 'selected' : ''}>${list}</option>`).join('')}</select>
+        <span class="ai-draft-meta">待办${task.dueTime ? ` · ${escapeHTML(task.dueTime)}` : ''}${names.length ? ` · 关联 ${escapeHTML(names.join('、'))}` : ''}</span>
+      </span>
+    </label>`;
+  }).join('');
+  const warnings = draft.uncertainties.length
+    ? `<div class="ai-draft-warn">请确认：${draft.uncertainties.map((item) => escapeHTML(draft.mask.unmaskText(item))).join('；')}</div>`
+    : '';
+  panel.innerHTML = `<div class="ai-draft-head"><span class="mark">✦</span><div><h3>MiMo 整理草稿</h3><p>${escapeHTML(draft.mask.unmaskText(draft.summary))} · 确认后才会保存</p></div><span class="grow"></span></div>
+    <div class="ai-draft-list">${records || ''}${tasks || ''}${!records && !tasks ? '<div style="padding:12px;color:var(--text-3)">没有识别到可保存的记录或任务。</div>' : ''}</div>
+    ${warnings}<div class="ai-draft-actions"><button type="button" data-ai-cancel>放弃草稿</button><button type="button" class="confirm" data-ai-confirm>确认并保存</button></div>`;
+  panel.hidden = false;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function organizeComposerWithAi() {
+  const button = $('#aiOrganizeBtn');
+  const rawInput = $('#inp')?.value.trim() || '';
+  if (!state.classId) return notify('请先创建班级并导入学生');
+  if (!rawInput) return notify('请先输入要整理的内容');
+  const mask = createStudentMask(state.students);
+  button.disabled = true;
+  button.innerHTML = '<span class="spark">✦</span>正在整理…';
+  try {
+    const result = await runAdminAi('organize', {
+      text: mask.maskText(rawInput),
+      currentDate: localDate(),
+      currentCategory: $('#noteCategory')?.value || '活动',
+      studentTokens: mask.studentTokens,
+      selectedStudentTokens: mask.tokensForIds([...state.selectedNoteStudentIds]),
+    });
+    state.aiDraft = { ...result, mask, rawInput };
+    renderAiDraft();
+  } catch (error) {
+    notify(error.message || 'AI整理失败，请稍后重试');
+  } finally {
+    button.disabled = false;
+    button.innerHTML = '<span class="spark">✦</span>AI 智能整理';
+  }
+}
+
+async function confirmAiDraft() {
+  const draft = state.aiDraft;
+  if (!draft) return;
+  const timestamp = Date.now();
+  const newNotes = draft.records.flatMap((record, index) => {
+    if (!$(`[data-ai-record="${index}"]`)?.checked) return [];
+    const body = $(`[data-ai-record-body="${index}"]`)?.value.trim();
+    if (!body) return [];
+    const students = draft.mask.studentsForTokens(record.studentTokens);
+    return [{
+      id: uid('note'), classId: state.classId,
+      type: students.length ? 'student_note' : 'class_note',
+      category: $(`[data-ai-record-category="${index}"]`)?.value || '活动',
+      body, studentIds: students.map((item) => item.id), studentNames: students.map((item) => item.name),
+      source: 'MiMo AI整理（教师确认）',
+      aiSource: { model: draft._meta.model, rawInput: draft.rawInput, suggestedText: draft.mask.unmaskText(record.body), confirmedAt: timestamp },
+      createdAt: timestamp + index, updatedAt: timestamp + index,
+    }];
+  });
+  const newTasks = draft.tasks.flatMap((task, index) => {
+    if (!$(`[data-ai-task="${index}"]`)?.checked) return [];
+    const title = $(`[data-ai-task-title="${index}"]`)?.value.trim();
+    if (!title) return [];
+    const students = draft.mask.studentsForTokens(task.studentTokens);
+    return [{
+      id: uid('task'), classId: state.classId, type: 'manual', status: 'pending',
+      title, dueDate: $(`[data-ai-task-date="${index}"]`)?.value || localDate(),
+      dueTime: task.dueTime || '', list: $(`[data-ai-task-list="${index}"]`)?.value || '收件箱',
+      studentIds: students.map((item) => item.id), studentNames: students.map((item) => item.name),
+      fragment: Boolean(task.fragment), source: 'MiMo AI整理（教师确认）',
+      aiSource: { model: draft._meta.model, rawInput: draft.rawInput, suggestedText: draft.mask.unmaskText(task.title), confirmedAt: timestamp },
+      createdAt: timestamp + draft.records.length + index, updatedAt: timestamp + draft.records.length + index,
+    }];
+  });
+  if (!newNotes.length && !newTasks.length) return notify('请至少保留一条记录或任务');
+  await Promise.all([
+    ...newNotes.map((note) => putRecord('notes', note)),
+    ...newTasks.map((task) => putRecord('followupTasks', task)),
+  ]);
+  state.notes.unshift(...newNotes);
+  state.tasks.unshift(...newTasks);
+  $('#inp').value = '';
+  $('#inp').style.height = '62px';
+  $('#saveNoteBtn')?.classList.add('off');
+  state.selectedNoteStudentIds.clear();
+  closeAiDraft();
+  renderStudentPicker();
+  renderPending();
+  renderPlan();
+  renderFeed();
+  renderSummary();
+  notify(`已确认保存 ${newNotes.length} 条记录、${newTasks.length} 项任务`);
+}
+
+async function generateAiDailySummary() {
+  const button = $('#aiSummaryBtn');
+  const mask = createStudentMask(state.students);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const notes = state.notes.filter((note) => (note.createdAt || 0) >= todayStart.getTime()).slice(0, 24);
+  const tasks = state.tasks.filter((task) => task.dueDate <= localDate() || task.status === 'completed').slice(0, 24);
+  if (!notes.length && !tasks.length) return notify('今天还没有足够的记录可以总结');
+  button.disabled = true;
+  button.textContent = '✦ 正在生成…';
+  try {
+    const result = await runAdminAi('daily-summary', {
+      currentDate: localDate(),
+      records: notes.map((note) => ({
+        category: note.category,
+        body: mask.maskText(note.body),
+        studentTokens: mask.tokensForIds(note.studentIds || []),
+      })),
+      tasks: tasks.map((task) => ({
+        title: mask.maskText(task.title || ''), status: task.status, dueDate: task.dueDate,
+        studentTokens: mask.tokensForIds(task.studentIds || []),
+      })),
+    });
+    const summary = $('.summary .txt');
+    if (summary) summary.innerHTML = `${escapeHTML(mask.unmaskText(result.summary))}${result.priorities.length ? `<span class="ai-priorities">下一步：${result.priorities.map((item) => escapeHTML(mask.unmaskText(item))).join('；')}</span>` : ''}`;
+    notify('AI今日小结已生成');
+  } catch (error) {
+    notify(error.message || 'AI今日小结生成失败');
+  } finally {
+    button.disabled = false;
+    button.textContent = '✦ AI 今日小结';
+  }
+}
+
 async function saveComposerNote() {
   if (!state.classId) {
     notify('请先创建班级并导入学生');
@@ -323,6 +498,7 @@ function bindEvents() {
     $('#saveNoteBtn')?.classList.toggle('off', !event.target.value.trim());
     event.target.style.height = 'auto';
     event.target.style.height = `${Math.max(62, event.target.scrollHeight)}px`;
+    if (state.aiDraft) closeAiDraft();
   });
   $('#studentSearch')?.addEventListener('input', renderStudentPicker);
   document.addEventListener('click', (event) => {
@@ -330,6 +506,25 @@ function bindEvents() {
       event.preventDefault();
       event.stopImmediatePropagation();
       saveComposerNote().catch(() => notify('记录保存失败，请重试'));
+      return;
+    }
+    if (event.target.closest('#aiOrganizeBtn')) {
+      event.preventDefault();
+      organizeComposerWithAi();
+      return;
+    }
+    if (event.target.closest('#aiSummaryBtn')) {
+      event.preventDefault();
+      generateAiDailySummary();
+      return;
+    }
+    if (event.target.closest('[data-ai-cancel]')) {
+      closeAiDraft();
+      return;
+    }
+    if (event.target.closest('[data-ai-confirm]')) {
+      event.preventDefault();
+      confirmAiDraft().catch(() => notify('AI草稿保存失败，请重试'));
       return;
     }
     if (event.target.closest('#openStudentPicker')) {
@@ -443,6 +638,7 @@ async function init() {
     source: task.source || (task.type === 'homework_followup' ? '作业登记' : '任务'),
   }));
   state.notes = notes.filter(scoped).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  mountAdminAi();
   simplifyComposer();
   renderStudentPicker();
   bindEvents();

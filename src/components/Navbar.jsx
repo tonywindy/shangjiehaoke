@@ -52,7 +52,7 @@ const Navbar = ({ currentPage = 'home' }) => {
             {PAGE_TITLES.HOME}
           </Link>
         </div>
-        
+
         <button
           type="button"
           className={`nav-toggle ${isMenuOpen ? 'is-open' : ''}`}
@@ -93,7 +93,7 @@ const Navbar = ({ currentPage = 'home' }) => {
               </Link>
             )
           ))}
-          
+
           <div className="feedback-container">
             <button
               type="button"
@@ -113,8 +113,8 @@ const Navbar = ({ currentPage = 'home' }) => {
             >
               <img
                 src={withBasePath('/images/erweima.png')}
-                alt="公众号二维码" 
-                className="qr-code" 
+                alt="公众号二维码"
+                className="qr-code"
                 loading="lazy"
               />
               <p className="qr-text">

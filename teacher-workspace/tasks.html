@@ -106,6 +106,7 @@ svg{display:block}
   font-size:14px;font-weight:600;box-shadow:0 3px 10px -3px rgba(26,128,80,.5);transition:.18s var(--ease)}
 .qadd:hover{background:var(--green-d)}
 .qadd.off{opacity:.4;pointer-events:none;box-shadow:none}
+.qai{display:none;height:34px;padding:0 12px;border:1px solid #b9d9c5;border-radius:9px;background:#f4faf6;color:var(--green-d);font-size:13px;font-weight:650}.qai.on{display:inline-flex;align-items:center;gap:5px}.qai:disabled{opacity:.55;cursor:wait}
 .qhint{padding:0 16px 12px;font-size:12.5px;color:var(--text-3)}
 
 /* 分节标题 */
@@ -180,7 +181,7 @@ svg{display:block}
 @media(max-width:920px){.cols{grid-template-columns:1fr}.vpane{position:static}}
 </style>
 <link rel="stylesheet" href="workspace-shell.css">
-<script src="access-control.js?v=20260810"></script>
+<script src="access-control.js?v=20260813"></script>
 <script type="module" src="workspace-shell.js"></script>
 <script type="module" src="tasks-bridge.js"></script>
 </head>
@@ -295,10 +296,10 @@ svg{display:block}
           </div>
           <div class="qrow2" id="qrow2">
             <span class="pc" style="opacity:.55">输入内容后会在这里显示识别结果</span>
-            <button class="qadd off" id="qadd" type="button">添加任务</button>
+            <button class="qai" id="qai" type="button">✦ AI 解析</button><button class="qadd off" id="qadd" type="button">添加任务</button>
           </div>
         </div>
-        <div class="qhint">识别：<b>明天/后天/7月30日</b> · <b>15:40</b> · <b>@学生</b> · <b>~3分钟</b></div>
+        <div class="qhint">普通账号继续使用本地规则；管理员可用 MiMo 识别更自然的日期、学生和任务清单。</div>
       </div>
 
       <!-- 逾期 -->

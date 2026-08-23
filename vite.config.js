@@ -19,6 +19,12 @@ function copyStaticGameScripts() {
         mkdirSync(resolve(projectRoot, to, '..'), { recursive: true });
         copyFileSync(resolve(projectRoot, from), resolve(projectRoot, to));
       });
+
+      // 静态托管平台会在未知地址返回 404.html，页面内再展示友好的 React 404。
+      copyFileSync(
+        resolve(projectRoot, 'dist/index.html'),
+        resolve(projectRoot, 'dist/404.html'),
+      );
     },
   };
 }

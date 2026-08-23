@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>三题通关 - 精准计算训练营</title>
@@ -159,7 +159,16 @@
         }
 
         .radio-option input[type="radio"] {
-            display: none;
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .radio-option:focus-within {
+            outline: 3px solid #fbbf24;
+            outline-offset: 3px;
         }
 
         .radio-label {
@@ -657,15 +666,15 @@
             <div class="selection-group">
                 <div class="selection-title">📚 选择训练内容</div>
                 <div class="radio-group">
-                    <div class="radio-option selected" onclick="selectContent('addition')">
+                    <div class="radio-option selected">
                         <label class="radio-label">
-                            <input type="radio" name="content" value="addition" checked>
+                            <input type="radio" name="content" value="addition" onchange="selectContent(this)" checked>
                             三位数加减混合运算
                         </label>
                     </div>
-                    <div class="radio-option" onclick="selectContent('multiplication')">
+                    <div class="radio-option">
                         <label class="radio-label">
-                            <input type="radio" name="content" value="multiplication">
+                            <input type="radio" name="content" value="multiplication" onchange="selectContent(this)">
                             表内乘法四则混合运算
                         </label>
                     </div>
@@ -675,23 +684,23 @@
             <div class="selection-group">
                 <div class="selection-title">🎮 选择训练模式</div>
                 <div class="radio-group">
-                    <div class="radio-option selected" onclick="selectMode('easy')">
+                    <div class="radio-option selected">
                         <label class="radio-label">
-                            <input type="radio" name="mode" value="easy" checked>
+                            <input type="radio" name="mode" value="easy" onchange="selectMode(this)" checked>
                             简单模式
                         </label>
                         <div class="mode-description">两步运算，提示错题位置，积分 +1</div>
                     </div>
-                    <div class="radio-option" onclick="selectMode('hard')">
+                    <div class="radio-option">
                         <label class="radio-label">
-                            <input type="radio" name="mode" value="hard">
+                            <input type="radio" name="mode" value="hard" onchange="selectMode(this)">
                             困难模式
                         </label>
                         <div class="mode-description">两步运算，只提示错题数量，积分 +2</div>
                     </div>
-                    <div class="radio-option" onclick="selectMode('master')">
+                    <div class="radio-option">
                         <label class="radio-label">
-                            <input type="radio" name="mode" value="master">
+                            <input type="radio" name="mode" value="master" onchange="selectMode(this)">
                             大师模式
                         </label>
                         <div class="mode-description">四步运算，只提示错题数量，积分 +3</div>
@@ -706,7 +715,7 @@
         <div id="trainingPage" class="page">
             <h1 class="title">📝 开始答题</h1>
             
-            <div class="message-box" id="messageBox"></div>
+            <div class="message-box" id="messageBox" role="status" aria-live="polite"></div>
             
             <div class="questions-container" id="questionsContainer">
                 <!-- 题目将在这里动态生成 -->
@@ -828,25 +837,19 @@
         }
 
         // 选择内容
-        function selectContent(content) {
-            currentContent = content;
-            document.querySelectorAll('#selectionPage .radio-option').forEach((option, index) => {
-                if (index < 2) {
-                    option.classList.remove('selected');
-                }
+        function selectContent(input) {
+            currentContent = input.value;
+            document.querySelectorAll('input[name="content"]').forEach(option => {
+                option.closest('.radio-option').classList.toggle('selected', option.checked);
             });
-            event.currentTarget.classList.add('selected');
         }
 
         // 选择模式
-        function selectMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('#selectionPage .radio-option').forEach((option, index) => {
-                if (index >= 2) { // 处理模式选项（第3,4,5个选项）
-                    option.classList.remove('selected');
-                }
+        function selectMode(input) {
+            currentMode = input.value;
+            document.querySelectorAll('input[name="mode"]').forEach(option => {
+                option.closest('.radio-option').classList.toggle('selected', option.checked);
             });
-            event.currentTarget.classList.add('selected');
         }
 
         // 开始训练
@@ -1498,4 +1501,3 @@
     </script>
 </body>
 </html>
-

@@ -22,6 +22,16 @@
 4. 立即复制完整授权码并通过私信发给用户。
 5. 用户在账号页选择“授权码注册”，阅读并同意协议后完成注册。
 
+## 管理员 AI 功能
+
+工作台中的 MiMo AI 智能整理、今日小结、任务解析、阶段回顾和学情建议目前只对管理员账号开放。普通授权账号不显示入口，服务端接口也会再次校验管理员角色。
+
+- 模型：小米 `mimo-v2.5`
+- 密钥：仅通过 Cloudflare Secret `MIMO_API_KEY` 配置，不写入仓库
+- 学生姓名：调用前在浏览器中替换为匿名代号，返回后仅在本机还原
+- 写入原则：AI 只生成草稿；记录和任务必须由管理员确认后才写入本机数据库
+- 学情原则：AI 只提供建议，不自动修改知识矩阵中的掌握状态
+
 完整授权码只在生成当次返回。D1 只保存带 Secret 保护的摘要和短前缀，刷新后台后无法找回完整号码。
 
 ## 续费、停用和忘记密码
@@ -57,6 +67,7 @@ npm run deploy
 - `WORKSPACE_SESSION_SECRET`
 - `WORKSPACE_LICENSE_PEPPER`
 - `WORKSPACE_PASSWORD_PEPPER`
+- `MIMO_API_KEY`
 
 可用 `npm run auth:hash -- --stdin` 生成兼容摘要。Secret 更新后再执行一次 `npm run deploy`，保证最新代码版本使用新 Secret。
 

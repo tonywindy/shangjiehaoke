@@ -26,20 +26,20 @@ function App() {
 
   return (
     <main id="main-content">
-      <div className="app">
+        <div className="app">
         {/* 视频背景 */}
         <div className="video-background">
+          <div className="video-fallback" aria-hidden="true">
+            <div className="fallback-bg"></div>
+          </div>
+
           {!videoLoaded && !videoError && (
             <div className="video-loading">
               <div className="loading-spinner"></div>
               <p>视频加载中...</p>
             </div>
           )}
-          
-          <div className="video-fallback" aria-hidden="true">
-            <div className="fallback-bg"></div>
-          </div>
-          
+
           <video
             autoPlay
             muted
@@ -57,6 +57,7 @@ function App() {
             <source src={heroVideoMp4} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
+
         </div>
 
         {/* 中央Logo区域 */}
@@ -72,7 +73,7 @@ function App() {
             */}
             
             {/* 使用图片logo */}
-            <img
+            <img 
               src={withBasePath('/images/logo1.png')}
               alt="上节好课"
               className="logo-image"
@@ -83,7 +84,7 @@ function App() {
         {/* 导航栏 */}
         <Navbar currentPage="home" />
 
-      </div>
+        </div>
 
       {/* 滚动内容区域 */}
       <div className="scroll-content">
@@ -122,7 +123,7 @@ function App() {
 
               <div className="featured-works-grid">
                 {FEATURED_WORKS.map((work) => (
-                  <a href={withBasePath(work.path)} className="featured-work-card" key={work.id}>
+                  <a href={work.path} className="featured-work-card" key={work.id}>
                     <div className="featured-work-image">
                       <img src={work.cover} alt={work.title} loading="lazy" />
                     </div>
@@ -143,7 +144,7 @@ function App() {
 
 
       </div>
-    </main>
+      </main>
   )
 }
 
