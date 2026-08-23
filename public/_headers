@@ -1,3 +1,6 @@
+/videos/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /teacher-workspace/access-control.js
   Cache-Control: no-store, max-age=0
 
