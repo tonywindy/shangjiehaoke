@@ -4,6 +4,83 @@
 /teacher-workspace/access-control.js
   Cache-Control: no-store, max-age=0
 
+/teacher-workspace/*
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/account
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/admin
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+
+/teacher-workspace/profile
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/today
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/tasks
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/class
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/learning
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/review-export
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/teacher-workspace/terms
+  Cache-Control: no-store, max-age=0
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
 /teacher-workspace/account.html
   Cache-Control: no-store, max-age=0
   X-Frame-Options: DENY
