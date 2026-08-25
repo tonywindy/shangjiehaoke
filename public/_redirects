@@ -1,14 +1,19 @@
-# Clean React routes map to their built HTML entry files.
+# Clean React routes map to their built HTML entry files. Cloudflare Pages
+# normalizes extensionless paths to a trailing slash before applying rewrites.
 /works          /works.html    200
+/works/         /works.html    200
 /quotes         /contact.html  200
+/quotes/        /contact.html  200
 /contact        /contact.html  200
+/contact/       /contact.html  200
 /shizhen        /shizhen.html  200
+/shizhen/       /shizhen.html  200
 
 # Legacy aliases use one canonical public URL.
 /index.html     /              301
-/works.html     /works         301
-/contact.html   /contact       301
-/shizhen.html   /shizhen       301
+/works.html     /works/        301
+/contact.html   /contact/      301
+/shizhen.html   /shizhen/      301
 
 # Unknown paths keep a real 404 status instead of returning a blank 200 shell.
 /*              /404.html      404
