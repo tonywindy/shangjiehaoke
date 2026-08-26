@@ -1,4 +1,5 @@
 import { readSheet } from 'read-excel-file/browser';
+import { calculateSchoolWeek, createSchoolWeekSetting } from './school-week.js';
 
 const ACCESS_CONTROL = window.TeacherWorkspaceAccess;
 let CLASS_DB_NAME = 'shangjiehaoke-teacher-workspace-v07';
@@ -162,6 +163,74 @@ function updateShellDate() {
     const node = document.getElementById(id);
     if (node) node.textContent = weekText;
   });
+}
+
+const SCHOOL_WEEK_STORAGE_PREFIX = 'sjhk-workspace-school-week';
+let temporarySchoolWeekSetting = null;
+let schoolWeekRefreshTimer = null;
+
+function schoolWeekStorageKey() {
+  const accountId = ACCESS_CONTROL?.session?.user?.id;
+  return `${SCHOOL_WEEK_STORAGE_PREFIX}:${accountId || 'experience'}`;
+}
+
+function readSchoolWeekSetting() {
+  try {
+    const stored = localStorage.getItem(schoolWeekStorageKey());
+    return stored ? JSON.parse(stored) : temporarySchoolWeekSetting;
+  } catch {
+    return temporarySchoolWeekSetting;
+  }
+}
+
+function saveSchoolWeekSetting(setting) {
+  temporarySchoolWeekSetting = setting;
+  try {
+    localStorage.setItem(schoolWeekStorageKey(), JSON.stringify(setting));
+  } catch {
+    // 浏览器禁用本地存储时，本次打开期间仍然可以正常显示。
+  }
+}
+
+function schoolWeekOptions(currentWeek) {
+  const lastWeek = Math.max(30, currentWeek || 0);
+  return Array.from({ length: lastWeek }, (_, index) => {
+    const week = index + 1;
+    return `<option value="${week}">第${week}周</option>`;
+  }).join('');
+}
+
+function updateSchoolWeekControl() {
+  const select = document.querySelector('[data-school-week-select]');
+  if (!select) return;
+  const currentWeek = calculateSchoolWeek(readSchoolWeekSetting());
+  select.innerHTML = `<option value="">设置周次</option>${schoolWeekOptions(currentWeek)}`;
+  select.value = currentWeek ? String(currentWeek) : '';
+  select.closest('.school-week-control')?.classList.toggle('is-unset', !currentWeek);
+}
+
+function ensureSchoolWeekControl() {
+  if (document.querySelector('[data-school-week-select]')) return;
+  const header = document.querySelector('.top,.topbar');
+  const date = header?.querySelector('.date,.shell-date');
+  if (!header || !date) return;
+
+  const control = document.createElement('label');
+  control.className = 'school-week-control';
+  control.title = '选择当前教学周，之后每到周一自动进入下一周';
+  control.innerHTML = '<select data-school-week-select aria-label="选择当前教学周"></select><span aria-hidden="true">⌄</span>';
+  header.insertBefore(control, date);
+
+  const select = control.querySelector('select');
+  select.addEventListener('change', () => {
+    if (!select.value) return;
+    saveSchoolWeekSetting(createSchoolWeekSetting(select.value));
+    updateSchoolWeekControl();
+  });
+  updateSchoolWeekControl();
+
+  if (schoolWeekRefreshTimer) window.clearInterval(schoolWeekRefreshTimer);
+  schoolWeekRefreshTimer = window.setInterval(updateSchoolWeekControl, 60 * 1000);
 }
 
 let classContext;
@@ -603,6 +672,7 @@ async function initializeClassShell() {
   updateShellDate();
   classContext = await managerReady;
   classContext.classes = await storeAll(classContext.db, 'classes');
+  ensureSchoolWeekControl();
   updatePickerLabels();
   document.querySelectorAll('.kbtn,.shell-kbtn').forEach((button) => {
     button.dataset.kopen = 'true';
