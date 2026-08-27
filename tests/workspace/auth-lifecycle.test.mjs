@@ -105,13 +105,41 @@ test('授权码注册、续期、停用授权码和停用账号形成完整闭�
       method: 'POST',
       body: {
         username: 'testteacher', password: 'Teacher2026',
-        licenseCode: registrationLicense.code, acceptedTerms: true, termsVersion: '2026-08-07',
+        licenseCode: registrationLicense.code, acceptedTerms: true, termsVersion: '2026-08-27',
       },
     });
     assert.equal(result.response.status, 201);
     assert.equal(result.payload.authorized, true);
     const userId = result.payload.user.id;
     let userCookie = result.cookie;
+
+    result = await request('/sync/status', { cookie: userCookie });
+    assert.equal(result.response.status, 200);
+    assert.equal(result.payload.enabled, false);
+
+    const encrypted = {
+      cipherVersion: 1,
+      algorithm: 'AES-GCM',
+      iv: 'AAAAAAAAAAAAAAAA',
+      ciphertext: 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+    };
+    result = await request('/sync/snapshot', {
+      method: 'PUT', cookie: userCookie,
+      body: { baseRevision: 0, deviceId: 'test-device', encrypted },
+    });
+    assert.equal(result.response.status, 200);
+    assert.equal(result.payload.revision, 1);
+
+    result = await request('/sync/snapshot', { cookie: userCookie });
+    assert.equal(result.response.status, 200);
+    assert.deepEqual(result.payload.encrypted, encrypted);
+
+    result = await request('/sync/snapshot', {
+      method: 'PUT', cookie: userCookie,
+      body: { baseRevision: 0, deviceId: 'stale-device', encrypted },
+    });
+    assert.equal(result.response.status, 409);
+    assert.equal(result.payload.code, 'SYNC_CONFLICT');
 
     result = await request('/admin/ai/organize', {
       method: 'POST', cookie: userCookie,

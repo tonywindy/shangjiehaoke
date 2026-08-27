@@ -34,6 +34,10 @@
 	],
 	"r2_buckets": [
 		{
+			"bucket_name": "shangjiehaoke-workspace-sync",
+			"binding": "WORKSPACE_SYNC"
+		},
+		{
 			"bucket_name": "shangjiehaoke-ai-evidence",
 			"binding": "EVIDENCE"
 		}

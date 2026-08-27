@@ -19,6 +19,7 @@ const encoder = new TextEncoder();
 
 export type WorkspaceAuthEnv = {
   AUTH_DB: D1Database;
+  WORKSPACE_SYNC?: R2Bucket;
   GLM_API_KEY?: string;
   MIMO_API_KEY?: string;
   WORKSPACE_ADMIN_USERNAME?: string;
@@ -59,6 +60,18 @@ type LicenseRow = {
   redeemed_at: string | null;
 };
 
+type SyncSnapshotRow = {
+  user_id: string;
+  revision: number;
+  cipher_version: number;
+  algorithm: string;
+  payload_key: string;
+  payload_size: number;
+  payload_sha256: string;
+  updated_at: string;
+  updated_by: string | null;
+};
+
 function isAllowedOrigin(origin: string): boolean {
   if (ALLOWED_ORIGINS.has(origin)) return true;
   try {
@@ -75,7 +88,7 @@ function corsHeaders(request: Request): HeadersInit {
   return {
     'Access-Control-Allow-Origin': origin && isAllowedOrigin(origin) ? origin : 'https://shangjiehaoke.com',
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
@@ -142,6 +155,11 @@ async function hmac(value: string, secret: string): Promise<string> {
     ['sign'],
   );
   const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(value));
+  return bytesToBase64Url(new Uint8Array(digest));
+}
+
+async function sha256(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', encoder.encode(value));
   return bytesToBase64Url(new Uint8Array(digest));
 }
 
@@ -419,6 +437,19 @@ async function requireAdmin(request: Request, env: WorkspaceAuthEnv): Promise<Se
   return user;
 }
 
+async function requireAuthorizedSession(
+  request: Request,
+  env: WorkspaceAuthEnv,
+): Promise<SessionUser | Response> {
+  const user = await requireSession(request, env);
+  if (isResponse(user)) return user;
+  const state = await authorization(env, user);
+  if (!state.authorized) {
+    return failure(request, 403, '会员授权有效时才能使用加密云同步。', 'AUTHORIZATION_REQUIRED');
+  }
+  return user;
+}
+
 function isResponse(value: SessionUser | Response): value is Response {
   return value instanceof Response;
 }
@@ -446,7 +477,7 @@ async function handleRegister(request: Request, env: WorkspaceAuthEnv): Promise<
   if (code.length !== 20 || !code.startsWith('SJHK')) {
     return failure(request, 400, '请输入完整授权码。', 'INVALID_LICENSE');
   }
-  if (input.acceptedTerms !== true || input.termsVersion !== '2026-08-07') {
+  if (input.acceptedTerms !== true || input.termsVersion !== '2026-08-27') {
     return failure(request, 400, '请先阅读并同意使用协议与隐私说明。', 'TERMS_REQUIRED');
   }
   const codeHash = await licenseHash(code, env);
@@ -482,7 +513,7 @@ async function handleRegister(request: Request, env: WorkspaceAuthEnv): Promise<
           id, username, password_hash, role, status, must_change_password,
           terms_version, terms_accepted_at, created_at, updated_at, last_login_at
         )
-        SELECT ?, ?, ?, 'user', 'active', 0, '2026-08-07', ?, ?, ?, ?
+        SELECT ?, ?, ?, 'user', 'active', 0, '2026-08-27', ?, ?, ?, ?
         FROM license_codes
         WHERE id = ? AND status = 'redeemed' AND redeemed_by = ?
       `).bind(userId, username, passwordHash, timestamp, timestamp, timestamp, timestamp, license.id, userId),
@@ -1058,6 +1089,184 @@ async function handleAdminWorkspaceAi(
   }
 }
 
+function publicSyncState(row: SyncSnapshotRow | null) {
+  return row ? {
+    enabled: true,
+    revision: Number(row.revision || 0),
+    cipherVersion: Number(row.cipher_version || 1),
+    algorithm: row.algorithm,
+    size: Number(row.payload_size || 0),
+    checksum: row.payload_sha256,
+    updatedAt: row.updated_at,
+  } : {
+    enabled: false,
+    revision: 0,
+    cipherVersion: 1,
+    algorithm: 'AES-GCM',
+    size: 0,
+    checksum: null,
+    updatedAt: null,
+  };
+}
+
+async function syncRow(env: WorkspaceAuthEnv, userId: string): Promise<SyncSnapshotRow | null> {
+  return env.AUTH_DB.prepare(`
+    SELECT user_id, revision, cipher_version, algorithm, payload_key,
+      payload_size, payload_sha256, updated_at, updated_by
+    FROM workspace_sync_snapshots WHERE user_id = ?
+  `).bind(userId).first<SyncSnapshotRow>();
+}
+
+async function handleSyncStatus(request: Request, env: WorkspaceAuthEnv): Promise<Response> {
+  const user = await requireAuthorizedSession(request, env);
+  if (isResponse(user)) return user;
+  if (!env.WORKSPACE_SYNC) {
+    return failure(request, 503, '加密云同步存储尚未配置。', 'SYNC_NOT_CONFIGURED');
+  }
+  return json(request, { ok: true, ...(publicSyncState(await syncRow(env, user.id))) });
+}
+
+async function handleSyncDownload(request: Request, env: WorkspaceAuthEnv): Promise<Response> {
+  const user = await requireAuthorizedSession(request, env);
+  if (isResponse(user)) return user;
+  if (!env.WORKSPACE_SYNC) {
+    return failure(request, 503, '加密云同步存储尚未配置。', 'SYNC_NOT_CONFIGURED');
+  }
+  const row = await syncRow(env, user.id);
+  if (!row) return failure(request, 404, '当前账号还没有云端加密数据。', 'SYNC_NOT_FOUND');
+  const object = await env.WORKSPACE_SYNC.get(row.payload_key);
+  if (!object) return failure(request, 503, '云端密文暂时无法读取，请稍后重试。', 'SYNC_PAYLOAD_MISSING');
+  const payload = await object.text();
+  if ((await sha256(payload)) !== row.payload_sha256) {
+    return failure(request, 503, '云端密文完整性校验失败，请联系管理员。', 'SYNC_INTEGRITY_FAILED');
+  }
+  let encrypted;
+  try {
+    encrypted = JSON.parse(payload);
+  } catch {
+    return failure(request, 503, '云端密文格式异常，请联系管理员。', 'SYNC_PAYLOAD_INVALID');
+  }
+  return json(request, {
+    ok: true,
+    ...publicSyncState(row),
+    encrypted,
+  });
+}
+
+async function handleSyncUpload(request: Request, env: WorkspaceAuthEnv): Promise<Response> {
+  const user = await requireAuthorizedSession(request, env);
+  if (isResponse(user)) return user;
+  if (!env.WORKSPACE_SYNC) {
+    return failure(request, 503, '加密云同步存储尚未配置。', 'SYNC_NOT_CONFIGURED');
+  }
+  if (!(await checkRateLimit(request, env, `encrypted-sync:${user.id}`, 120, 60 * 60_000))) {
+    return failure(request, 429, '同步次数过于频繁，请稍后再试。', 'SYNC_RATE_LIMITED');
+  }
+  const contentLength = Number(request.headers.get('Content-Length') || 0);
+  if (contentLength > 12 * 1024 * 1024) {
+    return failure(request, 413, '加密数据超过12MB，请先导出本地备份并联系管理员。', 'SYNC_TOO_LARGE');
+  }
+  let input: {
+    baseRevision?: number;
+    deviceId?: string;
+    encrypted?: {
+      cipherVersion?: number;
+      algorithm?: string;
+      iv?: string;
+      ciphertext?: string;
+    };
+  };
+  try {
+    input = await request.json();
+  } catch {
+    return failure(request, 400, '同步数据格式不正确。', 'SYNC_INVALID_REQUEST');
+  }
+  const baseRevision = Number(input.baseRevision);
+  const encrypted = input.encrypted;
+  const iv = String(encrypted?.iv || '');
+  const ciphertext = String(encrypted?.ciphertext || '');
+  const cipherVersion = Number(encrypted?.cipherVersion || 0);
+  const algorithm = String(encrypted?.algorithm || '');
+  if (!Number.isInteger(baseRevision) || baseRevision < 0
+    || cipherVersion !== 1 || algorithm !== 'AES-GCM'
+    || !/^[A-Za-z0-9_-]{12,64}$/.test(iv)
+    || !/^[A-Za-z0-9_-]{16,16777216}$/.test(ciphertext)) {
+    return failure(request, 400, '同步密文参数不完整。', 'SYNC_INVALID_PAYLOAD');
+  }
+  const payload = JSON.stringify({ cipherVersion, algorithm, iv, ciphertext });
+  if (payload.length > 12 * 1024 * 1024) {
+    return failure(request, 413, '加密数据超过12MB，请先导出本地备份并联系管理员。', 'SYNC_TOO_LARGE');
+  }
+  const current = await syncRow(env, user.id);
+  const currentRevision = Number(current?.revision || 0);
+  if (currentRevision !== baseRevision) {
+    return json(request, {
+      ok: false,
+      code: 'SYNC_CONFLICT',
+      message: '另一台设备已经上传了更新，请先同步云端版本。',
+      ...publicSyncState(current),
+    }, 409);
+  }
+  const nextRevision = currentRevision + 1;
+  const payloadKey = `teacher-workspace-sync/${user.id}/${nextRevision}-${crypto.randomUUID()}.json`;
+  const timestamp = nowIso();
+  const deviceId = String(input.deviceId || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || null;
+  const checksum = await sha256(payload);
+  await env.WORKSPACE_SYNC.put(payloadKey, payload, {
+    httpMetadata: { contentType: 'application/json; charset=utf-8' },
+    customMetadata: { userId: user.id, revision: String(nextRevision), cipherVersion: '1' },
+  });
+  let writeResult;
+  try {
+    if (current) {
+      writeResult = await env.AUTH_DB.prepare(`
+        UPDATE workspace_sync_snapshots SET
+          revision = ?, cipher_version = 1, algorithm = 'AES-GCM', payload_key = ?,
+          payload_size = ?, payload_sha256 = ?, updated_at = ?, updated_by = ?
+        WHERE user_id = ? AND revision = ?
+      `).bind(
+        nextRevision, payloadKey, payload.length, checksum, timestamp, deviceId,
+        user.id, currentRevision,
+      ).run();
+    } else {
+      writeResult = await env.AUTH_DB.prepare(`
+        INSERT INTO workspace_sync_snapshots (
+          user_id, revision, cipher_version, algorithm, payload_key,
+          payload_size, payload_sha256, updated_at, updated_by
+        ) VALUES (?, ?, 1, 'AES-GCM', ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id) DO NOTHING
+      `).bind(user.id, nextRevision, payloadKey, payload.length, checksum, timestamp, deviceId).run();
+    }
+    if ((writeResult.meta.changes || 0) !== 1) {
+      await env.WORKSPACE_SYNC.delete(payloadKey);
+      const latest = await syncRow(env, user.id);
+      return json(request, {
+        ok: false,
+        code: 'SYNC_CONFLICT',
+        message: '另一台设备已经上传了更新，请先同步云端版本。',
+        ...publicSyncState(latest),
+      }, 409);
+    }
+  } catch (error) {
+    await env.WORKSPACE_SYNC.delete(payloadKey);
+    throw error;
+  }
+  if (current?.payload_key && current.payload_key !== payloadKey) {
+    await env.WORKSPACE_SYNC.delete(current.payload_key).catch(() => undefined);
+  }
+  try {
+    await (await auditStatement(request, env, user.id, 'sync.encrypted_snapshot_uploaded', 'user', user.id, {
+      revision: nextRevision,
+      payloadSize: payload.length,
+    })).run();
+  } catch (error) {
+    // 审计失败不能让已经成功保存的密文快照被误报为失败。
+    console.error('Encrypted sync audit failed', error);
+  }
+  const row = await syncRow(env, user.id);
+  return json(request, { ok: true, ...(publicSyncState(row)) });
+}
+
 export async function handleWorkspaceRequest(
   request: Request,
   env: WorkspaceAuthEnv,
@@ -1100,6 +1309,9 @@ export async function handleWorkspaceRequest(
       if (user) await (await auditStatement(request, env, user.id, 'user.logged_out', 'user', user.id)).run();
       return json(request, { ok: true }, 200, { 'Set-Cookie': clearSessionCookie(request) });
     }
+    if (url.pathname === `${API_PREFIX}/sync/status` && request.method === 'GET') return handleSyncStatus(request, env);
+    if (url.pathname === `${API_PREFIX}/sync/snapshot` && request.method === 'GET') return handleSyncDownload(request, env);
+    if (url.pathname === `${API_PREFIX}/sync/snapshot` && request.method === 'PUT') return handleSyncUpload(request, env);
     if (url.pathname === `${API_PREFIX}/admin/overview` && request.method === 'GET') return handleAdminOverview(request, env);
     if (url.pathname === `${API_PREFIX}/admin/ai/generate-image` && request.method === 'POST') return handleAdminGenerateImage(request, env);
     if (url.pathname === `${API_PREFIX}/admin/ai/generate-story` && request.method === 'POST') return handleAdminGenerateStory(request, env);

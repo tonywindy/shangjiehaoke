@@ -23,14 +23,14 @@
     <section class="auth-intro">
       <p class="auth-kicker">账号与授权</p>
       <h1>一枚授权码，<br>开始管理自己的班级。</h1>
-      <p>先从公众号获取授权码，再完成账号注册。账号用于确认使用资格，不会把你的学生名单和教学记录上传到服务器。</p>
+      <p>先从公众号获取授权码，再完成账号注册。教学数据优先保存在本机；开启端到端加密同步后，服务器只保存无法直接阅读的密文。</p>
       <div class="official-account-card">
         <img src="../images/erweima.png" alt="上节好课公众号二维码">
         <div><strong>从公众号获取授权</strong><p>微信扫码进入公众号，查看教师工作台授权说明。</p></div>
       </div>
       <div class="privacy-card">
         <span class="privacy-icon">✓</span>
-        <div><strong>教学数据仍在你的电脑里</strong><p>登录账号只恢复授权资格。换电脑后，班级和作业数据需要通过“导出备份—恢复备份”迁移，不会自动同步。</p></div>
+        <div><strong>可选端到端加密云同步</strong><p>每台新电脑输入一次恢复码，之后即可自动同步；恢复码不会上传，平台无法查看学生姓名和教学记录。</p></div>
       </div>
     </section>
 
@@ -53,7 +53,7 @@
           <label class="field"><span>设置密码</span><input name="password" type="password" autocomplete="new-password" maxlength="72" required placeholder="至少8位，包含字母和数字"></label>
           <label class="field"><span>确认密码</span><input name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" required placeholder="再次输入密码"></label>
           <label class="field"><span>授权码</span><input class="license-input" name="licenseCode" autocomplete="off" maxlength="29" required placeholder="SJHK-XXXX-XXXX-XXXX-XXXX"></label>
-          <label class="agreement-field"><input name="agreement" type="checkbox" required><span>我已阅读并同意<a href="./terms.html" target="_blank" rel="noopener">《使用协议与隐私说明》</a>，理解教学数据保存在当前浏览器，账号登录不会自动同步班级数据。</span></label>
+          <label class="agreement-field"><input name="agreement" type="checkbox" required><span>我已阅读并同意<a href="./terms.html" target="_blank" rel="noopener">《使用协议与隐私说明》</a>，理解账号密码负责登录，恢复码负责解密云端教学数据。</span></label>
           <button class="button button-primary" type="submit">验证授权码并注册</button>
           <p class="auth-footnote">每枚授权码仅能注册一次。没有授权码时，请先从公众号获取。</p>
         </form>
