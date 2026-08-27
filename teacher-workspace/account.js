@@ -88,7 +88,7 @@ registerForm.addEventListener('submit', async (event) => {
         password: values.password,
         licenseCode: values.licenseCode,
         acceptedTerms: values.agreement === 'on',
-        termsVersion: '2026-08-07',
+        termsVersion: '2026-08-27',
       }),
     });
     showAlert(session.message || '注册成功，正在进入工作台…', 'success');

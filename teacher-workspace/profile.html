@@ -32,7 +32,7 @@
   <main class="main">
     <header class="top"><div class="title">上节好课 · 教师工作台</div><div class="grow"></div><a class="profile-back" href="today.html">返回今日</a></header>
     <div class="profile-wrap">
-      <section class="profile-intro"><p>MY PROFILE</p><h1>我的</h1><span>管理个人称呼、会员信息和账号安全。</span></section>
+      <section class="profile-intro"><p>MY PROFILE</p><h1>我的</h1><span>管理个人称呼、会员信息、账号安全和加密云同步。</span></section>
 
       <section class="profile-card guest-card" id="guestCard" hidden>
         <div class="guest-icon">人</div><h2>还没有登录账号</h2>
@@ -59,7 +59,33 @@
             <div class="greeting-preview"><small>首页预览</small><strong id="greetingPreview">你好，老师</strong></div>
             <button class="profile-button primary" type="submit">保存个人信息</button>
           </form>
-          <div class="data-note"><b>数据说明</b><p>账号称呼和会员状态会随账号保存；学生、座位、作业和学情仍保存在当前电脑，不会因此自动云同步。</p></div>
+          <div class="data-note"><b>数据说明</b><p>教学数据始终先保存在当前电脑。启用端到端加密云同步后，浏览器会在上传前完成加密，服务器只保存无法直接阅读的密文。</p></div>
+        </section>
+
+        <section class="profile-card sync-card" id="cloudSyncCard">
+          <div class="sync-heading">
+            <div class="sync-mark" aria-hidden="true">云</div>
+            <div><p>END-TO-END ENCRYPTED</p><h2>端到端加密云同步</h2><span>学生姓名、座位、作业和学情在当前设备加密后再上传；平台无法查看明文。</span></div>
+            <strong class="sync-status" id="syncStatus">正在检查</strong>
+          </div>
+          <div class="sync-facts">
+            <div><span>当前设备</span><strong id="syncDeviceState">正在检查…</strong></div>
+            <div><span>云端数据</span><strong id="syncCloudState">正在检查…</strong></div>
+            <div><span>最后同步</span><strong id="syncLastTime">—</strong></div>
+          </div>
+          <div class="sync-message" id="syncMessage">账号密码负责登录，恢复码负责解密。每台新设备只需输入一次恢复码。</div>
+          <div class="sync-conflict" id="syncConflict" hidden>
+            <b>本机和云端都有新修改</b><span>系统没有自动覆盖任何一边，请选择要保留的版本。</span>
+            <div><button class="profile-button secondary" id="keepCloudVersion" type="button">保留云端版本</button><button class="profile-button secondary" id="keepLocalVersion" type="button">保留本机版本</button></div>
+          </div>
+          <div class="sync-actions">
+            <button class="profile-button primary" id="enableCloudSync" type="button">开启加密云同步</button>
+            <button class="profile-button primary" id="enterRecoveryCode" type="button" hidden>输入恢复码</button>
+            <button class="profile-button secondary" id="syncNow" type="button" hidden>立即同步</button>
+            <button class="profile-button secondary" id="showRecoveryCode" type="button" hidden>查看恢复码</button>
+            <button class="profile-button quiet" id="rotateRecoveryCode" type="button" hidden>更换恢复码</button>
+          </div>
+          <p class="sync-footnote">恢复码不会上传到服务器。丢失恢复码且所有已授权设备均不可用时，云端密文无法恢复。</p>
         </section>
 
         <section class="profile-card onboarding-card" id="onboardingCard" hidden>
@@ -74,6 +100,20 @@
     </div>
   </main>
 </div>
+<dialog class="sync-dialog" id="syncDialog">
+  <form method="dialog" class="sync-dialog-card" id="syncDialogForm">
+    <button class="sync-dialog-close" value="cancel" aria-label="关闭" type="submit">×</button>
+    <div class="sync-dialog-mark" id="syncDialogMark">钥</div>
+    <p class="sync-dialog-kicker" id="syncDialogKicker">端到端加密</p>
+    <h2 id="syncDialogTitle">输入恢复码</h2>
+    <p class="sync-dialog-copy" id="syncDialogCopy"></p>
+    <label class="recovery-input" id="recoveryInputWrap"><span>恢复码</span><input id="recoveryCodeInput" autocomplete="off" spellcheck="false" maxlength="39" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"></label>
+    <div class="recovery-output" id="recoveryOutput" hidden><small>你的恢复码</small><code id="recoveryCodeOutput"></code><button class="profile-button secondary" id="copyRecoveryCode" type="button">复制恢复码</button></div>
+    <label class="recovery-confirm" id="recoveryConfirmWrap" hidden><input id="recoverySavedConfirm" type="checkbox"><span>我已经把恢复码保存在安全的位置</span></label>
+    <div class="sync-dialog-summary" id="syncDialogSummary" hidden></div>
+    <div class="sync-dialog-actions"><button class="profile-button secondary" value="cancel" type="submit">取消</button><button class="profile-button primary" id="syncDialogPrimary" type="button">继续</button></div>
+  </form>
+</dialog>
 <div class="profile-toast" id="profileToast" role="status" aria-live="polite"></div>
 <script type="module" src="profile.js"></script>
 </body>

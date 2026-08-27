@@ -1,5 +1,6 @@
 import { readSheet } from 'read-excel-file/browser';
 import { calculateSchoolWeek, createSchoolWeekSetting } from './school-week.js';
+import { startEncryptedAutoSync } from './encrypted-sync.js';
 
 const ACCESS_CONTROL = window.TeacherWorkspaceAccess;
 let CLASS_DB_NAME = 'shangjiehaoke-teacher-workspace-v07';
@@ -330,7 +331,7 @@ function globalSearchElements() {
 }
 
 function ensureGlobalSearchUi() {
-  const dataScopeLabel = ACCESS_CONTROL?.isAuthorized ? '当前账号本机数据' : '体验版虚拟数据';
+  const dataScopeLabel = ACCESS_CONTROL?.isAuthorized ? '当前账号数据（本机优先）' : '体验版虚拟数据';
   if (!document.querySelector('#kscrim')) {
     const scrim = document.createElement('div');
     scrim.id = 'kscrim';
@@ -739,6 +740,9 @@ async function initializeClassShell() {
   if (params.get('onboarding') === 'students' || params.get('action') === 'import') {
     openClassOnboarding();
   }
+  startEncryptedAutoSync().catch((error) => {
+    console.warn('加密云同步暂时不可用', error);
+  });
 }
 
 if (document.readyState === 'loading') {
