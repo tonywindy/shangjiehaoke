@@ -304,7 +304,8 @@
       var badge = document.createElement('button');
       badge.type = 'button';
       badge.className = 'workspace-access-badge' + (authorized ? ' authorized' : '');
-      badge.textContent = isLocalPreview ? '本地测试' : authorized ? '已授权' : mode === 'experience' ? '体验版' : mode === 'expired' ? '授权待续费' : '连接异常';
+      var isAdmin = authorized && accountSession && accountSession.user && accountSession.user.role === 'admin';
+      badge.textContent = isLocalPreview ? '本地测试' : isAdmin ? '管理员' : authorized ? '已授权' : mode === 'experience' ? '体验版' : mode === 'expired' ? '授权待续费' : '连接异常';
       badge.addEventListener('click', function () {
         if (authorized) {
           location.href = location.pathname.indexOf('/v07/') >= 0 ? '../account.html' : 'account.html';
