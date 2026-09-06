@@ -12,6 +12,7 @@
   ];
   var params = new URLSearchParams(location.search);
   var forceExperience = params.get('experience') === '1';
+  var isLocalPreview = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
   var authorized = false;
   var mode = 'experience';
@@ -85,7 +86,7 @@
         { id: 'active-class-id', value: classId },
         { id: 'experience-seeded-v2', value: true },
         { id: 'initialized:' + classId, value: true },
-        { id: 'seat-config:' + classId, value: { rows: 3, desks: 2, seatsPerDesk: 2 } },
+        { id: 'seat-config:' + classId, value: { rows: 3, desks: 2, seatsPerDesk: 2, podiumPosition: 'top' } },
         { id: 'seat-assignments:' + classId, value: assignments },
       ],
       classes: [{ id: classId, name: '体验班（虚拟学生）', status: 'active', createdAt: timestamp, updatedAt: timestamp }],
@@ -303,7 +304,7 @@
       var badge = document.createElement('button');
       badge.type = 'button';
       badge.className = 'workspace-access-badge' + (authorized ? ' authorized' : '');
-      badge.textContent = authorized ? '已授权' : mode === 'experience' ? '体验版' : mode === 'expired' ? '授权待续费' : '连接异常';
+      badge.textContent = isLocalPreview ? '本地测试' : authorized ? '已授权' : mode === 'experience' ? '体验版' : mode === 'expired' ? '授权待续费' : '连接异常';
       badge.addEventListener('click', function () {
         if (authorized) {
           location.href = location.pathname.indexOf('/v07/') >= 0 ? '../account.html' : 'account.html';
@@ -368,7 +369,7 @@
     mode: mode,
     isExperience: mode === 'experience',
     isAuthorized: authorized,
-    isLocalPreview: false,
+    isLocalPreview: isLocalPreview,
     databaseName: databaseName,
     limits: limits,
     session: accountSession,
@@ -384,8 +385,10 @@
     mode = result.mode;
     authorized = mode === 'authorized';
     accountSession = result.session || null;
-    databaseName = authorized && accountSession && accountSession.user
-      ? scopedDatabaseName(accountSession.user.id)
+    databaseName = isLocalPreview
+      ? LEGACY_DATABASE
+      : authorized && accountSession && accountSession.user
+        ? scopedDatabaseName(accountSession.user.id)
       : mode === 'experience' ? EXPERIENCE_DATABASE : BLOCKED_DATABASE;
     accessControl.mode = mode;
     accessControl.isExperience = mode === 'experience';
@@ -406,12 +409,22 @@
   }
 
   function workspaceSessionUrl() {
-    var local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-    return (local ? '' : 'https://api.shangjiehaoke.com') + '/api/workspace/auth/session';
+    return 'https://api.shangjiehaoke.com/api/workspace/auth/session';
   }
 
   function resolveAuthorization() {
     if (forceExperience) return Promise.resolve({ mode: 'experience', session: null });
+    if (isLocalPreview) {
+      return Promise.resolve({
+        mode: 'authorized',
+        localPreview: true,
+        session: {
+          authenticated: true,
+          authorized: true,
+          user: { id: 'local-preview', displayName: '', mustChangePassword: false },
+        },
+      });
+    }
     return fetch(workspaceSessionUrl(), { credentials: 'include', headers: { Accept: 'application/json' } })
       .then(function (response) {
         if (!response.ok) throw new Error('授权服务暂时不可用');

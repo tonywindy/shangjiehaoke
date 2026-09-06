@@ -540,7 +540,7 @@ async function saveClassOnboarding(form) {
     students.forEach((item) => studentStore.put(item));
     const metaStore = transaction.objectStore('meta');
     metaStore.put({ id: 'active-class-id', value: classId });
-    metaStore.put({ id: `seat-config:${classId}`, value: { rows: Math.max(1, Math.ceil(students.length / 6)), desks: 3, seatsPerDesk: 2 } });
+    metaStore.put({ id: `seat-config:${classId}`, value: { rows: Math.max(1, Math.ceil(students.length / 6)), desks: 3, seatsPerDesk: 2, podiumPosition: 'top' } });
     metaStore.put({ id: `seat-assignments:${classId}`, value: {} });
     metaStore.put({ id: `onboarding-class-confirmed:${classId}`, value: true });
     transaction.oncomplete = resolve;

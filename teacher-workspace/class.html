@@ -91,7 +91,9 @@ svg{display:block}
 .sel{height:34px;padding:0 11px;border:1px solid var(--line);border-radius:9px;font-size:13.5px;color:var(--text-2);background:#fff}
 
 /* ===== 座位表 ===== */
-.mapwrap{padding:18px 18px 8px;overflow:hidden}
+.mapwrap{display:flex;flex-direction:column;padding:18px 18px 8px;overflow:hidden}
+.mapwrap.podium-bottom .podium{order:2;margin:20px auto 0}
+.mapwrap.podium-bottom #seatMap{order:1}
 .podium{margin:0 auto 20px;width:230px;height:38px;border-radius:9px;background:#f4f3ec;border:1px dashed #ddd9cd;
   display:grid;place-items:center;font-size:13px;color:var(--text-3);letter-spacing:.3em}
 .deskrow{width:100%;display:grid;grid-template-columns:repeat(var(--desk-count),minmax(0,1fr));
@@ -308,7 +310,7 @@ svg{display:block}
   .hw-hist-body{grid-template-columns:1fr}.hw-hist-side{max-height:240px;border-right:0;border-bottom:1px solid var(--line)}.hw-students{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="workspace-shell.css">
-<script src="access-control.js?v=20260813"></script>
+<script src="access-control.js?v=20260906"></script>
 <script type="module" src="workspace-shell.js"></script>
 </head>
 <body>
@@ -374,6 +376,11 @@ svg{display:block}
           <option value="focus">着色：关注度</option>
           <option value="mastery">着色：本单元掌握</option>
         </select>
+        <select class="sel" id="classPodiumPosition" aria-label="选择讲台位置">
+          <option value="top">讲台：上方</option>
+          <option value="bottom">讲台：下方</option>
+        </select>
+        <button class="tbtn" type="button" id="exportClassSeatMap">导出座位表</button>
         <a class="tbtn" href="class.html?onboarding=students">导入学生</a>
         <a class="tbtn" id="editSeatsLink" href="class.html?onboarding=students">编辑座位</a>
       </div>
@@ -560,7 +567,7 @@ function attentionDays(student){return student.last==null?Infinity:student.last}
 function attentionText(student){return student.last==null?'从未记录':student.last+' 天前'}
 
 /* 与学情页共用同一份本机数据 */
-var CLASS_DB=null,CLASS_ACTIVE_ID='',CLASS_ACTIVE_NAME='尚未创建班级',CLASS_KPS=[],CLASS_JUDGEMENTS=[],CLASS_HOMEWORKS=[],CLASS_HOMEWORK_ENTRIES=[],CLASS_FOLLOWUP_TASKS=[],CLASS_NOTES=[],HOMEWORK_STATUSES={};
+var CLASS_DB=null,CLASS_ACTIVE_ID='',CLASS_ACTIVE_NAME='尚未创建班级',CLASS_KPS=[],CLASS_JUDGEMENTS=[],CLASS_HOMEWORKS=[],CLASS_HOMEWORK_ENTRIES=[],CLASS_FOLLOWUP_TASKS=[],CLASS_NOTES=[],HOMEWORK_STATUSES={},CLASS_SEAT_CONFIG={rows:7,desks:3,seatsPerDesk:2,podiumPosition:'top'};
 var SELECTED_HOMEWORK_ID='',HOMEWORK_HISTORY_STATUS='all',EDITING_HOMEWORK_ENTRY_ID='',DELETING_HOMEWORK_ID='';
 var CLASS_STORES=['meta','classes','students','kps','judgements','questionSets','questionSetUses','reasonTemplates','homeworks','homeworkEntries','followupTasks','notes'];
 function openClassDb(){
@@ -675,6 +682,8 @@ async function hydrateClassFromDb(){
         color:PAL[i%PAL.length],dbId:student.id};
     });
     var cfg=(meta.find(function(x){return x.id==='seat-config:'+CLASS_ACTIVE_ID})||meta.find(function(x){return x.id==='seat-config'})||{}).value||{rows:7,desks:3,seatsPerDesk:2};
+    cfg.podiumPosition=cfg.podiumPosition==='bottom'?'bottom':'top';CLASS_SEAT_CONFIG=cfg;
+    $('#classPodiumPosition').value=cfg.podiumPosition;$('#mapWrap').classList.toggle('podium-bottom',cfg.podiumPosition==='bottom');
     var assignments=(meta.find(function(x){return x.id==='seat-assignments:'+CLASS_ACTIVE_ID})||meta.find(function(x){return x.id==='seat-assignments'})||{}).value||{};
     var byId={};STU.forEach(function(st){byId[st.dbId]=st});
     var hasAssignments=Object.keys(assignments).length>0,k=0;
@@ -1075,7 +1084,10 @@ function renderMap(){
     $('#viewSub').textContent='尚未创建班级';
     return;
   }
-  SEATS.forEach(function(row,ri){
+  var rowIndexes=SEATS.map(function(_,index){return index});
+  if(CLASS_SEAT_CONFIG.podiumPosition==='bottom')rowIndexes.reverse();
+  rowIndexes.forEach(function(ri){
+    var row=SEATS[ri];
     var seatsPerDesk=Math.max.apply(null,row.map(function(desk){return desk.length}));
     h+='<div class="deskrow" style="--desk-count:'+row.length+';--seats-per-desk:'+seatsPerDesk+'">';
     row.forEach(function(desk,di){
@@ -1112,6 +1124,26 @@ function renderLegend(mode){
   $('#legend').innerHTML=h;
 }
 $('#colorMode').onchange=function(){renderMap();toast('已切换着色依据')};
+$('#classPodiumPosition').onchange=async function(){
+  if(!CLASS_ACTIVE_ID){toast('请先创建班级');this.value='top';return}
+  var previous=CLASS_SEAT_CONFIG.podiumPosition;CLASS_SEAT_CONFIG.podiumPosition=this.value==='bottom'?'bottom':'top';
+  $('#mapWrap').classList.toggle('podium-bottom',CLASS_SEAT_CONFIG.podiumPosition==='bottom');
+  try{await classDbPut('meta',{id:'seat-config:'+CLASS_ACTIVE_ID,value:CLASS_SEAT_CONFIG});renderMap();toast('讲台位置已保存')}
+  catch(error){console.warn('讲台位置保存失败',error);CLASS_SEAT_CONFIG.podiumPosition=previous;this.value=previous;$('#mapWrap').classList.toggle('podium-bottom',previous==='bottom');renderMap();toast('讲台位置保存失败，请重试')}
+};
+
+async function exportClassSeatMap(){
+  if(!CLASS_ACTIVE_ID){toast('请先创建班级并导入学生');return}
+  var popup=window.open('','_blank');
+  if(!popup){toast('浏览器拦截了导出窗口，请允许弹出窗口后重试');return}
+  var cfg=CLASS_SEAT_CONFIG,rowIndexes=SEATS.map(function(_,index){return index});
+  if(cfg.podiumPosition==='bottom')rowIndexes.reverse();
+  var rows=rowIndexes.map(function(ri){var row=SEATS[ri];return '<div class="row"><span>'+ (ri+1)+'排</span>'+row.map(function(desk,di){return '<div class="desk">'+desk.map(function(st,si){return '<div class="seat"><b>'+(st?esc(st.name):'空位')+'</b><small>'+(di+1)+'桌'+(si+1)+'座'+(st?' · '+esc(st.no)+'号':'')+'</small></div>'}).join('')+'</div>'}).join('')+'</div>'}).join('');
+  var podium='<div class="podium">讲台 · 教室前方</div>',assigned=STU.length;
+  popup.opener=null;popup.document.write('<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>'+esc(CLASS_ACTIVE_NAME)+'座位表</title><style>@page{size:A4 landscape;margin:12mm}*{box-sizing:border-box}body{margin:0;color:#272b2f;font:13px/1.45 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}header{display:flex;align-items:end;justify-content:space-between;margin-bottom:12px}h1{margin:0;font-size:23px}p{margin:3px 0 0;color:#737a7e}.meta{color:#737a7e;font-size:11px;text-align:right}.podium{width:40%;margin:10px auto;padding:7px;border:1px dashed #bdb7a5;border-radius:7px;color:#746c59;background:#f2efe6;text-align:center;letter-spacing:.12em}.board{display:grid;gap:8px}.row{display:grid;grid-template-columns:30px repeat('+cfg.desks+',minmax(0,1fr));align-items:stretch;gap:7px;break-inside:avoid}.row>span{align-self:center;color:#8e969a;font-size:10px;text-align:right}.desk{display:grid;grid-template-columns:repeat('+cfg.seatsPerDesk+',minmax(0,1fr));gap:3px;padding:4px;border:1px solid #d9d6ca;border-radius:8px;background:#f4f1e9}.seat{min-height:48px;display:grid;place-content:center;gap:1px;border:1px solid #e2e2dc;border-radius:6px;background:white;text-align:center}.seat b{font-size:13px}.seat small{color:#9aa0a4;font-size:8.5px}.actions{display:flex;justify-content:center;gap:8px;margin:18px}.actions button{min-height:38px;border:1px solid #1f8f55;border-radius:8px;padding:0 18px;color:white;background:#1f8f55;font:inherit;font-weight:700}.actions .secondary{color:#4f565c;border-color:#d9dad3;background:white}@media print{.actions{display:none}}</style></head><body><header><div><h1>'+esc(CLASS_ACTIVE_NAME)+'座位表</h1><p>'+cfg.rows+'排 × '+cfg.desks+'桌 × '+cfg.seatsPerDesk+'座 · '+assigned+'人</p></div><div class="meta">导出日期：'+new Date().toLocaleDateString('zh-CN')+'<br>讲台在座位表'+(cfg.podiumPosition==='bottom'?'下方':'上方')+'</div></header>'+(cfg.podiumPosition==='top'?podium:'')+'<main class="board">'+rows+'</main>'+(cfg.podiumPosition==='bottom'?podium:'')+'<div class="actions"><button onclick="window.print()">打印 / 保存为 PDF</button><button class="secondary" onclick="window.close()">关闭</button></div></body></html>');
+  popup.document.close();popup.focus();toast('座位表已打开，可打印或保存为 PDF');
+}
+$('#exportClassSeatMap').onclick=exportClassSeatMap;
 
 /* ============ 卡片墙 ============ */
 function renderWall(){

@@ -7,7 +7,7 @@
   <title>上节好课 · 教师工作台 v0.8</title>
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="../workspace-shell.css">
-  <script src="../access-control.js?v=20260813"></script>
+  <script src="../access-control.js?v=20260906"></script>
   <script type="module" src="../workspace-shell.js"></script>
 </head>
 <body>
@@ -90,6 +90,7 @@
           <span>单元</span>
           <select id="unitSelect" aria-label="选择单元"></select>
         </label>
+        <button class="button secondary" id="manageKnowledgePoints" type="button">管理知识点</button>
         <button class="button secondary admin-ai-only" id="aiLearningInsights" type="button">✦ AI 学情建议</button>
         <button class="button secondary" id="exportQuick">导出备份</button>
       </div>
@@ -244,8 +245,15 @@
               <label>排数 <input type="number" id="seatRows" min="1" max="12" value="6"></label>
               <label>每排桌数 <input type="number" id="seatDesks" min="1" max="9" value="3"></label>
               <label>每桌座位 <input type="number" id="seatPerDesk" min="1" max="4" value="2"></label>
+              <label>讲台位置
+                <select id="podiumPosition" aria-label="选择讲台位置">
+                  <option value="top">座位表上方</option>
+                  <option value="bottom">座位表下方</option>
+                </select>
+              </label>
               <span class="seat-limit" id="seatLimit">每排 6 / 9 座</span>
               <button class="button secondary small" id="applySeatLayout">应用布局</button>
+              <button class="button secondary small" id="exportSeatMap">导出座位表</button>
               <span class="toolbar-divider"></span>
               <button class="button secondary small" id="autoFillSeats">按名单自动填充</button>
               <button class="button secondary small" id="undoSeatChange" disabled>撤销上一步</button>
@@ -254,8 +262,10 @@
               <button class="button secondary small" data-move-seats="left">全班左移一桌</button>
               <button class="button secondary small" data-move-seats="right">全班右移一桌</button>
             </div>
-            <div class="classroom-front">讲台 · 教室前方</div>
-            <div id="seatBoard" class="seat-board"></div>
+            <div class="classroom-layout" id="classroomLayout">
+              <div class="classroom-front">讲台 · 教室前方</div>
+              <div id="seatBoard" class="seat-board"></div>
+            </div>
           </section>
 
           <aside class="panel student-roster-panel" aria-label="待安排学生">
@@ -317,7 +327,14 @@
               </label>
               <span id="kpFileName">未选择文件</span>
             </div>
-            <p class="import-hint">推荐首行为“单元、知识点”；读取后会先填入上方文本框供核对。</p>
+            <label class="field compact-field">
+              <span>一列清单的默认单元（选填）</span>
+              <input id="kpDefaultUnit" placeholder="例如：第一单元；有单元列时无需填写">
+            </label>
+            <p class="import-hint">会识别“单元、知识点”两列，并自动继承 Excel 合并单元格中的单元名称；导入前请核对下方分组。</p>
+            <div class="kp-import-preview" id="kpImportPreview" aria-live="polite">
+              <span>粘贴或选择文件后，这里会按单元显示预览。</span>
+            </div>
             <div class="card-actions">
               <button class="button secondary template-button" id="applyBnupTemplate">一键套用北师大四上清单</button>
               <a class="button secondary" id="downloadKpTemplate" href="../assets/北师大版四年级上册数学知识点清单.xlsx" download>下载 Excel 模板</a>
@@ -357,6 +374,30 @@
         </button>
       </div>
       <p class="privacy-note">数据默认只保存在这台设备的当前浏览器中。</p>
+    </form>
+  </dialog>
+
+  <dialog class="quick-dialog knowledge-manager-dialog" id="knowledgeManagerDialog">
+    <form method="dialog">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">知识清单维护</p>
+          <h2>管理知识点</h2>
+          <p>可以新增、改名、移动到其他单元或从当前清单移除；已有学情记录会保留。</p>
+        </div>
+        <button class="icon-button" value="cancel" type="submit" aria-label="关闭知识点管理">×</button>
+      </div>
+      <section class="knowledge-add-card" aria-label="新增知识点">
+        <label class="field"><span>单元</span><input id="newKpUnit" list="knowledgeUnitOptions" placeholder="例如：第一单元"></label>
+        <label class="field"><span>知识点</span><input id="newKpName" placeholder="输入知识点名称"></label>
+        <button class="button primary" id="addKnowledgePoint" type="button">新增知识点</button>
+      </section>
+      <datalist id="knowledgeUnitOptions"></datalist>
+      <div class="knowledge-manager-summary" id="knowledgeManagerSummary"></div>
+      <div class="knowledge-manager-list" id="knowledgeManagerList"></div>
+      <div class="dialog-actions">
+        <button class="button secondary" value="cancel" type="submit">完成</button>
+      </div>
     </form>
   </dialog>
 

@@ -123,7 +123,7 @@ function classMeta(meta, classId) {
   return {
     classId,
     seatConfig: meta.find((item) => item.id === `seat-config:${classId}`)?.value
-      || { rows: 6, desks: 3, seatsPerDesk: 2 },
+      || { rows: 6, desks: 3, seatsPerDesk: 2, podiumPosition: 'top' },
     seatAssignments: meta.find((item) => item.id === `seat-assignments:${classId}`)?.value || {},
     initialized: meta.find((item) => item.id === `initialized:${classId}`)?.value ?? true,
   };
@@ -317,7 +317,7 @@ function normalizeBackup(raw) {
       scope: 'current-class',
       class: classRecord,
       records,
-      seatConfig: raw.seatConfig || { rows: 6, desks: 3, seatsPerDesk: 2 },
+      seatConfig: raw.seatConfig || { rows: 6, desks: 3, seatsPerDesk: 2, podiumPosition: 'top' },
       seatAssignments: raw.seatAssignments || {},
       initialized: raw.initialized ?? true,
       exportedAt: raw.exportedAt,
@@ -455,7 +455,7 @@ async function restoreDatasetToClass(source, targetClassId, classRecord = null) 
       const meta = transaction.objectStore('meta');
       meta.put({
         id: `seat-config:${targetClassId}`,
-        value: source.seatConfig || { rows: 6, desks: 3, seatsPerDesk: 2 },
+        value: source.seatConfig || { rows: 6, desks: 3, seatsPerDesk: 2, podiumPosition: 'top' },
       });
       meta.put({ id: `seat-assignments:${targetClassId}`, value: remapped.seatAssignments });
       meta.put({ id: `initialized:${targetClassId}`, value: source.initialized ?? true });
@@ -500,7 +500,7 @@ async function restoreDatasetsToClasses(plans, database = backupDb) {
           const meta = transaction.objectStore('meta');
           meta.put({
             id: `seat-config:${plan.targetClassId}`,
-            value: plan.source.seatConfig || { rows: 6, desks: 3, seatsPerDesk: 2 },
+            value: plan.source.seatConfig || { rows: 6, desks: 3, seatsPerDesk: 2, podiumPosition: 'top' },
           });
           meta.put({
             id: `seat-assignments:${plan.targetClassId}`,
