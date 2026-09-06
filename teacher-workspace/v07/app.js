@@ -1,6 +1,7 @@
 import { readSheet } from 'read-excel-file/browser';
 import { pinyin } from 'pinyin-pro';
 import { BNUP_G4S1_KPS, BNUP_G4S1_TEMPLATE_META } from './bnup-grade4-sem1-kps.js';
+import { extractKnowledgePointRows, groupKnowledgePointRows, seatRowIndexes } from './knowledge-import.js';
 import bnuKnowledgeTemplateUrl from '../assets/北师大版四年级上册数学知识点清单.xlsx?url';
 import { isAdminAiUser, runAdminAi } from '../ai-client.js';
 
@@ -38,7 +39,7 @@ const state = {
   activeUnit: '',
   selectedStudentId: null,
   selectedKpId: null,
-  seatConfig: { rows: 6, desks: 3, seatsPerDesk: 2 },
+  seatConfig: { rows: 6, desks: 3, seatsPerDesk: 2, podiumPosition: 'top' },
   seatAssignments: {},
   seatEdit: false,
   seatRosterQuery: '',
@@ -170,9 +171,13 @@ async function refreshState() {
     state.homeworkEntries,
     state.followupTasks,
   ] = allData.map((items) => items.filter(belongsToActiveClass));
-  state.seatConfig = meta.find((item) => item.id === `seat-config:${state.activeClassId}`)?.value
+  const savedSeatConfig = meta.find((item) => item.id === `seat-config:${state.activeClassId}`)?.value
     || (state.activeClassId === 'class-local' ? meta.find((item) => item.id === 'seat-config')?.value : null)
     || { rows: 6, desks: 3, seatsPerDesk: 2 };
+  state.seatConfig = {
+    ...savedSeatConfig,
+    podiumPosition: savedSeatConfig.podiumPosition === 'bottom' ? 'bottom' : 'top',
+  };
   state.seatAssignments = meta.find((item) => item.id === `seat-assignments:${state.activeClassId}`)?.value
     || (state.activeClassId === 'class-local' ? meta.find((item) => item.id === 'seat-assignments')?.value : null)
     || {};
@@ -718,42 +723,6 @@ function parseDelimitedText(text) {
   return rows;
 }
 
-function normalizedHeader(value) {
-  return String(value ?? '').replace(/^\uFEFF/, '').replace(/[\s_·：:]/g, '').toLowerCase();
-}
-
-function extractKpRows(rows) {
-  const normalized = rows
-    .map((row) => (Array.isArray(row) ? row : [row]).map((cell) => String(cell ?? '').trim()))
-    .filter((row) => row.some(Boolean));
-  if (!normalized.length) return [];
-
-  const unitAliases = new Set(['单元', '单元名称', '章节', '章', 'unit', 'unitname'].map(normalizedHeader));
-  const kpAliases = new Set(['知识点', '知识点名称', '学习内容', '内容', 'knowledgepoint', 'name'].map(normalizedHeader));
-  const headerIndex = normalized.findIndex((row) => {
-    const headers = row.map(normalizedHeader);
-    return headers.some((value) => unitAliases.has(value)) && headers.some((value) => kpAliases.has(value));
-  });
-  const header = headerIndex >= 0 ? normalized[headerIndex].map(normalizedHeader) : [];
-  const unitIndex = header.findIndex((value) => unitAliases.has(value));
-  const kpIndex = header.findIndex((value) => kpAliases.has(value));
-  const dataRows = headerIndex >= 0 ? normalized.slice(headerIndex + 1) : normalized;
-  const seen = new Set();
-
-  return dataRows.map((row) => {
-    const nonEmpty = row.filter(Boolean);
-    const unitName = (unitIndex >= 0 ? row[unitIndex] : (nonEmpty.length > 1 ? nonEmpty[0] : '未分单元')) || '未分单元';
-    const name = (kpIndex >= 0 ? row[kpIndex] : (nonEmpty.length > 1 ? nonEmpty[1] : nonEmpty[0])) || '';
-    return { unitName: unitName.trim(), name: name.trim() };
-  }).filter((item) => {
-    if (!item.name || kpAliases.has(normalizedHeader(item.name))) return false;
-    const key = `${item.unitName}\u0000${item.name}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
 function createKps(rows) {
   return rows.map((item, index) => ({
     id: uid('kp'),
@@ -790,26 +759,61 @@ function reconcileKps(importedKps) {
 }
 
 function parseKps(text) {
-  return createKps(extractKpRows(parseDelimitedText(text)));
+  return createKps(extractKnowledgePointRows(parseDelimitedText(text), {
+    fallbackUnit: $('#kpDefaultUnit')?.value,
+  }));
 }
 
 function kpsToPasteText(rows) {
   return ['单元\t知识点', ...rows.map((item) => `${item.unitName}\t${item.name}`)].join('\n');
 }
 
+function sourceRowsToPasteText(rows) {
+  return rows.map((row) => (Array.isArray(row) ? row : [row])
+    .map((cell) => String(cell ?? '').trim()).join('\t')).join('\n');
+}
+
+function renderKpImportPreview(items = []) {
+  const preview = $('#kpImportPreview');
+  if (!preview) return;
+  if (!items.length) {
+    preview.innerHTML = '<span>粘贴或选择文件后，这里会按单元显示预览。</span>';
+    return;
+  }
+  const groups = groupKnowledgePointRows(items);
+  preview.innerHTML = `
+    <div class="kp-preview-summary">识别到 ${groups.length} 个单元 · ${items.length} 个知识点</div>
+    ${groups.map((group) => `<div class="kp-preview-group ${group.unitName === '未分单元' ? 'warn' : ''}">
+      <b>${escapeHTML(group.unitName)}</b>
+      <span>${group.knowledgePoints.length} 项 · ${escapeHTML(group.knowledgePoints.slice(0, 2).map((item) => item.name).join('、'))}${group.knowledgePoints.length > 2 ? '…' : ''}</span>
+    </div>`).join('')}`;
+}
+
+function refreshKpImportPreview() {
+  const items = extractKnowledgePointRows(parseDelimitedText($('#kpPaste')?.value || ''), {
+    fallbackUnit: $('#kpDefaultUnit')?.value,
+  });
+  renderKpImportPreview(items);
+  return items;
+}
+
 async function readKpFile(file) {
   try {
     const isExcel = /\.xlsx$/i.test(file.name);
     const rows = isExcel ? await readSheet(file) : parseDelimitedText(await file.text());
-    const items = extractKpRows(rows);
+    const items = extractKnowledgePointRows(rows, { fallbackUnit: $('#kpDefaultUnit')?.value });
     if (!items.length) {
       $('#kpFileName').textContent = '未识别到知识点';
       toast('没有识别到知识点，请检查“单元”和“知识点”表头');
       return;
     }
-    $('#kpPaste').value = kpsToPasteText(items);
+    $('#kpPaste').value = sourceRowsToPasteText(rows);
     $('#kpFileName').textContent = `${file.name} · ${items.length} 项`;
-    toast(`已读取 ${items.length} 个知识点，请核对后点击“导入知识点”`);
+    renderKpImportPreview(items);
+    const unresolved = items.filter((item) => item.unitName === '未分单元').length;
+    toast(unresolved
+      ? `已读取 ${items.length} 项，其中 ${unresolved} 项未分单元，请先填写默认单元`
+      : `已读取 ${items.length} 个知识点，请核对分组后导入`);
   } catch (error) {
     console.error(error);
     $('#kpFileName').textContent = '文件读取失败';
@@ -822,6 +826,7 @@ function applyBnupTemplate() {
   const items = BNUP_G4S1_KPS.map(([unitName, name]) => ({ unitName, name }));
   $('#kpPaste').value = kpsToPasteText(items);
   $('#kpFileName').textContent = `${BNUP_G4S1_TEMPLATE_META.title} · ${items.length} 项`;
+  renderKpImportPreview(items);
   toast(`已填入北师大四年级上册 ${items.length} 个知识点，请核对后导入`);
 }
 
@@ -881,6 +886,8 @@ async function importKps() {
     toast('没有识别到知识点');
     return;
   }
+  const unresolved = parsedKps.filter((kp) => kp.unitName === '未分单元').length;
+  if (unresolved && !confirm(`还有 ${unresolved} 个知识点没有分配单元。\n\n建议取消后填写“默认单元”，或在文本中增加单元标题；仍要按“未分单元”导入吗？`)) return;
   if (state.kps.some((kp) => !kp.archivedAt) && !confirm('重新导入会替换当前知识清单。同名单元和知识点会保留原有判断与题组；清单中不再出现的知识点会归档，历史记录不会删除。继续吗？')) return;
   const kps = reconcileKps(parsedKps);
   await dbReplaceForActiveClass('kps', kps);
@@ -889,6 +896,95 @@ async function importKps() {
   await refreshState();
   renderAll();
   toast(`已导入 ${parsedKps.length} 个知识点`);
+}
+
+function renderKnowledgeManager() {
+  const activeKps = state.kps.filter((kp) => !kp.archivedAt);
+  const groups = groupKnowledgePointRows(activeKps);
+  $('#knowledgeUnitOptions').innerHTML = getUnits()
+    .map((unit) => `<option value="${escapeHTML(unit)}"></option>`).join('');
+  $('#knowledgeManagerSummary').textContent = activeKps.length
+    ? `当前共 ${groups.length} 个单元、${activeKps.length} 个知识点。修改单元名称即可移动知识点。`
+    : '当前还没有知识点，可以先在上方新增。';
+  $('#knowledgeManagerList').innerHTML = groups.length
+    ? groups.map((group) => `<section class="knowledge-unit-group">
+      <div class="knowledge-unit-head"><h3>${escapeHTML(group.unitName)}</h3><span>${group.knowledgePoints.length} 个知识点</span></div>
+      ${group.knowledgePoints.map((kp) => `<div class="knowledge-point-row" data-kp-row="${kp.id}">
+        <input data-kp-unit value="${escapeHTML(kp.unitName)}" list="knowledgeUnitOptions" aria-label="${escapeHTML(kp.name)}所属单元">
+        <input data-kp-name value="${escapeHTML(kp.name)}" aria-label="知识点名称">
+        <button class="button secondary small" type="button" data-save-kp="${kp.id}">保存</button>
+        <button class="button danger small" type="button" data-delete-kp="${kp.id}">删除</button>
+      </div>`).join('')}
+    </section>`).join('')
+    : '<div class="knowledge-manager-empty">还没有知识点，请在上方输入单元和知识点名称。</div>';
+}
+
+function openKnowledgeManager() {
+  if (window.TeacherWorkspaceAccess && !window.TeacherWorkspaceAccess.requireFeature('knowledgeImport')) return;
+  renderKnowledgeManager();
+  $('#knowledgeManagerDialog').showModal();
+}
+
+async function addKnowledgePoint() {
+  if (window.TeacherWorkspaceAccess && !window.TeacherWorkspaceAccess.requireFeature('knowledgeImport')) return;
+  const unitName = $('#newKpUnit').value.trim();
+  const name = $('#newKpName').value.trim();
+  if (!unitName || !name) {
+    toast('请填写单元和知识点名称');
+    return;
+  }
+  if (state.kps.some((kp) => !kp.archivedAt && kp.unitName === unitName && kp.name === name)) {
+    toast('这个单元中已经有同名知识点');
+    return;
+  }
+  const kp = {
+    id: uid('kp'),
+    classId: state.activeClassId,
+    unitName,
+    name,
+    sortOrder: Math.max(-1, ...state.kps.map((item) => Number(item.sortOrder) || 0)) + 1,
+    createdAt: now(),
+    archivedAt: null,
+  };
+  await dbPut('kps', kp);
+  $('#newKpName').value = '';
+  await refreshState();
+  renderAll();
+  renderKnowledgeManager();
+  toast(`已新增“${name}”`);
+}
+
+async function saveKnowledgePoint(id) {
+  const kp = state.kps.find((item) => item.id === id && !item.archivedAt);
+  const row = $(`[data-kp-row="${CSS.escape(id)}"]`);
+  if (!kp || !row) return;
+  const unitName = $('[data-kp-unit]', row).value.trim();
+  const name = $('[data-kp-name]', row).value.trim();
+  if (!unitName || !name) {
+    toast('单元和知识点名称不能为空');
+    return;
+  }
+  if (state.kps.some((item) => item.id !== id && !item.archivedAt && item.unitName === unitName && item.name === name)) {
+    toast('这个单元中已经有同名知识点');
+    return;
+  }
+  await dbPut('kps', { ...kp, unitName, name, updatedAt: now() });
+  await refreshState();
+  renderAll();
+  renderKnowledgeManager();
+  toast('知识点已保存');
+}
+
+async function deleteKnowledgePoint(id) {
+  const kp = state.kps.find((item) => item.id === id && !item.archivedAt);
+  if (!kp) return;
+  if (!confirm(`确定删除“${kp.name}”吗？\n\n它会从当前知识清单中移除，已有学情判断和题组历史仍会保留。`)) return;
+  await dbPut('kps', { ...kp, archivedAt: now(), updatedAt: now() });
+  if (state.selectedKpId === id) clearSelection();
+  await refreshState();
+  renderAll();
+  renderKnowledgeManager();
+  toast('知识点已从当前清单移除');
 }
 
 function seatKeys(config = state.seatConfig) {
@@ -902,10 +998,12 @@ function seatKeys(config = state.seatConfig) {
 }
 
 function renderClass() {
-  const { rows, desks, seatsPerDesk } = state.seatConfig;
+  const { rows, desks, seatsPerDesk, podiumPosition = 'top' } = state.seatConfig;
   $('#seatRows').value = rows;
   $('#seatDesks').value = desks;
   $('#seatPerDesk').value = seatsPerDesk;
+  $('#podiumPosition').value = podiumPosition;
+  $('#classroomLayout').classList.toggle('podium-bottom', podiumPosition === 'bottom');
   updateSeatLimitPreview();
   $('#toggleSeatEdit').textContent = state.seatEdit ? '完成并返回班级' : '进入编辑模式';
   $('#toggleSeatEdit').classList.toggle('secondary', state.seatEdit);
@@ -918,7 +1016,7 @@ function renderClass() {
 
   const studentById = new Map(state.students.map((student) => [student.id, student]));
   let board = '';
-  for (let row = 0; row < rows; row += 1) {
+  for (const row of seatRowIndexes(rows, podiumPosition)) {
     board += `<div class="seat-row" style="--desk-count:${desks}"><span class="row-label">${row + 1} 排</span>`;
     for (let desk = 0; desk < desks; desk += 1) {
       board += `<div class="seat-desk" style="--seat-count:${seatsPerDesk}">`;
@@ -1105,6 +1203,7 @@ async function applySeatLayout() {
     rows: clamp($('#seatRows').value, 1, 12),
     desks: clamp($('#seatDesks').value, 1, 9),
     seatsPerDesk: clamp($('#seatPerDesk').value, 1, 4),
+    podiumPosition: $('#podiumPosition').value === 'bottom' ? 'bottom' : 'top',
   };
   if (nextConfig.desks * nextConfig.seatsPerDesk > 9) {
     updateSeatLimitPreview();
@@ -1115,6 +1214,7 @@ async function applySeatLayout() {
     nextConfig.rows === state.seatConfig.rows
     && nextConfig.desks === state.seatConfig.desks
     && nextConfig.seatsPerDesk === state.seatConfig.seatsPerDesk
+    && nextConfig.podiumPosition === state.seatConfig.podiumPosition
   ) {
     toast('座位布局没有变化');
     return;
@@ -1125,7 +1225,7 @@ async function applySeatLayout() {
   state.seatAssignments = Object.fromEntries(Object.entries(state.seatAssignments).filter(([key]) => allowed.has(key)));
   await saveSeatState();
   renderClass();
-  toast(`座位布局已更新为 ${state.seatConfig.rows} 排 × ${state.seatConfig.desks} 桌 × ${state.seatConfig.seatsPerDesk} 座`);
+  toast(`座位布局已更新，讲台位于座位表${state.seatConfig.podiumPosition === 'bottom' ? '下方' : '上方'}`);
 }
 
 async function autoFillSeats() {
@@ -1175,6 +1275,64 @@ async function moveSeats(direction) {
   toast(`全班座位已${actionLabel.replace('全班', '')}`);
 }
 
+async function exportSeatMap() {
+  const exportWindow = window.open('', '_blank');
+  if (!exportWindow) {
+    toast('浏览器拦截了导出窗口，请允许弹出窗口后重试');
+    return;
+  }
+  try {
+    const classContext = await window.TeacherClassManager?.getContext();
+    const currentClass = classContext?.classes?.find((item) => item.id === state.activeClassId);
+    const className = currentClass?.name || '当前班级';
+    const { rows, desks, seatsPerDesk, podiumPosition = 'top' } = state.seatConfig;
+    const studentById = new Map(state.students.map((student) => [student.id, student]));
+    const rowMarkup = seatRowIndexes(rows, podiumPosition).map((row) => `<div class="seat-row">
+      <span class="row-label">${row + 1}排</span>
+      ${Array.from({ length: desks }, (_, desk) => `<div class="desk">
+        ${Array.from({ length: seatsPerDesk }, (_, seat) => {
+          const student = studentById.get(state.seatAssignments[`${row}:${desk}:${seat}`]);
+          return `<div class="seat"><b>${student ? escapeHTML(student.name) : '空位'}</b><small>${desk + 1}桌${seat + 1}座${student?.seatNo ? ` · ${escapeHTML(student.seatNo)}号` : ''}</small></div>`;
+        }).join('')}
+      </div>`).join('')}
+    </div>`).join('');
+    const podium = '<div class="podium">讲台 · 教室前方</div>';
+    const assignedCount = new Set(Object.values(state.seatAssignments)).size;
+    exportWindow.opener = null;
+    exportWindow.document.write(`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>${escapeHTML(className)}座位表</title>
+      <style>
+        @page { size: A4 landscape; margin: 12mm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: #272b2f; font: 13px/1.45 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+        header { display: flex; align-items: end; justify-content: space-between; margin-bottom: 12px; }
+        h1 { margin: 0; font-size: 23px; } p { margin: 3px 0 0; color: #737a7e; }
+        .meta { color: #737a7e; font-size: 11px; text-align: right; }
+        .podium { width: 40%; margin: 10px auto; padding: 7px; border: 1px dashed #bdb7a5; border-radius: 7px; color: #746c59; background: #f2efe6; text-align: center; letter-spacing: .12em; }
+        .board { display: grid; gap: 8px; }
+        .seat-row { display: grid; grid-template-columns: 30px repeat(${desks}, minmax(0, 1fr)); align-items: stretch; gap: 7px; break-inside: avoid; }
+        .row-label { align-self: center; color: #8e969a; font-size: 10px; text-align: right; }
+        .desk { display: grid; grid-template-columns: repeat(${seatsPerDesk}, minmax(0, 1fr)); gap: 3px; padding: 4px; border: 1px solid #d9d6ca; border-radius: 8px; background: #f4f1e9; }
+        .seat { min-height: 48px; display: grid; place-content: center; gap: 1px; border: 1px solid #e2e2dc; border-radius: 6px; background: white; text-align: center; }
+        .seat b { font-size: 13px; } .seat small { color: #9aa0a4; font-size: 8.5px; }
+        .screen-actions { display: flex; justify-content: center; gap: 8px; margin: 18px 0; }
+        button { min-height: 38px; border: 1px solid #1f8f55; border-radius: 8px; padding: 0 18px; color: white; background: #1f8f55; cursor: pointer; font: inherit; font-weight: 700; }
+        button.secondary { color: #4f565c; border-color: #d9dad3; background: white; }
+        @media print { .screen-actions { display: none; } }
+      </style></head><body>
+      <header><div><h1>${escapeHTML(className)}座位表</h1><p>${rows}排 × ${desks}桌 × ${seatsPerDesk}座 · 已安排${assignedCount}人</p></div><div class="meta">导出日期：${new Date().toLocaleDateString('zh-CN')}<br>讲台在座位表${podiumPosition === 'bottom' ? '下方' : '上方'}</div></header>
+      ${podiumPosition === 'top' ? podium : ''}<main class="board">${rowMarkup}</main>${podiumPosition === 'bottom' ? podium : ''}
+      <div class="screen-actions"><button onclick="window.print()">打印 / 保存为 PDF</button><button class="secondary" onclick="window.close()">关闭</button></div>
+      </body></html>`);
+    exportWindow.document.close();
+    exportWindow.focus();
+    toast('座位表已打开，可打印或保存为 PDF');
+  } catch (error) {
+    console.error(error);
+    exportWindow.close();
+    toast('座位表导出失败，请重试');
+  }
+}
+
 async function exportBackup() {
   if (window.TeacherWorkspaceAccess && !window.TeacherWorkspaceAccess.requireFeature('exportBackup')) return;
   const classContext = await window.TeacherClassManager?.getContext();
@@ -1220,7 +1378,7 @@ async function clearAllData() {
   if (!confirm('确定清空当前班级的全部数据吗？其他班级不会受影响，请先导出备份。')) return;
   await Promise.all(CLASS_SCOPED_STORES.map((store) => dbClearForActiveClass(store)));
   await Promise.all([
-    dbPut('meta', { id: `seat-config:${state.activeClassId}`, value: { rows: 6, desks: 3, seatsPerDesk: 2 } }),
+    dbPut('meta', { id: `seat-config:${state.activeClassId}`, value: { rows: 6, desks: 3, seatsPerDesk: 2, podiumPosition: 'top' } }),
     dbPut('meta', { id: `seat-assignments:${state.activeClassId}`, value: {} }),
     setInitialized(false),
   ]);
@@ -1344,6 +1502,22 @@ function bindEvents() {
   });
 
   $('#aiLearningInsights')?.addEventListener('click', generateLearningInsights);
+  $('#manageKnowledgePoints').addEventListener('click', openKnowledgeManager);
+  $('#addKnowledgePoint').addEventListener('click', addKnowledgePoint);
+  $('#newKpName').addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    addKnowledgePoint();
+  });
+  $('#knowledgeManagerList').addEventListener('click', (event) => {
+    const save = event.target.closest('[data-save-kp]');
+    if (save) {
+      saveKnowledgePoint(save.dataset.saveKp);
+      return;
+    }
+    const remove = event.target.closest('[data-delete-kp]');
+    if (remove) deleteKnowledgePoint(remove.dataset.deleteKp);
+  });
 
   $('#matrixBody').addEventListener('click', async (event) => {
     const cycle = event.target.closest('[data-cycle-status]');
@@ -1441,6 +1615,7 @@ function bindEvents() {
   });
   $('#applySeatLayout').addEventListener('click', applySeatLayout);
   [$('#seatDesks'), $('#seatPerDesk')].forEach((input) => input.addEventListener('input', updateSeatLimitPreview));
+  $('#exportSeatMap').addEventListener('click', exportSeatMap);
   $('#autoFillSeats').addEventListener('click', autoFillSeats);
   $('#undoSeatChange').addEventListener('click', undoSeatChange);
   $('.seat-toolbar').addEventListener('click', (event) => {
@@ -1594,6 +1769,8 @@ function bindEvents() {
     if (file) readStudentExcel(file);
   });
   $('#importKps').addEventListener('click', importKps);
+  $('#kpPaste').addEventListener('input', refreshKpImportPreview);
+  $('#kpDefaultUnit').addEventListener('input', refreshKpImportPreview);
   $('#kpFile').addEventListener('change', async (event) => {
     const [file] = event.target.files;
     if (file) await readKpFile(file);
