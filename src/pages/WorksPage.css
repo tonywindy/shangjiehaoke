@@ -114,10 +114,39 @@ body {
 }
 
 .work-image-container {
+  position: relative;
   width: 100%;
   aspect-ratio: 16/10;
   overflow: hidden;
   background: #f7fafc;
+}
+
+.work-cover-title {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 66px;
+  padding: 8px 20px 8px 14px;
+  border: 1px solid rgba(215, 208, 196, 0.95);
+  border-radius: 15px;
+  color: #1c2a28;
+  background: rgba(255, 253, 248, 0.95);
+  box-shadow: 0 5px 16px rgba(28, 42, 40, 0.12);
+  font-family: "Noto Serif SC", "Songti SC", "Source Han Serif SC", serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.work-cover-title::before {
+  width: 5px;
+  height: 38px;
+  border-radius: 999px;
+  background: #0e6b64;
+  content: "";
 }
 
 .work-item img {

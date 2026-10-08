@@ -24,6 +24,9 @@ const WorksPage = () => {
               <a href={work.path} className="work-item" key={work.id}>
                 <div className="work-image-container">
                   <img src={work.cover} alt={work.title} loading="lazy" />
+                  {work.coverTitle && (
+                    <div className="work-cover-title">{work.coverTitle}</div>
+                  )}
                 </div>
                 <div className="work-info">
                   <div className="work-copy">
