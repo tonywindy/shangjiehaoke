@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>线的认识</title>
+  <style>
+    :root {
+      --paper: #f3efe6;
+      --surface: #fffdf8;
+      --ink: #1c2a28;
+      --muted: #5e6b68;
+      --line: #d7d0c4;
+      --teal: #0e6b64;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); }
+    body {
+      font-family: "Noto Sans SC", "PingFang SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    button { font: inherit; cursor: pointer; }
+    #app { position: relative; height: 100dvh; overflow: hidden; background: var(--paper); }
+    #stage { position: absolute; inset: 0; }
+    svg { display: block; width: 100%; height: 100%; touch-action: none; background: var(--paper); user-select: none; }
+    header, footer {
+      position: absolute; left: 0; right: 0; z-index: 2;
+      background: color-mix(in srgb, var(--surface) 95%, transparent);
+    }
+    header { top: 0; display: flex; align-items: center; gap: 12px; padding: 8px 16px; }
+    footer { bottom: 0; padding: 12px 16px; }
+    h1 { margin: 0; font-size: 18px; }
+    .sub { margin: 0; color: var(--muted); font-size: 14px; }
+    .tools { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .tabs { display: flex; gap: 0; padding: 4px; border-radius: 999px; background: var(--paper); }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .note { flex: 1; min-width: 220px; margin: 0; font-size: 14px; line-height: 1.5; }
+    .muted { color: var(--muted); }
+    button.tab, button.chip, button.go, button.full {
+      min-height: 44px; border: 0; border-radius: 12px; padding: 0 16px; font-size: 14px; font-weight: 500;
+    }
+    button.tab { border-radius: 999px; background: transparent; color: var(--ink); }
+    button.tab.on { background: var(--teal); color: var(--surface); }
+    button.chip { background: var(--paper); color: var(--ink); }
+    button.chip.on, button.go, button.full { background: var(--teal); color: var(--surface); }
+    button.full { border-radius: 999px; }
+    button:disabled { opacity: 0.4; cursor: default; }
+    .stats { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; margin-bottom: 8px; }
+    @media (max-width: 720px) { .sub { display: none; } }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="stage">
+      <svg id="board" preserveAspectRatio="none"></svg>
+    </div>
+    <header>
+      <div>
+        <h1>线的认识</h1>
+        <p class="sub">北师大版四年级上册 · 第二单元</p>
+      </div>
+      <div class="tools">
+        <div class="tabs" role="tablist">
+          <button class="tab on" id="tab-kinds" type="button">三种线</button>
+          <button class="tab" id="tab-short" type="button">线段最短</button>
+        </div>
+        <button class="full" id="full" type="button">全屏</button>
+      </div>
+    </header>
+    <footer id="dock"></footer>
+  </div>
+  <script>
+    const VB_W = 1000;
+    const VB_H = 640;
+    const HIT = 28;
+    const MAX_BENDS = 5;
+    const MAX_POINTS = 12;
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.getElementById("board");
+    const app = document.getElementById("app");
+    const stage = document.getElementById("stage");
+    const dock = document.getElementById("dock");
+
+    const state = {
+      mode: "kinds",
+      kind: "segment",
+      points: [],
+      strokes: [],
+      pending: null,
+      endA: { id: "A", x: 220, y: 360, label: "A" },
+      endB: { id: "B", x: 780, y: 280, label: "B" },
+      bends: [],
+      picked: null,
+      frame: { x: 0, y: 0, w: VB_W, h: VB_H },
+      drag: null
+    };
+
+    function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    function word(kind) { return kind === "segment" ? "线段" : kind === "ray" ? "射线" : "直线"; }
+    function el(name, attrs) {
+      const node = document.createElementNS(NS, name);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+      return node;
+    }
+    function localPoint(event) {
+      const pt = svg.createSVGPoint();
+      pt.x = event.clientX;
+      pt.y = event.clientY;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return { x: 0, y: 0 };
+      const p = pt.matrixTransform(ctm.inverse());
+      return { x: p.x, y: p.y };
+    }
+    function clamp(x, y) {
+      const pad = 36;
+      const f = state.frame;
+      return {
+        x: Math.min(f.x + f.w - pad, Math.max(f.x + pad, x)),
+        y: Math.min(f.y + f.h - pad, Math.max(f.y + pad, y))
+      };
+    }
+    function labelAt(a, b, side) {
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return { x: mx + (-dy / len) * 28 * side, y: my + (dx / len) * 28 * side };
+    }
+    function fit() {
+      const r = stage.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return;
+      const aspect = r.width / r.height;
+      const base = VB_W / VB_H;
+      if (aspect > base) {
+        const w = VB_H * aspect;
+        state.frame = { x: (VB_W - w) / 2, y: 0, w, h: VB_H };
+      } else {
+        const h = VB_W / aspect;
+        state.frame = { x: 0, y: (VB_H - h) / 2, w: VB_W, h };
+      }
+      draw();
+    }
+
+    function caption(x, y, text) {
+      const w = text.length * 16 + 20;
+      const g = el("g", {});
+      g.append(el("rect", { x: x - w / 2, y: y - 16, width: w, height: 32, rx: 8, fill: "#fffdf8", stroke: "#d7d0c4" }));
+      const t = el("text", { x, y: y + 6, "text-anchor": "middle", fill: "#1c2a28", "font-size": 16 });
+      t.textContent = text;
+      g.append(t);
+      return g;
+    }
+    function pointNode(p, hot, hollow) {
+      const g = el("g", {});
+      g.append(el("circle", {
+        cx: p.x, cy: p.y, r: hot ? 16 : 13,
+        fill: hollow ? "#fffdf8" : "#0e6b64",
+        stroke: hollow ? "#1c2a28" : "#fffdf8",
+        "stroke-width": 3
+      }));
+      const t = el("text", { x: p.x + 20, y: p.y - 16, fill: "#1c2a28", "font-size": 22, "font-weight": 700 });
+      t.textContent = p.label;
+      g.append(t);
+      return g;
+    }
+    function kindStroke(stroke, index) {
+      const a = state.points.find((p) => p.id === stroke.a);
+      const b = state.points.find((p) => p.id === stroke.b);
+      if (!a || !b) return null;
+      const far = 4000;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len;
+      const uy = dy / len;
+      const side = index % 2 === 0 ? -1 : 1;
+      const spot = labelAt(a, b, side);
+      const g = el("g", {});
+      if (stroke.kind === "segment") {
+        g.append(el("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: "#0e6b64", "stroke-width": 5, "stroke-linecap": "round" }));
+      } else if (stroke.kind === "ray") {
+        g.append(el("line", {
+          x1: a.x, y1: a.y, x2: a.x + ux * far, y2: a.y + uy * far,
+          stroke: "#1c2a28", "stroke-width": 3, "stroke-dasharray": "10 8", "stroke-linecap": "round", "marker-end": "url(#arrow)"
+        }));
+        g.append(el("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: "#0e6b64", "stroke-width": 5, "stroke-linecap": "round" }));
+      } else {
+        g.append(el("line", {
+          x1: a.x - ux * far, y1: a.y - uy * far, x2: a.x + ux * far, y2: a.y + uy * far,
+          stroke: "#1c2a28", "stroke-width": 3, "stroke-dasharray": "10 8"
+        }));
+      }
+      g.append(caption(spot.x, spot.y, word(stroke.kind) + a.label + b.label));
+      return g;
+    }
+    function shortestLayer() {
+      const a = state.endA;
+      const b = state.endB;
+      const g = el("g", {});
+      if (state.bends.length) {
+        const pts = [a, ...state.bends, b].map((p) => p.x + "," + p.y).join(" ");
+        g.append(el("polyline", {
+          points: pts, fill: "none", stroke: "#1c2a28", "stroke-width": 4,
+          "stroke-dasharray": "12 8", "stroke-linejoin": "round", "stroke-linecap": "round"
+        }));
+      }
+      g.append(el("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: "#0e6b64", "stroke-width": 5, "stroke-linecap": "round" }));
+      const seg = labelAt(a, b, -1);
+      g.append(caption(seg.x, seg.y, "线段 " + Math.round(dist(a, b))));
+      if (state.bends.length) {
+        const route = [a, ...state.bends, b];
+        let best = -1;
+        let p = route[0];
+        let q = route[1];
+        for (let i = 1; i < route.length; i++) {
+          const d = dist(route[i - 1], route[i]);
+          if (d > best) { best = d; p = route[i - 1]; q = route[i]; }
+        }
+        const spot = labelAt(p, q, 1);
+        let walked = 0;
+        for (let i = 1; i < route.length; i++) walked += dist(route[i - 1], route[i]);
+        g.append(caption(spot.x, spot.y, "绕路 " + Math.round(walked)));
+      }
+      return g;
+    }
+
+    function draw() {
+      const f = state.frame;
+      svg.setAttribute("viewBox", f.x + " " + f.y + " " + f.w + " " + f.h);
+      svg.replaceChildren();
+      const defs = el("defs", {});
+      const marker = el("marker", { id: "arrow", markerWidth: 10, markerHeight: 10, refX: 8, refY: 5, orient: "auto" });
+      marker.append(el("path", { d: "M0,0 L10,5 L0,10 z", fill: "#1c2a28" }));
+      defs.append(marker);
+      svg.append(defs);
+      const x0 = Math.floor(f.x / 50) * 50;
+      const y0 = Math.floor(f.y / 50) * 50;
+      for (let x = x0; x <= f.x + f.w; x += 50) svg.append(el("line", { x1: x, y1: y0, x2: x, y2: f.y + f.h, stroke: "#d7d0c4" }));
+      for (let y = y0; y <= f.y + f.h; y += 50) svg.append(el("line", { x1: x0, y1: y, x2: f.x + f.w, y2: y, stroke: "#d7d0c4" }));
+      if (state.mode === "kinds") {
+        state.strokes.forEach((stroke, index) => {
+          const node = kindStroke(stroke, index);
+          if (node) svg.append(node);
+        });
+        if (!state.points.length) {
+          const hint = el("text", {
+            x: f.x + f.w / 2, y: f.y + f.h / 2, "text-anchor": "middle", fill: "#5e6b68", "font-size": 28
+          });
+          hint.textContent = "先选类型，再在空白处点出起点";
+          svg.append(hint);
+        }
+      } else {
+        svg.append(shortestLayer());
+      }
+      const pts = state.mode === "kinds" ? state.points : [state.endA, state.endB, ...state.bends];
+      const last = state.strokes[state.strokes.length - 1];
+      pts.forEach((p) => {
+        const stroke = state.strokes.find((s) => s.a === p.id || s.b === p.id);
+        const hollow = state.mode === "shortest"
+          ? p.id !== "A" && p.id !== "B"
+          : p.id === state.pending
+            ? state.kind === "line"
+            : Boolean(stroke && (stroke.kind === "line" || (stroke.kind === "ray" && stroke.b === p.id)));
+        const hot = state.mode === "kinds"
+          ? p.id === state.pending || Boolean(last && !state.pending && (last.a === p.id || last.b === p.id))
+          : p.id === "A" || p.id === "B" || p.id === state.picked;
+        svg.append(pointNode(p, hot, hollow));
+      });
+      drawDock();
+    }
+
+    function kindStatus() {
+      const name = word(state.kind);
+      const pending = state.points.find((p) => p.id === state.pending);
+      if (!state.points.length) {
+        return "画布是空的。先选「" + name + "」，第一下是起点，第二下画出这条" + name + "。第三个点是下一条的起点。";
+      }
+      if (pending) return "起点是 " + pending.label + "。再点一处，画出" + name + pending.label + "。";
+      const last = state.strokes[state.strokes.length - 1];
+      const a = state.points.find((p) => p.id === last?.a);
+      const b = state.points.find((p) => p.id === last?.b);
+      if (!last || !a || !b) return "再点一处，作为下一条的起点。";
+      const drawn = word(last.kind);
+      const title = drawn + a.label + b.label;
+      const also = last.kind === "ray"
+        ? "从 " + a.label + " 出发，经过 " + b.label
+        : "也可以读作" + drawn + b.label + a.label;
+      return title + "，" + also + "。已画 " + state.strokes.length + " 条，下一次点击是新的起点。";
+    }
+    function shortStatus() {
+      const straight = dist(state.endA, state.endB);
+      const route = [state.endA, ...state.bends, state.endB];
+      let walked = 0;
+      for (let i = 1; i < route.length; i++) walked += dist(route[i - 1], route[i]);
+      const extra = walked - straight;
+      const same = state.bends.length > 0 && extra < 1.2;
+      const verdict = state.bends.length === 0
+        ? "现在只有线段。在空白处点一下，加一个弯点，再比一比。"
+        : same
+          ? "弯点正好在线段上，两条路一样长。"
+          : "绕路多走了 " + Math.round(extra) + "。两点之间，线段最短。";
+      return { straight, walked, verdict };
+    }
+    function button(className, text, onClick, disabled) {
+      const node = document.createElement("button");
+      node.type = "button";
+      node.className = className;
+      node.textContent = text;
+      node.disabled = Boolean(disabled);
+      node.addEventListener("click", onClick);
+      return node;
+    }
+    function drawDock() {
+      dock.replaceChildren();
+      if (state.mode === "kinds") {
+        const row = document.createElement("div");
+        row.className = "row";
+        ["segment", "ray", "line"].forEach((kind) => {
+          row.append(button("chip" + (state.kind === kind ? " on" : ""), word(kind), () => {
+            state.kind = kind;
+            draw();
+          }));
+        });
+        const note = document.createElement("p");
+        note.className = "note";
+        note.textContent = kindStatus();
+        row.append(note);
+        row.append(button("chip", "清空", () => {
+          state.points = [];
+          state.strokes = [];
+          state.pending = null;
+          draw();
+        }));
+        dock.append(row);
+        return;
+      }
+      const info = shortStatus();
+      const stats = document.createElement("div");
+      stats.className = "stats";
+      stats.innerHTML = "<span>线段 AB <strong style='color:#0e6b64'>" + Math.round(info.straight) +
+        "</strong></span><span>" + (state.bends.length ? "绕路（" + state.bends.length + " 个弯点）" : "你的路径") +
+        " <strong>" + Math.round(info.walked) + "</strong></span><span class='muted'>" + info.verdict + "</span>";
+      const row = document.createElement("div");
+      row.className = "row";
+      row.append(button("go", "试一条绕路", () => {
+        const a = state.endA;
+        const b = state.endB;
+        const mx = (a.x + b.x) / 2;
+        const my = (a.y + b.y) / 2;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy) || 1;
+        state.bends = [{
+          id: "detour",
+          x: Math.min(VB_W - 40, Math.max(40, mx + (-dy / len) * 140)),
+          y: Math.min(VB_H - 40, Math.max(40, my + (dx / len) * 140)),
+          label: "C"
+        }];
+        state.picked = "detour";
+        draw();
+      }));
+      row.append(button("chip", "去掉选中的弯点", () => {
+        if (!state.picked) return;
+        state.bends = state.bends.filter((p) => p.id !== state.picked).map((p, i) => ({
+          ...p, label: String.fromCharCode(67 + i)
+        }));
+        state.picked = null;
+        draw();
+      }, !state.picked));
+      row.append(button("chip", "清空弯点", () => {
+        state.bends = [];
+        state.picked = null;
+        draw();
+      }, state.bends.length === 0));
+      dock.append(stats, row);
+    }
+
+    function hit(x, y, pts) {
+      for (let i = pts.length - 1; i >= 0; i--) {
+        if (Math.hypot(pts[i].x - x, pts[i].y - y) <= HIT) return pts[i].id;
+      }
+      return null;
+    }
+    function move(id, x, y) {
+      const next = clamp(x, y);
+      if (state.mode === "kinds") {
+        state.points = state.points.map((p) => p.id === id ? { ...p, x: next.x, y: next.y } : p);
+        return;
+      }
+      if (id === "A") state.endA = { ...state.endA, x: next.x, y: next.y };
+      else if (id === "B") state.endB = { ...state.endB, x: next.x, y: next.y };
+      else state.bends = state.bends.map((p) => p.id === id ? { ...p, x: next.x, y: next.y } : p);
+    }
+
+    svg.addEventListener("pointerdown", (event) => {
+      const p = localPoint(event);
+      if (state.mode === "kinds") {
+        const id = hit(p.x, p.y, state.points);
+        if (id) {
+          state.drag = id;
+          svg.setPointerCapture(event.pointerId);
+          return;
+        }
+        if (state.points.length >= MAX_POINTS) return;
+        const fresh = {
+          id: "k-" + state.points.length + "-" + Math.round(p.x) + "-" + Math.round(p.y),
+          x: p.x, y: p.y,
+          label: String.fromCharCode(65 + state.points.length)
+        };
+        state.points.push(fresh);
+        if (!state.pending) state.pending = fresh.id;
+        else {
+          state.strokes.push({ id: "s-" + fresh.id, kind: state.kind, a: state.pending, b: fresh.id });
+          state.pending = null;
+        }
+        draw();
+        return;
+      }
+      const pts = [...state.bends].reverse().concat([state.endB, state.endA]);
+      const id = hit(p.x, p.y, pts);
+      if (id) {
+        state.drag = id;
+        state.picked = id === "A" || id === "B" ? null : id;
+        svg.setPointerCapture(event.pointerId);
+        draw();
+        return;
+      }
+      if (state.bends.length >= MAX_BENDS) return;
+      const bend = { id: "w-" + Date.now(), x: p.x, y: p.y, label: String.fromCharCode(67 + state.bends.length) };
+      state.bends.push(bend);
+      state.picked = bend.id;
+      state.drag = bend.id;
+      svg.setPointerCapture(event.pointerId);
+      draw();
+    });
+    svg.addEventListener("pointermove", (event) => {
+      if (!state.drag) return;
+      const p = localPoint(event);
+      move(state.drag, p.x, p.y);
+      draw();
+    });
+    function endDrag() { state.drag = null; }
+    svg.addEventListener("pointerup", endDrag);
+    svg.addEventListener("pointercancel", endDrag);
+
+    document.getElementById("tab-kinds").addEventListener("click", () => {
+      state.mode = "kinds";
+      document.getElementById("tab-kinds").classList.add("on");
+      document.getElementById("tab-short").classList.remove("on");
+      draw();
+    });
+    document.getElementById("tab-short").addEventListener("click", () => {
+      state.mode = "shortest";
+      document.getElementById("tab-short").classList.add("on");
+      document.getElementById("tab-kinds").classList.remove("on");
+      draw();
+    });
+    document.getElementById("full").addEventListener("click", async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await app.requestFullscreen();
+      } catch (error) { /* 教室浏览器若不支持全屏，页面本身已铺满窗口 */ }
+    });
+    document.addEventListener("fullscreenchange", () => {
+      document.getElementById("full").textContent = document.fullscreenElement ? "退出全屏" : "全屏";
+    });
+    new ResizeObserver(fit).observe(stage);
+    fit();
+  </script>
+</body>
+</html>

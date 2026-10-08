@@ -40,6 +40,15 @@ export const SITE_PAGES = [
 
 export const WORKS_DATA = [
   {
+    id: 'line-awareness',
+    title: '线的认识',
+    cover: withBasePath('/works-covers/line-awareness.png'),
+    path: withBasePath('/line-awareness/index.html'),
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['线段·射线·直线', '互动几何'],
+    featured: true,
+  },
+  {
     id: 'teacher-workspace',
     title: '上节好课 · 教师工作台',
     cover: withBasePath('/works-covers/teacher-workspace.webp'),
