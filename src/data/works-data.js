@@ -42,7 +42,8 @@ export const WORKS_DATA = [
   {
     id: 'line-awareness',
     title: '线与角',
-    cover: withBasePath('/works-covers/line-and-angle-cover.svg'),
+    cover: withBasePath('/works-covers/line-and-angle-cover.png'),
+    coverTitle: '线与角',
     path: withBasePath('/line-awareness/index.html'),
     pageType: PAGE_TYPES.TOOL,
     tags: ['线段与角', '互动几何'],
