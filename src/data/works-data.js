@@ -40,6 +40,15 @@ export const SITE_PAGES = [
 
 export const WORKS_DATA = [
   {
+    id: 'jingting-senzhang',
+    title: '静听森长',
+    cover: withBasePath('/works-covers/jingting-senzhang.webp'),
+    path: withBasePath('/jingting-senzhang/index.html'),
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['课堂静音', '专注计时'],
+    featured: true,
+  },
+  {
     id: 'line-awareness',
     title: '线与角',
     cover: withBasePath('/works-covers/line-and-angle-cover.png'),
