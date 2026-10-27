@@ -40,6 +40,15 @@ export const SITE_PAGES = [
 
 export const WORKS_DATA = [
   {
+    id: 'shushi-dabipin',
+    title: '竖式大比拼',
+    cover: withBasePath('/works-covers/shushi-dabipin.webp'),
+    path: withBasePath('/shushi-dabipin/index.html'),
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['乘法竖式', '竞技游戏'],
+    featured: true,
+  },
+  {
     id: 'duilie-biaoyan',
     title: '队列表演',
     cover: withBasePath('/works-covers/duilie-biaoyan.webp'),
