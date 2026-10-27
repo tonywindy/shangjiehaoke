@@ -40,6 +40,15 @@ export const SITE_PAGES = [
 
 export const WORKS_DATA = [
   {
+    id: 'duilie-biaoyan',
+    title: '队列表演',
+    cover: withBasePath('/works-covers/duilie-biaoyan.webp'),
+    path: withBasePath('/duilie-biaoyan/index.html'),
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['两位数乘法', '点子图'],
+    featured: true,
+  },
+  {
     id: 'jingting-senzhang',
     title: '静听森长',
     cover: withBasePath('/works-covers/jingting-senzhang.webp'),
