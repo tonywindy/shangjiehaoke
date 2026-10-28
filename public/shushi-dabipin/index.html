@@ -17,7 +17,7 @@ let count=3,goal=8,players=[],questions=[],phase='ready',selected=0,startTime=0,
 const names=['青松队','蓝鲸队','暖阳队','紫星队'];
 const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 function question(type){if(type==='mix')type=['2x1','2x2','3x2'][rand(0,2)];let a=type==='3x2'?rand(100,999):rand(10,99),b=type==='2x1'?rand(2,9):type==='tens'?rand(1,9)*10:rand(10,99);return{a:Math.max(a,b),b:Math.min(a,b)};}
-function calculation(q){let a=q.a,b=q.b,zeros=0;while(a%10===0){a/=10;zeros++;}while(b%10===0){b/=10;zeros++;}return{a,b,zeros,zerosA:String(q.a).length-String(a).length,zerosB:String(q.b).length-String(b).length};}
+function calculation(q){let a=q.a,b=q.b,zeros=0;while(a%10===0){a/=10;zeros++;}while(b%10===0){b/=10;zeros++;}const zA=String(q.a).length-String(a).length,zB=String(q.b).length-String(b).length;return a<b?{a:b,b:a,zeros,zerosA:zB,zerosB:zA}:{a,b,zeros,zerosA:zA,zerosB:zB};}
 function expected(q){const {a,b}=calculation(q);return b<10?[String(a*b)]:[String(a*(b%10)),String(a*Math.floor(b/10)),String(a*b)];}
 function activeExpected(p){const q=currentQuestion(p);return p.stage==='zeros'?['0'.repeat(calculation(q).zeros)]:expected(q);}
 function shuffle(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=rand(0,i);[copy[i],copy[j]]=[copy[j],copy[i]];}return copy;}
