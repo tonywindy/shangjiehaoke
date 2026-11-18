@@ -40,6 +40,15 @@ export const SITE_PAGES = [
 
 export const WORKS_DATA = [
   {
+    id: 'langdu',
+    title: '朗读小屋',
+    cover: withBasePath('/works-covers/langdu.jpg'),
+    path: withBasePath('/langdu/index.html'),
+    pageType: PAGE_TYPES.TOOL,
+    tags: ['实时跟读', '绘本朗读'],
+    featured: true,
+  },
+  {
     id: 'shushi-dabipin',
     title: '竖式大比拼',
     cover: withBasePath('/works-covers/shushi-dabipin.webp'),

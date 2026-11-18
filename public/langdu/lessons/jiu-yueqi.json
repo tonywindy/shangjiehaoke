@@ -1,0 +1,34 @@
+{
+  "id": "jiu-yueqi",
+  "title": "旧乐器",
+  "cover": "images/jiu-yueqi/07.jpg",
+  "image": "images/jiu-yueqi/01.jpg",
+  "theme": "#FFB547",
+  "paragraphs": [
+    {
+      "sentences": [
+        { "text": "有只小老鼠在垃圾堆里发现一个大箱子，", "image": "images/jiu-yueqi/01.jpg" },
+        { "text": "它用牙齿咬破了箱子的外壳，", "image": "images/jiu-yueqi/02.jpg" },
+        { "text": "扭着屁股钻了进去，", "image": "images/jiu-yueqi/03.jpg" },
+        { "text": "看到箱子里装着很多被丢弃的旧乐器，有小提琴、单簧管、二胡等。", "image": "images/jiu-yueqi/04.jpg" },
+        { "text": "小老鼠开心极了，", "image": "images/jiu-yueqi/05.jpg" },
+        { "text": "它叫来同伴一起玩乐器。", "image": "images/jiu-yueqi/06.jpg" }
+      ]
+    },
+    {
+      "sentences": [
+        { "text": "大箱子像一个音乐盒，", "image": "images/jiu-yueqi/07.jpg" },
+        { "text": "发出美妙的声音。", "image": "images/jiu-yueqi/08.jpg" }
+      ]
+    }
+  ],
+  "newChars": ["咬", "破", "壳", "丢", "旧", "器", "琴", "管", "胡"],
+  "words": ["乐器", "小提琴", "二胡"],
+  "pinyinOverrides": {
+    "箱子": "xiāng zi",
+    "屁股": "pì gu",
+    "钻了": "zuān le",
+    "进去": "jìn qù",
+    "外壳": "wài ké"
+  }
+}

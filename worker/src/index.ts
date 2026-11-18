@@ -18,6 +18,7 @@ import {
   verifySessionToken,
 } from './auth';
 import { handleWorkspaceRequest, type WorkspaceAuthEnv } from './workspace-auth';
+import { handleAliyunTokenRequest, type AliyunTokenEnv } from './aliyun-token';
 
 const SERVICE_NAME = '上节好课 · AI小学数学精准教学助手 API';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -26,7 +27,7 @@ const DAILY_GLOBAL_LIMIT = 500;
 const DAILY_LOGIN_ATTEMPT_LIMIT = 30;
 const PRIMARY_TEACHER_ID = 'teacher-primary';
 
-type AppEnv = Env & WorkspaceAuthEnv & {
+type AppEnv = Env & WorkspaceAuthEnv & AliyunTokenEnv & {
   GLM_API_KEY?: string;
   RATE_LIMIT_SALT?: string;
   SESSION_SECRET?: string;
@@ -58,6 +59,7 @@ const KNOWLEDGE_POINTS: Record<string, string> = {
 const ALLOWED_ORIGINS = new Set([
   'https://shangjiehaoke.com',
   'https://www.shangjiehaoke.com',
+  'https://tonywindy.github.io',
 ]);
 
 function isAllowedOrigin(origin: string): boolean {
@@ -79,7 +81,7 @@ function corsHeaders(request: Request): HeadersInit {
 
   return {
     'Access-Control-Allow-Origin': origin && isAllowedOrigin(origin) ? origin : 'https://shangjiehaoke.com',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Access-Code',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
@@ -477,6 +479,10 @@ export default {
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders(request) });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/aliyun-token') {
+      return handleAliyunTokenRequest(request, env, corsHeaders(request));
     }
 
     if (request.method === 'POST' && url.pathname === '/api/auth/login') {
