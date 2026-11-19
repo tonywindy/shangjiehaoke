@@ -14,6 +14,9 @@ import { coverHTML } from './home.js';
 
 const PY_PUNCT_OPEN = new Set([...'“‘（《【「『']);
 
+const FS_ORDER = ['s', 'm', 'l', 'xl'];
+const FS_LABEL = { s: '小', m: '中', l: '大', xl: '特大' };
+
 function starsFor(errors) {
   if (errors <= 1) return 3;
   if (errors <= 4) return 2;
@@ -80,6 +83,7 @@ function build(root, lesson) {
         </div>
         <div class="tb-title">${esc(lesson.title)}</div>
         <div class="tb-actions">
+          <button class="toggle-fs" id="btn-fs" aria-label="调整字号"><span class="fs-a">A</span><span class="fs-b">${FS_LABEL[S.fontSize] || '中'}</span></button>
           <button class="toggle-py ${S.showPinyin ? 'on' : ''}" id="btn-py" aria-label="拼音开关"><span class="py-a">pīn</span><span class="py-b">拼</span></button>
           <button class="icon-btn" id="btn-rec" aria-label="我的录音">${icon('headphones')}</button>
           <button class="icon-btn" id="btn-set" aria-label="家长设置">${icon('gear')}</button>
@@ -359,9 +363,9 @@ function build(root, lesson) {
           <small>听成了「${esc(err.heard)}」</small>
         </div>
         <button class="bb-say" aria-label="听一听">${icon('speaker')}</button>`;
-      bubble.querySelector('.bb-say').onclick = (e) => {
+      bubble.querySelector('.bb-say').onclick = async (e) => {
         e.stopPropagation();
-        if (!speak(t.ch)) toast('这台设备不支持朗读示范');
+        if (!(await speak(t.ch))) toast('这台设备不支持朗读示范');
       };
       bubble.hidden = false;
       bubble.classList.remove('pop');
@@ -766,6 +770,14 @@ function build(root, lesson) {
       speak(b.dataset.w);
     })
   );
+
+  $('#btn-fs').addEventListener('click', (e) => {
+    const cur = settings.get().fontSize || 'm';
+    const next = FS_ORDER[(FS_ORDER.indexOf(cur) + 1) % FS_ORDER.length];
+    settings.set({ fontSize: next });
+    e.currentTarget.querySelector('.fs-b').textContent = FS_LABEL[next];
+    toast('字号：' + FS_LABEL[next], 1200);
+  });
 
   $('#btn-py').addEventListener('click', (e) => {
     const on = !readerEl.classList.contains('show-py');

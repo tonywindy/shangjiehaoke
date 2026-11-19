@@ -122,3 +122,70 @@ export async function handleAliyunTokenRequest(
     return respond({ error: `获取语音 Token 失败：${msg}` }, 502);
   }
 }
+
+export async function handleAliyunTtsRequest(
+  request: Request,
+  env: AliyunTokenEnv,
+  cors: HeadersInit,
+): Promise<Response> {
+  const respondJson = (body: unknown, status = 200) =>
+    Response.json(body, {
+      status,
+      headers: {
+        ...cors,
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
+
+  if (env.LANGDU_ACCESS_CODE) {
+    const provided = (request.headers.get('X-Access-Code') || '').trim();
+    if (!provided || !safeEqual(provided, env.LANGDU_ACCESS_CODE)) {
+      return respondJson({ error: '访问口令不对', needCode: true }, 401);
+    }
+  }
+
+  if (!env.ALIYUN_AK_ID || !env.ALIYUN_AK_SECRET || !env.ALIYUN_APPKEY) {
+    return respondJson({ error: '服务器尚未配置阿里云语音密钥' }, 503);
+  }
+
+  const text = (new URL(request.url).searchParams.get('text') || '').trim().slice(0, 60);
+  if (!text) return respondJson({ error: '缺少朗读文本' }, 400);
+
+  try {
+    const now = Date.now() / 1000;
+    if (!cached || cached.expireTime - 600 <= now) {
+      cached = await createAliyunToken(env.ALIYUN_AK_ID, env.ALIYUN_AK_SECRET);
+    }
+    const ttsRes = await fetch('https://nls-gateway-cn-shanghai.aliyuncs.com/stream/v1/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        appkey: env.ALIYUN_APPKEY,
+        token: cached.token,
+        text,
+        format: 'mp3',
+        sample_rate: 16000,
+        voice: 'zhixiaoxia',
+        speech_rate: -120,
+      }),
+    });
+    const ct = ttsRes.headers.get('content-type') || '';
+    if (!ttsRes.ok || !ct.includes('audio')) {
+      const msg = await ttsRes.text();
+      return respondJson({ error: `语音合成失败：${msg}` }, 502);
+    }
+    return new Response(ttsRes.body, {
+      status: 200,
+      headers: {
+        ...cors,
+        'Content-Type': 'audio/mpeg',
+        'Cache-Control': 'public, max-age=86400',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : '未知错误';
+    return respondJson({ error: `语音合成失败：${msg}` }, 502);
+  }
+}

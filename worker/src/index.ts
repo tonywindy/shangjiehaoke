@@ -18,7 +18,7 @@ import {
   verifySessionToken,
 } from './auth';
 import { handleWorkspaceRequest, type WorkspaceAuthEnv } from './workspace-auth';
-import { handleAliyunTokenRequest, type AliyunTokenEnv } from './aliyun-token';
+import { handleAliyunTokenRequest, handleAliyunTtsRequest, type AliyunTokenEnv } from './aliyun-token';
 
 const SERVICE_NAME = '上节好课 · AI小学数学精准教学助手 API';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -483,6 +483,10 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/api/aliyun-token') {
       return handleAliyunTokenRequest(request, env, corsHeaders(request));
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/aliyun-tts') {
+      return handleAliyunTtsRequest(request, env, corsHeaders(request));
     }
 
     if (request.method === 'POST' && url.pathname === '/api/auth/login') {

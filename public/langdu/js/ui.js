@@ -147,8 +147,12 @@ export const sfx = {
   },
 };
 
-/* ---------------- 朗读示范（浏览器自带语音合成，可能不可用） ---------------- */
-export function speak(text) {
+/* ---------------- 朗读示范（优先使用阿里云自然语音合成，带本地缓存） ---------------- */
+const ttsCache = new Map();
+const ttsAudio = new Audio();
+let ttsSeq = 0;
+
+function fallbackSpeak(text) {
   try {
     if (!window.speechSynthesis) return false;
     const u = new SpeechSynthesisUtterance(text);
@@ -162,6 +166,41 @@ export function speak(text) {
   } catch (e) {
     return false;
   }
+}
+
+export async function speak(text) {
+  const clean = String(text || '').trim();
+  if (!clean) return false;
+  const seq = ++ttsSeq;
+  try {
+    ttsAudio.pause();
+  } catch (e) {}
+
+  const cfg = window.APP_CONFIG || {};
+  const s = settings.get();
+  const ttsBase = cfg.ttsUrl || (cfg.tokenUrl ? cfg.tokenUrl.replace(/aliyun-token(\.php)?$/, 'aliyun-tts') : '');
+
+  if (ttsBase && s.asr !== 'demo') {
+    try {
+      let url = ttsCache.get(clean);
+      if (!url) {
+        const headers = {};
+        if (s.accessCode) headers['X-Access-Code'] = s.accessCode;
+        const res = await fetch(`${ttsBase}?text=${encodeURIComponent(clean)}`, { headers });
+        if (!res.ok) throw new Error('TTS ' + res.status);
+        const blob = await res.blob();
+        url = URL.createObjectURL(blob);
+        ttsCache.set(clean, url);
+      }
+      if (seq !== ttsSeq) return true;
+      ttsAudio.src = url;
+      await ttsAudio.play();
+      return true;
+    } catch (e) {
+      // 阿里云合成不可用时静默回退到系统朗读
+    }
+  }
+  return fallbackSpeak(clean);
 }
 
 /* ---------------- 彩带 ---------------- */

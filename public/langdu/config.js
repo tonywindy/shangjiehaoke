@@ -7,6 +7,9 @@ window.APP_CONFIG = {
   // 线上走 shangjiehaoke 的 Cloudflare Worker；本地走同源 /api/aliyun-token
   tokenUrl: isLocal ? '/api/aliyun-token' : 'https://api.shangjiehaoke.com/api/aliyun-token',
 
+  // 阿里云语音合成（示范朗读）接口
+  ttsUrl: isLocal ? '/api/aliyun-tts' : 'https://api.shangjiehaoke.com/api/aliyun-tts',
+
   // 阿里云实时语音识别网关（上海地域）
   aliyunGateway: 'wss://nls-gateway-cn-shanghai.aliyuncs.com/ws/v1',
 

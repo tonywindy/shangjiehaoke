@@ -48,6 +48,7 @@ export function openSettings(onChange) {
           ['s', '小'],
           ['m', '中'],
           ['l', '大'],
+          ['xl', '超大'],
         ])}</div>
         <div class="set-row"><span>音效</span>${sw('sound', s.sound)}</div>
         <div class="set-row"><span>朗读时录音</span>${sw('record', s.record)}</div>
