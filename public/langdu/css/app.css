@@ -281,20 +281,20 @@ a { color: inherit; text-decoration: none; }
 
 .stage {
   position: relative; z-index: 2;
-  min-height: 0; display: grid; gap: 20px;
-  grid-template-columns: minmax(340px, 44%) 1fr;
-  padding: 8px 22px 10px;
+  min-height: 0; display: grid; gap: 22px;
+  grid-template-columns: minmax(420px, 58%) 1fr;
+  padding: 8px 24px 10px;
   align-items: stretch;
 }
 
-/* 左侧：绘本画框 + 连环画分镜条（与右侧纸张顶底齐平） */
+/* 左侧：大画幅绘本插画 + 轻巧进度圆点（不放剧透缩略图） */
 .art-col {
-  min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; gap: 12px;
+  min-height: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px;
 }
 
 .art-frame {
-  position: relative; width: 100%;
-  background: var(--card); border-radius: 28px; padding: 10px;
+  position: relative; width: 100%; max-height: 100%;
+  background: var(--card); border-radius: 28px; padding: 11px;
   box-shadow: var(--shadow);
   border: 1px solid rgba(255, 255, 255, 0.92);
 }
@@ -343,35 +343,23 @@ a { color: inherit; text-decoration: none; }
 .reader.cinema .cinema-btn .i-exp { display: none; }
 .reader.cinema .cinema-btn .i-cmp { display: block; }
 
-/* 连环画分镜缩略条（横屏 4×2 画廊） */
+/* 轻巧故事进度圆点（不剧透后续画面，不占用底部空间） */
 .scene-strip {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-  padding: 8px; border-radius: 22px;
-  background: rgba(255, 253, 248, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 8px 20px -14px rgba(132, 82, 32, 0.28);
+  display: flex; justify-content: center; align-items: center; gap: 8px;
+  padding: 4px 12px;
 }
 .sc-thumb {
-  position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden;
-  background: var(--paper-2); opacity: 0.62;
-  transition: transform 0.25s var(--ease-spring), opacity 0.25s, box-shadow 0.25s;
+  position: relative; width: 10px; height: 10px; border-radius: 99px;
+  background: #dfd0bc; opacity: 1;
+  transition: width 0.3s var(--ease-spring), background 0.3s, box-shadow 0.3s;
 }
-.sc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sc-thumb span {
-  position: absolute; right: 5px; bottom: 4px;
-  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px;
-  display: grid; place-items: center;
-  background: rgba(62, 47, 40, 0.62); color: #fff;
-  font-family: var(--font-py); font-size: 11px; font-weight: 700;
-}
-.sc-thumb:hover { opacity: 0.92; transform: translateY(-2px); }
-.sc-thumb.done { opacity: 0.88; }
-.sc-thumb.done span { background: var(--mint); }
+.sc-thumb::after { content: ''; position: absolute; inset: -10px -6px; }
+.sc-thumb img, .sc-thumb span { display: none; }
+.sc-thumb.done { background: var(--mint); }
 .sc-thumb.on {
-  opacity: 1; transform: translateY(-2px) scale(1.03); z-index: 2;
-  box-shadow: 0 0 0 3px var(--sun), 0 8px 16px -6px rgba(246, 169, 59, 0.75);
+  width: 28px; background: var(--sun);
+  box-shadow: 0 2px 8px rgba(246, 169, 59, 0.6);
 }
-.sc-thumb.on span { background: var(--sun); color: #fff; }
 
 /* 右侧：课文纸张外框 + 纸张（错误气泡锚在纸张上缘，绝不挡字） */
 .page-wrap {
@@ -383,38 +371,38 @@ a { color: inherit; text-decoration: none; }
   background: var(--card); border-radius: var(--r-lg);
   box-shadow: var(--shadow), inset 16px 0 26px -22px rgba(165, 108, 46, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.92);
-  padding: 24px clamp(22px, 2.8vw, 40px) 18px;
+  padding: 16px clamp(18px, 2.2vw, 32px) 14px;
   scroll-padding: 28px;
   scrollbar-width: none;
 }
 .page::-webkit-scrollbar { display: none; }
 .page::before {
   /* 纸张左侧淡雅的装订虚线 */
-  content: ''; position: absolute; left: 14px; top: 24px; bottom: 24px; width: 2px;
+  content: ''; position: absolute; left: 14px; top: 20px; bottom: 20px; width: 2px;
   background: repeating-linear-gradient(to bottom, #f2d3aa 0 6px, transparent 6px 14px);
   border-radius: 2px; opacity: 0.8;
 }
 
 .page-inner { max-width: 31em; margin: 0 auto; font-size: var(--hz); }
-html[data-fs='m'] .page-inner { --hz: clamp(22px, 1.92vw, 25px); --py: 10px; }
-html[data-fs='s'] .page-inner { --hz: clamp(19px, 1.7vw, 23px); --py: 9px; }
-html[data-fs='l'] .page-inner { --hz: clamp(26px, 2.5vw, 33px); --py: 12px; }
+html[data-fs='m'] .page-inner { --hz: clamp(18px, 1.62vw, 22px); --py: 9px; }
+html[data-fs='s'] .page-inner { --hz: clamp(16px, 1.42vw, 19px); --py: 8.5px; }
+html[data-fs='l'] .page-inner { --hz: clamp(22px, 2.05vw, 28px); --py: 11px; }
 
-.title-line { text-align: center; margin: 0 0 0.14em; font-weight: 700; font-size: 1.12em; letter-spacing: 0.14em; }
+.title-line { text-align: center; margin: 0 0 0.1em; font-weight: 700; font-size: 1.12em; letter-spacing: 0.14em; }
 .title-line .hz { font-size: calc(var(--hz) * 1.12); }
 .para { margin: 0; text-indent: 2.1em; line-height: 1; }
-.para + .para { margin-top: 0.12em; }
+.para + .para { margin-top: 0.08em; }
 
 /* 一个字 = 拼音 + 汉字 */
 .sent { transition: opacity 0.45s var(--ease-out), filter 0.45s; }
-.w { display: inline-flex; align-items: flex-end; vertical-align: bottom; margin-bottom: 0.14em; text-indent: 0; }
+.w { display: inline-flex; align-items: flex-end; vertical-align: bottom; margin-bottom: 0.08em; text-indent: 0; }
 .ch {
   position: relative; display: inline-flex; flex-direction: column; align-items: center;
   min-width: 1.08em; cursor: pointer; isolation: isolate;
 }
 .py {
   display: none; font-style: normal; font-family: var(--font-py); font-size: var(--py);
-  line-height: 1.48; color: var(--ink-2); white-space: nowrap; letter-spacing: 0.01em;
+  line-height: 1.32; color: var(--ink-2); white-space: nowrap; letter-spacing: 0.01em;
   transition: color 0.3s;
 }
 .show-py .py { display: block; }
@@ -512,8 +500,8 @@ html[data-fs='l'] .page-inner { --hz: clamp(26px, 2.5vw, 33px); --py: 12px; }
 /* 词语卡（呼应书本下方的嫩绿虚线框） */
 .words {
   display: flex; justify-content: center; flex-wrap: wrap; gap: 0.15em 1.1em;
-  width: fit-content; max-width: 100%; margin: 10px auto 0; padding: 7px 22px;
-  border-radius: 16px; background: #eef7dc; border: 2px dashed #a4cf7c;
+  width: fit-content; max-width: 100%; margin: 8px auto 0; padding: 6px 18px;
+  border-radius: 14px; background: #eef7dc; border: 2px dashed #a4cf7c;
 }
 .word { font-size: calc(var(--hz) * 0.8); color: #3d5a28; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 10px; transition: background 0.2s; }
 .word:hover { background: rgba(164, 207, 124, 0.22); }
