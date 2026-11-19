@@ -72,8 +72,12 @@ function build(root, lesson) {
   /* ---------------- 页面结构 ---------------- */
   root.innerHTML = `
     <div class="reader ${S.showPinyin ? 'show-py' : ''} ${S.focus ? 'focus-mode' : ''}">
+      <div class="art-ambient" id="art-ambient" aria-hidden="true"></div>
+
       <header class="topbar">
-        <a class="icon-btn" href="#/" aria-label="返回书架">${icon('back')}</a>
+        <div class="tb-left">
+          <a class="icon-btn" href="#/" aria-label="返回书架">${icon('back')}</a>
+        </div>
         <div class="tb-title">${esc(lesson.title)}</div>
         <div class="tb-actions">
           <button class="toggle-py ${S.showPinyin ? 'on' : ''}" id="btn-py" aria-label="拼音开关"><span class="py-a">pīn</span><span class="py-b">拼</span></button>
@@ -87,6 +91,9 @@ function build(root, lesson) {
           <div class="art-frame">
             <figure class="art" id="art"></figure>
             ${scenes.length > 1 ? `<span class="scene-badge" id="scene-badge">1 / ${scenes.length}</span>` : ''}
+            <button type="button" class="cinema-btn" id="btn-cinema" aria-label="全屏绘本">
+              ${icon('expand', 'i-exp')}${icon('compress', 'i-cmp')}<span class="cb-lbl">全屏</span>
+            </button>
           </div>
           ${
             scenes.length > 1
@@ -105,18 +112,21 @@ function build(root, lesson) {
           }
         </div>
 
-        <article class="page" id="page">
-          <div class="page-inner" id="text"></div>
-          ${
-            lesson.words && lesson.words.length
-              ? `<div class="words">${lesson.words
-                  .map((w) => `<button class="word" data-w="${esc(w)}">${esc(w)}</button>`)
-                  .join('')}</div>`
-              : ''
-          }
-          <div class="bubble" id="bubble" hidden></div>
-        </article>
+        <div class="page-wrap">
+          <article class="page" id="page">
+            <div class="page-inner" id="text"></div>
+            ${
+              lesson.words && lesson.words.length
+                ? `<div class="words">${lesson.words
+                    .map((w) => `<button class="word" data-w="${esc(w)}">${esc(w)}</button>`)
+                    .join('')}</div>`
+                : ''
+            }
+          </article>
+        </div>
       </section>
+
+      <div class="bubble" id="bubble" hidden></div>
 
       <footer class="dock">
         <div class="dock-side left">
@@ -146,6 +156,7 @@ function build(root, lesson) {
 
   const $ = (sel) => root.querySelector(sel);
   const readerEl = $('.reader');
+  const ambientEl = $('#art-ambient');
   const textEl = $('#text');
   const pageEl = $('#page');
   const artEl = $('#art');
@@ -229,14 +240,23 @@ function build(root, lesson) {
     }
 
     if (src === curImg) return;
+    const isFirst = curImg === undefined;
     curImg = src;
     const layer = src
-      ? h(`<div class="art-layer"><img class="fg" src="${esc(src)}" alt=""/></div>`)
-      : h(`<div class="art-layer">${coverHTML(lesson, 'big')}<div class="art-hint">配图待添加</div></div>`);
+      ? h(`<div class="art-layer${isFirst ? ' in' : ''}"><img class="fg" src="${esc(src)}" alt=""/></div>`)
+      : h(`<div class="art-layer${isFirst ? ' in' : ''}">${coverHTML(lesson, 'big')}<div class="art-hint">配图待添加</div></div>`);
     artEl.appendChild(layer);
-    requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add('in')));
+    if (!isFirst) requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add('in')));
     const old = [...artEl.children].slice(0, -1);
     setTimeout(() => old.forEach((o) => o.remove()), 650);
+
+    if (src) {
+      const amb = h(`<div class="amb-layer${isFirst ? ' in' : ''}" style="background-image:url('${esc(src)}')"></div>`);
+      ambientEl.appendChild(amb);
+      if (!isFirst) requestAnimationFrame(() => requestAnimationFrame(() => amb.classList.add('in')));
+      const oldAmb = [...ambientEl.children].slice(0, -1);
+      setTimeout(() => oldAmb.forEach((o) => o.remove()), 850);
+    }
   }
 
   /* ---------------- 状态 → 界面 ---------------- */
@@ -289,15 +309,17 @@ function build(root, lesson) {
     // 当前句
     const si = pos < N ? tokens[pos].sent : sentences.length - 1;
     if (si !== lastSent) {
+      const activeSent = si === 0 && sentences.length > 1 ? new Set([0, 1]) : new Set([si]);
       sentEls.forEach((el, k) => {
         el.classList.toggle('on', k === si);
         el.classList.toggle('past', k < si);
+        el.classList.toggle('cin-on', activeSent.has(k));
       });
       if (!silent && lastSent >= 0 && si > lastSent) sfx.sentence();
       lastSent = si;
       showArt(si);
     }
-    if (pos !== lastPos && pos < N) scrollToToken(pos);
+    if (!readerEl.classList.contains('cinema') && pos !== lastPos && pos < N) scrollToToken(pos);
 
     // 读错
     chEls.forEach((el) => el.classList.remove('err'));
@@ -350,19 +372,6 @@ function build(root, lesson) {
       el.classList.add('shake');
       sfx.oops();
     }
-    // 定位到字的上方（放不下就放下方）
-    const pr = pageEl.getBoundingClientRect();
-    const r = el.getBoundingClientRect();
-    const bw = bubble.offsetWidth;
-    let left = r.left - pr.left + r.width / 2 - bw / 2;
-    left = Math.max(8, Math.min(left, pr.width - bw - 8));
-    let top = r.top - pr.top + pageEl.scrollTop - bubble.offsetHeight - 14;
-    const below = r.top - pr.top < bubble.offsetHeight + 20;
-    if (below) top = r.bottom - pr.top + pageEl.scrollTop + 14;
-    bubble.classList.toggle('below', below);
-    bubble.style.left = left + 'px';
-    bubble.style.top = top + 'px';
-    bubble.style.setProperty('--arrow', r.left - pr.left + r.width / 2 - left + 'px');
   }
   function hideBubble() {
     bubbleFor = -1;
@@ -762,7 +771,26 @@ function build(root, lesson) {
     const on = !readerEl.classList.contains('show-py');
     readerEl.classList.toggle('show-py', on);
     e.currentTarget.classList.toggle('on', on);
+    settings.set({ showPinyin: on });
   });
+
+  const cinemaBtn = $('#btn-cinema');
+  const artFrameEl = $('.art-frame');
+  const tbActionsEl = $('.tb-actions');
+  function setCinema(on) {
+    readerEl.classList.toggle('cinema', on);
+    cinemaBtn.querySelector('.cb-lbl').textContent = on ? '退出全屏' : '全屏';
+    cinemaBtn.setAttribute('aria-label', on ? '退出全屏绘本' : '全屏绘本');
+    if (on) tbActionsEl.prepend(cinemaBtn);
+    else artFrameEl.appendChild(cinemaBtn);
+    if (!on && matcher.pos < N) requestAnimationFrame(() => scrollToToken(matcher.pos));
+  }
+  cinemaBtn.addEventListener('click', () => setCinema(!readerEl.classList.contains('cinema')));
+
+  const onKey = (e) => {
+    if (e.key === 'Escape' && readerEl.classList.contains('cinema')) setCinema(false);
+  };
+  document.addEventListener('keydown', onKey);
 
   $('#btn-rec').addEventListener('click', () => {
     if (phase === 'listening') pause();
@@ -812,12 +840,6 @@ function build(root, lesson) {
   };
   document.addEventListener('visibilitychange', onVis);
 
-  const onResize = () => {
-    const err = matcher.error;
-    if (err && !bubble.hidden) showBubble(chEls[err.at], err);
-  };
-  window.addEventListener('resize', onResize);
-
   // 初始渲染
   setPhase('idle');
   render(matcher.state(false), { silent: true });
@@ -825,7 +847,7 @@ function build(root, lesson) {
 
   return () => {
     document.removeEventListener('visibilitychange', onVis);
-    window.removeEventListener('resize', onResize);
+    document.removeEventListener('keydown', onKey);
     audio.pause();
     stopAll();
   };
