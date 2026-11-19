@@ -789,12 +789,21 @@ function build(root, lesson) {
   const cinemaBtn = $('#btn-cinema');
   const artFrameEl = $('.art-frame');
   const tbActionsEl = $('.tb-actions');
+  const stageEl = $('.stage');
+  const pageWrapEl = $('.page-wrap');
+  const dockEl = $('.dock');
+  const dockCenterEl = $('.dock-center');
   function setCinema(on) {
     readerEl.classList.toggle('cinema', on);
     cinemaBtn.querySelector('.cb-lbl').textContent = on ? '退出全屏' : '全屏';
     cinemaBtn.setAttribute('aria-label', on ? '退出全屏绘本' : '全屏绘本');
-    if (on) tbActionsEl.prepend(cinemaBtn);
-    else artFrameEl.appendChild(cinemaBtn);
+    if (on) {
+      tbActionsEl.prepend(cinemaBtn);
+      dockEl.insertBefore(pageWrapEl, dockCenterEl);
+    } else {
+      artFrameEl.appendChild(cinemaBtn);
+      stageEl.appendChild(pageWrapEl);
+    }
     if (!on && matcher.pos < N) requestAnimationFrame(() => scrollToToken(matcher.pos));
   }
   cinemaBtn.addEventListener('click', () => setCinema(!readerEl.classList.contains('cinema')));
