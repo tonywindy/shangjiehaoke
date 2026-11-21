@@ -1,0 +1,51 @@
+{
+  "id": "yan-ma-xi",
+  "title": "演马戏",
+  "cover": "images/yan-ma-xi/02.jpg",
+  "image": "images/yan-ma-xi/01.jpg",
+  "theme": "#BA68C8",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "小猴子，真机灵，",
+          "image": "images/yan-ma-xi/01.jpg"
+        },
+        {
+          "text": "上舞台，演马戏。",
+          "image": "images/yan-ma-xi/02.jpg"
+        },
+        {
+          "text": "踩皮球，抛彩球，",
+          "image": "images/yan-ma-xi/03.jpg"
+        },
+        {
+          "text": "翻跟头，跳跳绳。",
+          "image": "images/yan-ma-xi/04.jpg"
+        },
+        {
+          "text": "观众乐，抛香蕉，",
+          "image": "images/yan-ma-xi/05.jpg"
+        },
+        {
+          "text": "小猴拾起放兜里。",
+          "image": "images/yan-ma-xi/06.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "真",
+    "机",
+    "灵",
+    "跳",
+    "拾"
+  ],
+  "words": [
+    "机灵"
+  ],
+  "pinyinOverrides": {
+    "机灵": "jī ling",
+    "跟头": "gēn tou"
+  }
+}

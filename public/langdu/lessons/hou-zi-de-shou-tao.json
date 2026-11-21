@@ -1,0 +1,64 @@
+{
+  "id": "hou-zi-de-shou-tao",
+  "title": "猴子的手套",
+  "cover": "images/hou-zi-de-shou-tao/06.jpg",
+  "image": "images/hou-zi-de-shou-tao/01.jpg",
+  "theme": "#FFA726",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "猴子捡到一双手套，它模仿人类戴在手上，还向小伙伴炫耀。",
+          "image": "images/hou-zi-de-shou-tao/01.jpg"
+        },
+        {
+          "text": "这时，一只老虎来到山上，猴子们都躲到树上，",
+          "image": "images/hou-zi-de-shou-tao/02.jpg"
+        },
+        {
+          "text": "而戴手套的猴子抓不住树干，怎么也爬不上树，它急得满身大汗。",
+          "image": "images/hou-zi-de-shou-tao/03.jpg"
+        },
+        {
+          "text": "树上的小伙伴喊道：“快把手套摘下来！”",
+          "image": "images/hou-zi-de-shou-tao/04.jpg"
+        }
+      ]
+    },
+    {
+      "sentences": [
+        {
+          "text": "猴子马上摘掉手套，",
+          "image": "images/hou-zi-de-shou-tao/05.jpg"
+        },
+        {
+          "text": "终于爬上大树摆脱了困境。",
+          "image": "images/hou-zi-de-shou-tao/06.jpg"
+        }
+      ]
+    },
+    {
+      "sentences": [
+        {
+          "text": "从此，小猴子再也不乱模仿别人了。",
+          "image": "images/hou-zi-de-shou-tao/07.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "急",
+    "摆",
+    "脱",
+    "困",
+    "境"
+  ],
+  "words": [
+    "摆脱",
+    "困境"
+  ],
+  "pinyinOverrides": {
+    "树干": "shù gàn",
+    "急得": "jí de"
+  }
+}

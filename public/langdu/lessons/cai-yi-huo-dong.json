@@ -1,0 +1,55 @@
+{
+  "id": "cai-yi-huo-dong",
+  "title": "才艺活动",
+  "cover": "images/cai-yi-huo-dong/05.jpg",
+  "image": "images/cai-yi-huo-dong/01.jpg",
+  "theme": "#F06292",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "幼儿园开展才艺表演活动啦，",
+          "image": "images/cai-yi-huo-dong/01.jpg"
+        },
+        {
+          "text": "每个班级的宝宝都很有本领，",
+          "image": "images/cai-yi-huo-dong/02.jpg"
+        },
+        {
+          "text": "有的宝宝会跳绳，有的宝宝会打篮球，",
+          "image": "images/cai-yi-huo-dong/03.jpg"
+        },
+        {
+          "text": "还有的会玩拼积木。",
+          "image": "images/cai-yi-huo-dong/04.jpg"
+        }
+      ]
+    },
+    {
+      "sentences": [
+        {
+          "text": "宝宝们表现都很棒，得到了许多奖品。",
+          "image": "images/cai-yi-huo-dong/05.jpg"
+        },
+        {
+          "text": "小朋友们都会哪些本领呢？",
+          "image": "images/cai-yi-huo-dong/06.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "活",
+    "班",
+    "级",
+    "得",
+    "奖"
+  ],
+  "words": [
+    "班级",
+    "活动"
+  ],
+  "pinyinOverrides": {
+    "本领": "běn lǐng"
+  }
+}

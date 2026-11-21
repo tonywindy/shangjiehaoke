@@ -1,0 +1,43 @@
+{
+  "id": "yu-zhu-chuan",
+  "title": "玉珠串",
+  "cover": "images/yu-zhu-chuan/04.jpg",
+  "image": "images/yu-zhu-chuan/01.jpg",
+  "theme": "#F48FB1",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "小盒子，真漂亮，",
+          "image": "images/yu-zhu-chuan/01.jpg"
+        },
+        {
+          "text": "里面装着玉珠串。",
+          "image": "images/yu-zhu-chuan/02.jpg"
+        },
+        {
+          "text": "拿起来，盘手上，",
+          "image": "images/yu-zhu-chuan/03.jpg"
+        },
+        {
+          "text": "晶莹剔透真好看。",
+          "image": "images/yu-zhu-chuan/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "盒",
+    "玉",
+    "珠",
+    "盘"
+  ],
+  "words": [
+    "盒子",
+    "玉珠"
+  ],
+  "pinyinOverrides": {
+    "盒子": "hé zi",
+    "漂亮": "piào liang"
+  }
+}

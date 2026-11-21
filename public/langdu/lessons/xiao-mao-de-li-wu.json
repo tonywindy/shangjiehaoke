@@ -1,0 +1,49 @@
+{
+  "id": "xiao-mao-de-li-wu",
+  "title": "小猫的礼物",
+  "cover": "images/xiao-mao-de-li-wu/06.jpg",
+  "image": "images/xiao-mao-de-li-wu/01.jpg",
+  "theme": "#90A4AE",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "今天是老花猫生日，小猫想为它献上一份特别的礼物。",
+          "image": "images/xiao-mao-de-li-wu/01.jpg"
+        },
+        {
+          "text": "当它经过一个屋子时，看到里面有一个奇怪的光点在跳动，",
+          "image": "images/xiao-mao-de-li-wu/02.jpg"
+        },
+        {
+          "text": "它伸出利爪，迅速把光点抓起来，",
+          "image": "images/xiao-mao-de-li-wu/03.jpg"
+        },
+        {
+          "text": "跑回去把礼物送给老花猫。",
+          "image": "images/xiao-mao-de-li-wu/04.jpg"
+        },
+        {
+          "text": "可是打开爪子后，光点不见了，",
+          "image": "images/xiao-mao-de-li-wu/05.jpg"
+        },
+        {
+          "text": "同伴们哈哈大笑：“那只是蜡烛的光。”",
+          "image": "images/xiao-mao-de-li-wu/06.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "献",
+    "利",
+    "抓",
+    "烛"
+  ],
+  "words": [
+    "蜡烛"
+  ],
+  "pinyinOverrides": {
+    "爪子": "zhuǎ zi"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "id": "wan-hua-tong",
+  "title": "万花筒",
+  "cover": "images/wan-hua-tong/02.jpg",
+  "image": "images/wan-hua-tong/01.jpg",
+  "theme": "#9575CD",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "万花筒，真奇妙，",
+          "image": "images/wan-hua-tong/01.jpg"
+        },
+        {
+          "text": "里面长出万朵花。",
+          "image": "images/wan-hua-tong/02.jpg"
+        },
+        {
+          "text": "转圆筒，画面变，",
+          "image": "images/wan-hua-tong/03.jpg"
+        },
+        {
+          "text": "换个角度更精彩。",
+          "image": "images/wan-hua-tong/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "画",
+    "面",
+    "变",
+    "角",
+    "度"
+  ],
+  "words": [
+    "画面",
+    "角度"
+  ],
+  "pinyinOverrides": {
+    "长出": "zhǎng chū",
+    "转圆筒": "zhuàn yuán tǒng"
+  }
+}

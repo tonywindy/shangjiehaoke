@@ -1,0 +1,53 @@
+{
+  "id": "mei-hua-huan-jing",
+  "title": "美化环境",
+  "cover": "images/mei-hua-huan-jing/06.jpg",
+  "image": "images/mei-hua-huan-jing/01.jpg",
+  "theme": "#81C784",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "山坡上，种树苗，",
+          "image": "images/mei-hua-huan-jing/01.jpg"
+        },
+        {
+          "text": "种好树苗来浇水。",
+          "image": "images/mei-hua-huan-jing/02.jpg"
+        },
+        {
+          "text": "水滴穿过泥土里，",
+          "image": "images/mei-hua-huan-jing/03.jpg"
+        },
+        {
+          "text": "滋润树苗快成长。",
+          "image": "images/mei-hua-huan-jing/04.jpg"
+        },
+        {
+          "text": "花草树木长满地，",
+          "image": "images/mei-hua-huan-jing/05.jpg"
+        },
+        {
+          "text": "环境变得真美丽。",
+          "image": "images/mei-hua-huan-jing/06.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "滴",
+    "穿",
+    "环",
+    "境",
+    "美"
+  ],
+  "words": [
+    "环境",
+    "美丽"
+  ],
+  "pinyinOverrides": {
+    "种树苗": "zhòng shù miáo",
+    "种好": "zhòng hǎo",
+    "长满": "zhǎng mǎn"
+  }
+}

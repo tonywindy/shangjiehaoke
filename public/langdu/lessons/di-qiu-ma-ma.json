@@ -1,0 +1,58 @@
+{
+  "id": "di-qiu-ma-ma",
+  "title": "地球妈妈",
+  "cover": "images/di-qiu-ma-ma/06.jpg",
+  "image": "images/di-qiu-ma-ma/01.jpg",
+  "theme": "#4FC3F7",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "地球妈妈真伟大，",
+          "image": "images/di-qiu-ma-ma/01.jpg"
+        },
+        {
+          "text": "她用青草纺织绿色的外衣，",
+          "image": "images/di-qiu-ma-ma/02.jpg"
+        },
+        {
+          "text": "她用雨水滋润青翠的农田。",
+          "image": "images/di-qiu-ma-ma/03.jpg"
+        },
+        {
+          "text": "云朵是她乘凉的扇子，",
+          "image": "images/di-qiu-ma-ma/04.jpg"
+        },
+        {
+          "text": "微风是她呢喃的话语。",
+          "image": "images/di-qiu-ma-ma/05.jpg"
+        },
+        {
+          "text": "她抚育着所有的生命，",
+          "image": "images/di-qiu-ma-ma/06.jpg"
+        },
+        {
+          "text": "她需要我们好好爱惜。",
+          "image": "images/di-qiu-ma-ma/07.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "纺",
+    "织",
+    "农",
+    "田",
+    "扇",
+    "话",
+    "语"
+  ],
+  "words": [
+    "纺织",
+    "话语"
+  ],
+  "pinyinOverrides": {
+    "扇子": "shàn zi",
+    "抚育着": "fǔ yù zhe"
+  }
+}

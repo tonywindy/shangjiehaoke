@@ -1,0 +1,41 @@
+{
+  "id": "xue-han-zi",
+  "title": "学汉字",
+  "cover": "images/xue-han-zi/02.jpg",
+  "image": "images/xue-han-zi/01.jpg",
+  "theme": "#64B5F6",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "课堂里，真安静，",
+          "image": "images/xue-han-zi/01.jpg"
+        },
+        {
+          "text": "老师教我学汉字。",
+          "image": "images/xue-han-zi/02.jpg"
+        },
+        {
+          "text": "听一遍，念一遍，",
+          "image": "images/xue-han-zi/03.jpg"
+        },
+        {
+          "text": "读错会改才进步。",
+          "image": "images/xue-han-zi/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "静",
+    "读",
+    "错",
+    "会",
+    "改"
+  ],
+  "words": [
+    "安静",
+    "朗读"
+  ],
+  "pinyinOverrides": {}
+}

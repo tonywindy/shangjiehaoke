@@ -1,0 +1,44 @@
+{
+  "id": "hao-bang-shou",
+  "title": "好帮手",
+  "cover": "images/hao-bang-shou/04.jpg",
+  "image": "images/hao-bang-shou/01.jpg",
+  "theme": "#AED581",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "我是妈妈好帮手，",
+          "image": "images/hao-bang-shou/01.jpg"
+        },
+        {
+          "text": "平时帮忙干家务，",
+          "image": "images/hao-bang-shou/02.jpg"
+        },
+        {
+          "text": "浇花扫地端盘子，",
+          "image": "images/hao-bang-shou/03.jpg"
+        },
+        {
+          "text": "做事认真人人夸。",
+          "image": "images/hao-bang-shou/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "平",
+    "干",
+    "事",
+    "认",
+    "夸"
+  ],
+  "words": [
+    "做事",
+    "认真"
+  ],
+  "pinyinOverrides": {
+    "干家务": "gàn jiā wù",
+    "盘子": "pán zi"
+  }
+}

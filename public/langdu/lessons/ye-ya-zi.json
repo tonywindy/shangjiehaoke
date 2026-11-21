@@ -1,0 +1,44 @@
+{
+  "id": "ye-ya-zi",
+  "title": "野鸭子",
+  "cover": "images/ye-ya-zi/03.jpg",
+  "image": "images/ye-ya-zi/01.jpg",
+  "theme": "#4DD0E1",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "野鸭子，岸边走，",
+          "image": "images/ye-ya-zi/01.jpg"
+        },
+        {
+          "text": "拍拍翅膀抖抖毛。",
+          "image": "images/ye-ya-zi/02.jpg"
+        },
+        {
+          "text": "走入湖中找食物，",
+          "image": "images/ye-ya-zi/03.jpg"
+        },
+        {
+          "text": "顺着水流往下游。",
+          "image": "images/ye-ya-zi/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "拍",
+    "抖",
+    "入",
+    "顺"
+  ],
+  "words": [
+    "拍翅膀",
+    "抖动"
+  ],
+  "pinyinOverrides": {
+    "鸭子": "yā zi",
+    "翅膀": "chì bǎng",
+    "顺着": "shùn zhe"
+  }
+}

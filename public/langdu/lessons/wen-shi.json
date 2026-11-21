@@ -1,0 +1,60 @@
+{
+  "id": "wen-shi",
+  "title": "温室",
+  "cover": "images/wen-shi/03.jpg",
+  "image": "images/wen-shi/01.jpg",
+  "theme": "#66BB6A",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "小温室，种蔬菜，",
+          "image": "images/wen-shi/01.jpg"
+        },
+        {
+          "text": "防风防雨防害虫。",
+          "image": "images/wen-shi/02.jpg"
+        },
+        {
+          "text": "温室里，真漂亮，",
+          "image": "images/wen-shi/03.jpg"
+        },
+        {
+          "text": "蔬菜宝宝爱装扮。",
+          "image": "images/wen-shi/04.jpg"
+        },
+        {
+          "text": "大白菜，绿头发，",
+          "image": "images/wen-shi/05.jpg"
+        },
+        {
+          "text": "茄子哥哥穿紫衣。",
+          "image": "images/wen-shi/06.jpg"
+        },
+        {
+          "text": "大南瓜，个子大，",
+          "image": "images/wen-shi/07.jpg"
+        },
+        {
+          "text": "番茄妹妹红外套。",
+          "image": "images/wen-shi/08.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "防",
+    "装",
+    "扮"
+  ],
+  "words": [
+    "装扮"
+  ],
+  "pinyinOverrides": {
+    "种蔬菜": "zhòng shū cài",
+    "漂亮": "piào liang",
+    "头发": "tóu fa",
+    "茄子": "qié zi",
+    "个子": "gè zi"
+  }
+}
