@@ -1,0 +1,41 @@
+{
+  "id": "tuo-huang",
+  "title": "拓荒",
+  "cover": "images/tuo-huang/04.jpg",
+  "image": "images/tuo-huang/01.jpg",
+  "theme": "#66BB6A",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "小农夫，来拓荒，",
+          "image": "images/tuo-huang/01.jpg"
+        },
+        {
+          "text": "荒地里，建新居，",
+          "image": "images/tuo-huang/02.jpg"
+        },
+        {
+          "text": "学耕地，种庄稼，",
+          "image": "images/tuo-huang/03.jpg"
+        },
+        {
+          "text": "荒地变成小农场。",
+          "image": "images/tuo-huang/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "里",
+    "居",
+    "学"
+  ],
+  "words": [
+    "庄稼"
+  ],
+  "pinyinOverrides": {
+    "庄稼": "zhuāng jia",
+    "种庄稼": "zhòng zhuāng jia"
+  }
+}

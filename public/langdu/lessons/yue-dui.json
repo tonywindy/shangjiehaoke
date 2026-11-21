@@ -1,0 +1,43 @@
+{
+  "id": "yue-dui",
+  "title": "乐队",
+  "cover": "images/yue-dui/04.jpg",
+  "image": "images/yue-dui/01.jpg",
+  "theme": "#FF7043",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "豆豆爱打鼓，快慢节奏好。",
+          "image": "images/yue-dui/01.jpg"
+        },
+        {
+          "text": "皮皮爱弹琴，音符在跳动。",
+          "image": "images/yue-dui/02.jpg"
+        },
+        {
+          "text": "我们多才艺，组成小乐队。",
+          "image": "images/yue-dui/03.jpg"
+        },
+        {
+          "text": "开心上舞台，表演很精彩。",
+          "image": "images/yue-dui/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "快",
+    "慢",
+    "才",
+    "很"
+  ],
+  "words": [
+    "才艺",
+    "乐队"
+  ],
+  "pinyinOverrides": {
+    "乐队": "yuè duì",
+    "弹琴": "tán qín"
+  }
+}

@@ -3,7 +3,14 @@
     {
       "id": "book-1",
       "title": "我的故事书",
-      "lessons": ["jiu-yueqi"]
+      "lessons": [
+        "jiu-yueqi",
+        "sai-pao",
+        "tuo-huang",
+        "shei-de-shou-ming-chang",
+        "xuan-liang-ci-gu",
+        "yue-dui"
+      ]
     }
   ]
 }

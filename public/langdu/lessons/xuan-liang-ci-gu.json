@@ -1,0 +1,64 @@
+{
+  "id": "xuan-liang-ci-gu",
+  "title": "悬梁刺股",
+  "cover": "images/xuan-liang-ci-gu/06.jpg",
+  "image": "images/xuan-liang-ci-gu/01.jpg",
+  "theme": "#7986CB",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "东汉的时候，孙敬因为读书犯困，",
+          "image": "images/xuan-liang-ci-gu/01.jpg"
+        },
+        {
+          "text": "用绳子把头发绑在房梁上，",
+          "image": "images/xuan-liang-ci-gu/02.jpg"
+        },
+        {
+          "text": "头一低，悬挂的头发扯痛头皮，马上就清醒了。",
+          "image": "images/xuan-liang-ci-gu/03.jpg"
+        }
+      ]
+    },
+    {
+      "sentences": [
+        {
+          "text": "战国时期，苏秦因为渴求知识，读书一打瞌睡，",
+          "image": "images/xuan-liang-ci-gu/04.jpg"
+        },
+        {
+          "text": "就用锥子刺进大腿，因疼痛而清醒。",
+          "image": "images/xuan-liang-ci-gu/05.jpg"
+        }
+      ]
+    },
+    {
+      "sentences": [
+        {
+          "text": "他们为了学习，而头悬梁，锥刺股。",
+          "image": "images/xuan-liang-ci-gu/06.jpg"
+        },
+        {
+          "text": "小朋友们觉得这样做对吗？",
+          "image": "images/xuan-liang-ci-gu/07.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "因",
+    "渴",
+    "求",
+    "悬",
+    "刺"
+  ],
+  "words": [
+    "求知",
+    "渴望"
+  ],
+  "pinyinOverrides": {
+    "头发": "tóu fa",
+    "觉得": "jué de"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "id": "shei-de-shou-ming-chang",
+  "title": "谁的寿命长",
+  "cover": "images/shei-de-shou-ming-chang/05.jpg",
+  "image": "images/shei-de-shou-ming-chang/01.jpg",
+  "theme": "#4DB6AC",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "大家猜，谁的寿命长？",
+          "image": "images/shei-de-shou-ming-chang/01.jpg"
+        },
+        {
+          "text": "小狗说：“我能活十年！”",
+          "image": "images/shei-de-shou-ming-chang/02.jpg"
+        },
+        {
+          "text": "乌龟说：“我能活百年！”",
+          "image": "images/shei-de-shou-ming-chang/03.jpg"
+        },
+        {
+          "text": "松树说：“我能活万年！”",
+          "image": "images/shei-de-shou-ming-chang/04.jpg"
+        },
+        {
+          "text": "原来是，松树最长寿！",
+          "image": "images/shei-de-shou-ming-chang/05.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "长",
+    "年",
+    "龟",
+    "松",
+    "万"
+  ],
+  "words": [
+    "乌龟",
+    "松树"
+  ],
+  "pinyinOverrides": {
+    "长寿": "cháng shòu"
+  }
+}

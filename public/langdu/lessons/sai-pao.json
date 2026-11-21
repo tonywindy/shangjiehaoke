@@ -1,0 +1,64 @@
+{
+  "id": "sai-pao",
+  "title": "赛跑",
+  "cover": "images/sai-pao/07.jpg",
+  "image": "images/sai-pao/01.jpg",
+  "theme": "#FF8A65",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "兔子和乌龟参加赛跑。",
+          "image": "images/sai-pao/01.jpg"
+        },
+        {
+          "text": "兔子嘲笑乌龟跑得慢，很快把乌龟远远甩在后面，",
+          "image": "images/sai-pao/02.jpg"
+        },
+        {
+          "text": "可是它跑得太快，一不小心被石头绊倒了，脚受了伤。",
+          "image": "images/sai-pao/03.jpg"
+        }
+      ]
+    },
+    {
+      "sentences": [
+        {
+          "text": "乌龟追上来后让兔子坐到自己背上，",
+          "image": "images/sai-pao/04.jpg"
+        },
+        {
+          "text": "然后继续朝着终点前进。",
+          "image": "images/sai-pao/05.jpg"
+        }
+      ]
+    },
+    {
+      "sentences": [
+        {
+          "text": "最后，乌龟和兔子共同取得了胜利，",
+          "image": "images/sai-pao/06.jpg"
+        },
+        {
+          "text": "它们高高举起手里的奖杯，开心地笑了。",
+          "image": "images/sai-pao/07.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "胜",
+    "利",
+    "举",
+    "杯"
+  ],
+  "words": [
+    "胜利",
+    "奖杯"
+  ],
+  "pinyinOverrides": {
+    "跑得": "pǎo de",
+    "背上": "bèi shàng",
+    "朝着": "cháo zhe"
+  }
+}
