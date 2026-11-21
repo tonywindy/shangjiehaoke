@@ -9,6 +9,7 @@ const DEFAULTS = {
   childName: '宝贝',
   asr: CFG.defaultAsr || 'aliyun', // 'aliyun' | 'demo'
   level: 'normal', // 'loose' | 'normal' | 'strict'
+  leadMode: false, // 带读模式：老师先读一句，孩子跟读一句
   showPinyin: true,
   fontSize: 'm', // 's' | 'm' | 'l'
   record: true,

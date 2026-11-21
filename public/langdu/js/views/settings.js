@@ -39,6 +39,7 @@ export function openSettings(onChange) {
           <small class="muted" id="level-tip"></small>
         </div>
         <div class="set-row"><span>当前句子聚焦</span>${sw('focus', s.focus)}</div>
+        <div class="set-row"><span>带读模式（读一句跟一句）</span>${sw('leadMode', s.leadMode)}</div>
       </div>
 
       <div class="set-group">

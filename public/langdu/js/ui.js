@@ -149,58 +149,133 @@ export const sfx = {
 
 /* ---------------- 朗读示范（优先使用阿里云自然语音合成，带本地缓存） ---------------- */
 const ttsCache = new Map();
+const ttsInflight = new Map();
 const ttsAudio = new Audio();
 let ttsSeq = 0;
+let ttsResolve = null;
 
-function fallbackSpeak(text) {
-  try {
-    if (!window.speechSynthesis) return false;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-CN';
-    u.rate = 0.8;
-    const v = speechSynthesis.getVoices().find((x) => /zh[-_]CN/i.test(x.lang));
-    if (v) u.voice = v;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-    return true;
-  } catch (e) {
-    return false;
+function settleSpeak(ok) {
+  if (ttsResolve) {
+    const fn = ttsResolve;
+    ttsResolve = null;
+    fn(ok);
   }
 }
 
-export async function speak(text) {
-  const clean = String(text || '').trim();
-  if (!clean) return false;
-  const seq = ++ttsSeq;
+export function stopSpeak() {
+  ttsSeq++;
   try {
     ttsAudio.pause();
+    ttsAudio.onended = ttsAudio.onerror = null;
   } catch (e) {}
+  try {
+    window.speechSynthesis && speechSynthesis.cancel();
+  } catch (e) {}
+  settleSpeak(false);
+}
 
+function getTtsUrl() {
   const cfg = window.APP_CONFIG || {};
-  const s = settings.get();
-  const ttsBase = cfg.ttsUrl || (cfg.tokenUrl ? cfg.tokenUrl.replace(/aliyun-token(\.php)?$/, 'aliyun-tts') : '');
+  return cfg.ttsUrl || (cfg.tokenUrl ? cfg.tokenUrl.replace(/aliyun-token(\.php)?$/, 'aliyun-tts') : '');
+}
 
+async function fetchTtsAudio(clean) {
+  if (ttsCache.has(clean)) return ttsCache.get(clean);
+  if (ttsInflight.has(clean)) return ttsInflight.get(clean);
+  const ttsBase = getTtsUrl();
+  const s = settings.get();
+  if (!ttsBase || s.asr === 'demo') return null;
+
+  const p = (async () => {
+    const headers = {};
+    if (s.accessCode) headers['X-Access-Code'] = s.accessCode;
+    const res = await fetch(`${ttsBase}?text=${encodeURIComponent(clean)}`, { headers });
+    if (!res.ok) throw new Error('TTS ' + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    ttsCache.set(clean, url);
+    return url;
+  })().finally(() => ttsInflight.delete(clean));
+
+  ttsInflight.set(clean, p);
+  return p;
+}
+
+export function preloadSpeak(text) {
+  const clean = String(text || '').trim();
+  if (!clean || ttsCache.has(clean)) return;
+  fetchTtsAudio(clean).catch(() => {});
+}
+
+function fallbackSpeak(text, wait) {
+  try {
+    if (!window.speechSynthesis) return wait ? Promise.resolve(false) : false;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = 0.82;
+    const v = speechSynthesis.getVoices().find((x) => /zh[-_]CN/i.test(x.lang));
+    if (v) u.voice = v;
+    speechSynthesis.cancel();
+    if (!wait) {
+      speechSynthesis.speak(u);
+      return true;
+    }
+    return new Promise((resolve) => {
+      ttsResolve = resolve;
+      const done = (ok) => {
+        clearTimeout(guard);
+        if (ttsResolve === resolve) settleSpeak(ok);
+      };
+      const guard = setTimeout(() => done(true), Math.max(2000, text.length * 420));
+      u.onend = () => done(true);
+      u.onerror = () => done(false);
+      speechSynthesis.speak(u);
+    });
+  } catch (e) {
+    return wait ? Promise.resolve(false) : false;
+  }
+}
+
+export async function speak(text, { wait = false } = {}) {
+  const clean = String(text || '').trim();
+  if (!clean) return false;
+  stopSpeak();
+  const seq = ttsSeq;
+
+  const ttsBase = getTtsUrl();
+  const s = settings.get();
   if (ttsBase && s.asr !== 'demo') {
     try {
-      let url = ttsCache.get(clean);
-      if (!url) {
-        const headers = {};
-        if (s.accessCode) headers['X-Access-Code'] = s.accessCode;
-        const res = await fetch(`${ttsBase}?text=${encodeURIComponent(clean)}`, { headers });
-        if (!res.ok) throw new Error('TTS ' + res.status);
-        const blob = await res.blob();
-        url = URL.createObjectURL(blob);
-        ttsCache.set(clean, url);
+      const url = await fetchTtsAudio(clean);
+      if (seq !== ttsSeq) return false;
+      if (url) {
+        ttsAudio.src = url;
+        if (!wait) {
+          await ttsAudio.play();
+          return true;
+        }
+        return await new Promise((resolve) => {
+          ttsResolve = resolve;
+          ttsAudio.onended = () => {
+            ttsAudio.onended = ttsAudio.onerror = null;
+            if (ttsResolve === resolve) settleSpeak(true);
+          };
+          ttsAudio.onerror = () => {
+            ttsAudio.onended = ttsAudio.onerror = null;
+            if (ttsResolve === resolve) settleSpeak(false);
+          };
+          ttsAudio.play().catch(() => {
+            ttsAudio.onended = ttsAudio.onerror = null;
+            if (ttsResolve === resolve) settleSpeak(false);
+          });
+        });
       }
-      if (seq !== ttsSeq) return true;
-      ttsAudio.src = url;
-      await ttsAudio.play();
-      return true;
     } catch (e) {
       // 阿里云合成不可用时静默回退到系统朗读
     }
   }
-  return fallbackSpeak(clean);
+  if (seq !== ttsSeq) return false;
+  return fallbackSpeak(clean, wait);
 }
 
 /* ---------------- 彩带 ---------------- */

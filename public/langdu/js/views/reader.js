@@ -8,7 +8,7 @@ import { Mic } from '../mic.js';
 import { AliyunASR } from '../asr-aliyun.js';
 import { DemoASR } from '../asr-demo.js';
 import { settings, progress, recordings } from '../store.js';
-import { icon, esc, h, toast, modal, sfx, confetti, speak, parentGate, STICKERS, STARS_PER_STICKER } from '../ui.js';
+import { icon, esc, h, toast, modal, sfx, confetti, speak, stopSpeak, preloadSpeak, parentGate, STICKERS, STARS_PER_STICKER } from '../ui.js';
 import { openSettings } from './settings.js';
 import { coverHTML } from './home.js';
 
@@ -83,6 +83,7 @@ function build(root, lesson) {
         </div>
         <div class="tb-title">${esc(lesson.title)}</div>
         <div class="tb-actions">
+          <button class="toggle-lead ${S.leadMode ? 'on' : ''}" id="btn-lead" aria-label="带读模式" aria-pressed="${S.leadMode}">${icon('speaker', 'ld-ic')}<span class="ld-b">带读</span></button>
           <button class="toggle-fs" id="btn-fs" aria-label="调整字号"><span class="fs-a">A</span><span class="fs-b">${FS_LABEL[S.fontSize] || '中'}</span></button>
           <button class="toggle-py ${S.showPinyin ? 'on' : ''}" id="btn-py" aria-label="拼音开关"><span class="py-a">pīn</span><span class="py-b">拼</span></button>
           <button class="icon-btn" id="btn-rec" aria-label="我的录音">${icon('headphones')}</button>
@@ -145,6 +146,7 @@ function build(root, lesson) {
           <div class="status-wrap">
             <div class="status" id="status">点一下话筒，开始读吧</div>
             <div class="heard" id="heard" aria-live="polite"></div>
+            <button type="button" class="rehear-btn" id="btn-rehear" hidden>${icon('speaker')}<span>再听这句</span></button>
           </div>
         </div>
         <div class="dock-side right">
@@ -170,6 +172,8 @@ function build(root, lesson) {
   const bar = $('#bar');
   const statusEl = $('#status');
   const heardEl = $('#heard');
+  const rehearBtn = $('#btn-rehear');
+  const leadBtn = $('#btn-lead');
   const micBtn = $('#mic');
   const micWrap = $('.mic-wrap');
 
@@ -268,6 +272,15 @@ function build(root, lesson) {
   let lastPos = -1;
   let lastSent = -1;
   let heardTimer = 0;
+  let leadSpeaking = false;
+  let lastLedSent = -1;
+  let silenceTimer = 0;
+  const SILENCE_PCM = new ArrayBuffer(3200);
+
+  function updateRehear() {
+    if (!rehearBtn) return;
+    rehearBtn.hidden = !(S.leadMode && phase === 'listening' && !leadSpeaking && !matcher.done);
+  }
 
   function setPhase(p, msg) {
     phase = p;
@@ -275,6 +288,7 @@ function build(root, lesson) {
     micBtn.setAttribute('aria-label', p === 'listening' ? '暂停' : '开始朗读');
     if (msg != null) setStatus(msg);
     if (p !== 'listening') setHeard('');
+    updateRehear();
   }
   function setStatus(msg, cls = '') {
     statusEl.innerHTML = msg;
@@ -312,7 +326,8 @@ function build(root, lesson) {
 
     // 当前句
     const si = pos < N ? tokens[pos].sent : sentences.length - 1;
-    if (si !== lastSent) {
+    const sentChanged = si !== lastSent;
+    if (sentChanged) {
       const activeSent = si === 0 && sentences.length > 1 ? new Set([0, 1]) : new Set([si]);
       sentEls.forEach((el, k) => {
         el.classList.toggle('on', k === si);
@@ -336,9 +351,15 @@ function build(root, lesson) {
     } else {
       hideBubble();
       readerEl.classList.remove('has-err');
-      if (phase === 'listening') setStatus('我在听，请大声读～', 'live');
+      if (phase === 'listening' && !leadSpeaking) {
+        setStatus(S.leadMode ? '轮到你读这句啦～' : '我在听，请大声读～', 'live');
+      }
     }
     lastPos = pos;
+
+    if (sentChanged && !silent && S.leadMode && phase === 'listening' && !state.done && si !== lastLedSent) {
+      leadSentence(si);
+    }
   }
 
   function scrollToToken(pos) {
@@ -392,10 +413,12 @@ function build(root, lesson) {
 
   const handlers = {
     onPartial: (text) => {
+      if (leadSpeaking) return;
       setHeard(text);
       apply(matcher.feed(text, false));
     },
     onFinal: (text) => {
+      if (leadSpeaking) return;
       setHeard(text);
       apply(matcher.feed(text, true));
     },
@@ -410,7 +433,7 @@ function build(root, lesson) {
         try {
           asr = makeAsr();
           await asr.start();
-          setStatus('我在听，请大声读～', 'live');
+          if (!leadSpeaking) setStatus(S.leadMode ? '轮到你读这句啦～' : '我在听，请大声读～', 'live');
           return;
         } catch (er) {}
       }
@@ -418,6 +441,55 @@ function build(root, lesson) {
       pause();
     },
   };
+
+  function stopLead() {
+    clearInterval(silenceTimer);
+    silenceTimer = 0;
+    if (leadSpeaking) {
+      leadSpeaking = false;
+      readerEl.classList.remove('lead-speaking');
+      stopSpeak();
+    }
+    updateRehear();
+  }
+
+  async function leadSentence(si) {
+    const s = sentences[si];
+    if (!s || phase !== 'listening' || !S.leadMode) return;
+    stopLead();
+    lastLedSent = si;
+    leadSpeaking = true;
+    readerEl.classList.add('lead-speaking');
+    updateRehear();
+    setStatus('老师领读中，请仔细听～', 'lead');
+
+    mic && mic.pause();
+    if (S.asr === 'demo' && asr) await asr.stop().catch(() => {});
+
+    clearInterval(silenceTimer);
+    if (S.asr !== 'demo') {
+      silenceTimer = setInterval(() => asr && asr.feed(SILENCE_PCM), 100);
+    }
+
+    if (sentences[si + 1]) preloadSpeak(sentences[si + 1].text);
+    const completed = await speak(s.text, { wait: true });
+
+    clearInterval(silenceTimer);
+    silenceTimer = 0;
+    leadSpeaking = false;
+    readerEl.classList.remove('lead-speaking');
+    updateRehear();
+
+    if (!completed || phase !== 'listening' || !S.leadMode) return;
+
+    sfx.sentence();
+    mic && mic.resume();
+    if (S.asr === 'demo') {
+      asr = makeAsr();
+      await asr.start().catch(() => {});
+    }
+    setStatus('轮到你读这句啦～', 'live');
+  }
 
   function makeAsr() {
     return S.asr === 'demo'
@@ -457,11 +529,15 @@ function build(root, lesson) {
       await asr.start();
       reconnects = 0;
       activeSince = Date.now();
-      setPhase('listening', '我在听，请大声读～');
-      setStatus('我在听，请大声读～', 'live');
+      setPhase('listening', S.leadMode ? '老师领读中，请仔细听～' : '我在听，请大声读～');
+      setStatus(S.leadMode ? '老师领读中，请仔细听～' : '我在听，请大声读～', S.leadMode ? 'lead' : 'live');
       render(matcher.state(false), { silent: true });
       requestWakeLock();
-      if (S.asr === 'demo') fakeLevel();
+      if (S.asr === 'demo' && !S.leadMode) fakeLevel();
+      if (S.leadMode && !matcher.done) {
+        const curSi = matcher.pos < N ? tokens[matcher.pos].sent : 0;
+        leadSentence(curSi);
+      }
     } catch (e) {
       console.error(e);
       if (asr) asr.stop().catch(() => {});
@@ -504,6 +580,7 @@ function build(root, lesson) {
 
   async function pause(msg = '暂停啦，点话筒继续') {
     if (phase !== 'listening' && phase !== 'connecting') return;
+    stopLead();
     setPhase('paused', msg);
     if (activeSince) activeMs += Date.now() - activeSince;
     activeSince = 0;
@@ -517,6 +594,7 @@ function build(root, lesson) {
   }
 
   async function stopAll() {
+    stopLead();
     const a = asr;
     asr = null;
     if (a) await a.stop().catch(() => {});
@@ -537,6 +615,7 @@ function build(root, lesson) {
     matcher.reset(0);
     activeMs = 0;
     lastSent = -1;
+    lastLedSent = -1;
     lastPos = -1;
     if (!keepPhase) setPhase('idle', '点一下话筒，开始读吧');
     render(matcher.state(false), { silent: true });
@@ -720,10 +799,16 @@ function build(root, lesson) {
 
   function jumpToToken(t, msg) {
     if (phase === 'done') return;
+    stopLead();
+    lastLedSent = -1;
     const st = matcher.jumpTo(t);
     lastPos = -1;
     render(st, { silent: true });
-    restartDemo();
+    if (S.leadMode && phase === 'listening' && !st.done) {
+      leadSentence(tokens[st.pos].sent);
+    } else {
+      restartDemo();
+    }
     if (msg) toast(msg, 1600);
   }
 
@@ -770,6 +855,40 @@ function build(root, lesson) {
       speak(b.dataset.w);
     })
   );
+
+  leadBtn.addEventListener('click', async () => {
+    const on = !S.leadMode;
+    S.leadMode = on;
+    settings.set({ leadMode: on });
+    leadBtn.classList.toggle('on', on);
+    leadBtn.setAttribute('aria-pressed', on);
+    if (!on) {
+      const wasSpeaking = leadSpeaking;
+      stopLead();
+      if (wasSpeaking && phase === 'listening') {
+        mic && mic.resume();
+        if (S.asr === 'demo') {
+          asr = makeAsr();
+          await asr.start().catch(() => {});
+        }
+        setStatus('我在听，请大声读～', 'live');
+      }
+      toast('已切回自读模式', 1600);
+    } else {
+      toast('已开启带读：老师读一句，你跟读一句', 2000);
+      if (phase === 'listening' && !matcher.done) {
+        leadSentence(tokens[matcher.pos].sent);
+      } else {
+        updateRehear();
+      }
+    }
+  });
+
+  rehearBtn && rehearBtn.addEventListener('click', () => {
+    if (phase === 'listening' && !matcher.done && !leadSpeaking) {
+      leadSentence(tokens[matcher.pos].sent);
+    }
+  });
 
   $('#btn-fs').addEventListener('click', (e) => {
     const cur = settings.get().fontSize || 'm';
@@ -830,6 +949,10 @@ function build(root, lesson) {
         S.level = ns.level;
         S.focus = ns.focus;
         S.sound = ns.sound;
+        S.leadMode = ns.leadMode;
+        leadBtn.classList.toggle('on', ns.leadMode);
+        leadBtn.setAttribute('aria-pressed', ns.leadMode);
+        updateRehear();
         matcher.level = ns.level;
         readerEl.classList.toggle('focus-mode', ns.focus);
       });
