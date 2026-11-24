@@ -10,6 +10,7 @@ const DEFAULTS = {
   asr: CFG.defaultAsr || 'aliyun', // 'aliyun' | 'demo'
   level: 'normal', // 'loose' | 'normal' | 'strict'
   leadMode: false, // 带读模式：老师先读一句，孩子跟读一句
+  activeBook: 'book-1', // 'book-1' | 'book-2' | 'all'
   showPinyin: true,
   fontSize: 'm', // 's' | 'm' | 'l'
   record: true,
