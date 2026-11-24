@@ -1,0 +1,32 @@
+{
+  "id": "mu-qin",
+  "title": "母亲",
+  "cover": "images/mu-qin/02.jpg",
+  "image": "images/mu-qin/01.jpg",
+  "theme": "#F48FB1",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "母亲母亲真辛苦，日夜操劳为儿女。",
+          "image": "images/mu-qin/01.jpg"
+        },
+        {
+          "text": "自己唱首小儿歌，送给我的好妈妈。",
+          "image": "images/mu-qin/02.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "母",
+    "儿",
+    "女",
+    "自"
+  ],
+  "words": [
+    "母亲",
+    "儿女"
+  ],
+  "pinyinOverrides": {}
+}

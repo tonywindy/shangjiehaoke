@@ -1,0 +1,46 @@
+{
+  "id": "fang-xiang-ge",
+  "title": "方向歌",
+  "cover": "images/fang-xiang-ge/03.jpg",
+  "image": "images/fang-xiang-ge/01.jpg",
+  "theme": "#9575CD",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "小朋友，看地图，方向口诀记心内，",
+          "image": "images/fang-xiang-ge/01.jpg"
+        },
+        {
+          "text": "上是北，下是南，左是西，右是东。",
+          "image": "images/fang-xiang-ge/02.jpg"
+        },
+        {
+          "text": "小朋友，外出时，早晨面向太阳走，前是东，后是西，左是北，右是南。",
+          "image": "images/fang-xiang-ge/03.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "内",
+    "上",
+    "下",
+    "南",
+    "左",
+    "西",
+    "右",
+    "东",
+    "外"
+  ],
+  "words": [
+    "上下",
+    "左右",
+    "东西",
+    "南北",
+    "内外"
+  ],
+  "pinyinOverrides": {
+    "东西": "dōng xī"
+  }
+}

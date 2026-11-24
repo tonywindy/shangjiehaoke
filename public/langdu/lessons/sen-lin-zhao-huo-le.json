@@ -1,0 +1,43 @@
+{
+  "id": "sen-lin-zhao-huo-le",
+  "title": "森林着火了",
+  "cover": "images/sen-lin-zhao-huo-le/04.jpg",
+  "image": "images/sen-lin-zhao-huo-le/01.jpg",
+  "theme": "#FF7043",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "森林里着火了，",
+          "image": "images/sen-lin-zhao-huo-le/01.jpg"
+        },
+        {
+          "text": "猩猩搬起大石头控制了火势，",
+          "image": "images/sen-lin-zhao-huo-le/02.jpg"
+        },
+        {
+          "text": "大象用鼻子喷水，",
+          "image": "images/sen-lin-zhao-huo-le/03.jpg"
+        },
+        {
+          "text": "其他动物拿起泥土盖在火上，大家一起来灭火。",
+          "image": "images/sen-lin-zhao-huo-le/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "林",
+    "火",
+    "石",
+    "水",
+    "土"
+  ],
+  "words": [
+    "水火"
+  ],
+  "pinyinOverrides": {
+    "着火": "zháo huǒ",
+    "石头": "shí tou"
+  }
+}

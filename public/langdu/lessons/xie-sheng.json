@@ -1,0 +1,34 @@
+{
+  "id": "xie-sheng",
+  "title": "写生",
+  "cover": "images/xie-sheng/02.jpg",
+  "image": "images/xie-sheng/01.jpg",
+  "theme": "#BA68C8",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "拿着小画册，踩着自行车。",
+          "image": "images/xie-sheng/01.jpg"
+        },
+        {
+          "text": "到野外写生，要当小画王。",
+          "image": "images/xie-sheng/02.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "册",
+    "行",
+    "车",
+    "王"
+  ],
+  "words": [
+    "画册",
+    "自行车"
+  ],
+  "pinyinOverrides": {
+    "自行车": "zì xíng chē"
+  }
+}

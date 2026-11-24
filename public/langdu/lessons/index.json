@@ -23,6 +23,29 @@
         "xue-han-zi",
         "xiao-mao-de-li-wu"
       ]
+    },
+    {
+      "id": "book-2",
+      "title": "小班上册",
+      "lessons": [
+        "zao-shang",
+        "tian-he-di",
+        "lei-yu",
+        "shu-mu",
+        "sen-lin-zhao-huo-le",
+        "lian",
+        "mu-qin",
+        "li-jiao-qiao",
+        "liang-zhi-xiao-xiang",
+        "tian-yuan",
+        "feng-shou",
+        "wa-pian-fang",
+        "ying-huo-chong",
+        "xia-yu-le",
+        "xie-sheng",
+        "hua-ju",
+        "fang-xiang-ge"
+      ]
     }
   ]
 }

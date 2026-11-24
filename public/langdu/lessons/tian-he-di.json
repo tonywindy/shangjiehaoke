@@ -1,0 +1,37 @@
+{
+  "id": "tian-he-di",
+  "title": "天和地",
+  "cover": "images/tian-he-di/02.jpg",
+  "image": "images/tian-he-di/01.jpg",
+  "theme": "#4FC3F7",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "天空是蓝蓝的，飘着朵朵白云。",
+          "image": "images/tian-he-di/01.jpg"
+        },
+        {
+          "text": "大地是绿绿的，长满树和花草。",
+          "image": "images/tian-he-di/02.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "天",
+    "云",
+    "大",
+    "地",
+    "和"
+  ],
+  "words": [
+    "天空",
+    "大地"
+  ],
+  "pinyinOverrides": {
+    "天和地": "tiān hé dì",
+    "树和花草": "shù hé huā cǎo",
+    "长满": "zhǎng mǎn"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "id": "lian",
+  "title": "脸",
+  "cover": "images/lian/04.jpg",
+  "image": "images/lian/01.jpg",
+  "theme": "#F06292",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "小朋友，抬起手，轻轻摸摸小脸蛋，",
+          "image": "images/lian/01.jpg"
+        },
+        {
+          "text": "脸蛋两侧有耳朵，额头下面有眉毛，",
+          "image": "images/lian/02.jpg"
+        },
+        {
+          "text": "眉毛下面是眼睛，眼睛下面是鼻子，",
+          "image": "images/lian/03.jpg"
+        },
+        {
+          "text": "鼻子下面是嘴巴，口中长着小舌头。",
+          "image": "images/lian/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "手",
+    "耳",
+    "眉",
+    "眼",
+    "鼻",
+    "巴",
+    "口"
+  ],
+  "words": [
+    "耳朵",
+    "眉毛",
+    "眼睛",
+    "鼻子",
+    "嘴巴"
+  ],
+  "pinyinOverrides": {
+    "耳朵": "ěr duo",
+    "眉毛": "méi mao",
+    "眼睛": "yǎn jing",
+    "鼻子": "bí zi",
+    "嘴巴": "zuǐ ba",
+    "舌头": "shé tou",
+    "长着": "zhǎng zhe"
+  }
+}

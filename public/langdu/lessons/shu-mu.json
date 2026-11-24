@@ -1,0 +1,35 @@
+{
+  "id": "shu-mu",
+  "title": "树木",
+  "cover": "images/shu-mu/03.jpg",
+  "image": "images/shu-mu/01.jpg",
+  "theme": "#66BB6A",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "两棵树木是树林，",
+          "image": "images/shu-mu/01.jpg"
+        },
+        {
+          "text": "三棵树木是森林。",
+          "image": "images/shu-mu/02.jpg"
+        },
+        {
+          "text": "树木多了空气好，保护森林环境好。",
+          "image": "images/shu-mu/03.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "木",
+    "森",
+    "气"
+  ],
+  "words": [
+    "树木",
+    "森林"
+  ],
+  "pinyinOverrides": {}
+}

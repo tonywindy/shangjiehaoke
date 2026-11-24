@@ -1,0 +1,38 @@
+{
+  "id": "li-jiao-qiao",
+  "title": "立交桥",
+  "cover": "images/li-jiao-qiao/03.jpg",
+  "image": "images/li-jiao-qiao/01.jpg",
+  "theme": "#4DB6AC",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "立交桥，高又高，往来车辆能分道。",
+          "image": "images/li-jiao-qiao/01.jpg"
+        },
+        {
+          "text": "大黄牛，开卡车，小马开着出租车。",
+          "image": "images/li-jiao-qiao/02.jpg"
+        },
+        {
+          "text": "小山羊，开公车，汽车行驶不拥堵。",
+          "image": "images/li-jiao-qiao/03.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "立",
+    "交",
+    "牛",
+    "马",
+    "羊"
+  ],
+  "words": [
+    "立交桥"
+  ],
+  "pinyinOverrides": {
+    "行": "xíng"
+  }
+}

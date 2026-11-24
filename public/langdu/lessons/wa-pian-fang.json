@@ -1,0 +1,34 @@
+{
+  "id": "wa-pian-fang",
+  "title": "瓦片房",
+  "cover": "images/wa-pian-fang/02.jpg",
+  "image": "images/wa-pian-fang/01.jpg",
+  "theme": "#90A4AE",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "瓦片房，白色墙，大木门，小窗户。",
+          "image": "images/wa-pian-fang/01.jpg"
+        },
+        {
+          "text": "两只燕子飞过来，屋檐下面安了家。",
+          "image": "images/wa-pian-fang/02.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "白",
+    "门",
+    "户",
+    "飞"
+  ],
+  "words": [
+    "大门",
+    "窗户"
+  ],
+  "pinyinOverrides": {
+    "窗户": "chuāng hu"
+  }
+}

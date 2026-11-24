@@ -1,0 +1,34 @@
+{
+  "id": "xia-yu-le",
+  "title": "下雨了",
+  "cover": "images/xia-yu-le/02.jpg",
+  "image": "images/xia-yu-le/01.jpg",
+  "theme": "#64B5F6",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "森林里下起了丝丝细雨，小动物都打开了雨伞。",
+          "image": "images/xia-yu-le/01.jpg"
+        },
+        {
+          "text": "只有鸭子的羽毛像雨衣一样不怕水，真神奇啊！",
+          "image": "images/xia-yu-le/02.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "丝",
+    "伞",
+    "羽",
+    "毛"
+  ],
+  "words": [
+    "羽毛",
+    "雨伞"
+  ],
+  "pinyinOverrides": {
+    "鸭子": "yā zi"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "id": "liang-zhi-xiao-xiang",
+  "title": "两只小象",
+  "cover": "images/liang-zhi-xiao-xiang/03.jpg",
+  "image": "images/liang-zhi-xiao-xiang/01.jpg",
+  "theme": "#AED581",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "鸟儿叫，花儿笑，森林里面好热闹。",
+          "image": "images/liang-zhi-xiao-xiang/01.jpg"
+        },
+        {
+          "text": "两只小象比力气，老鼠一旁来打气。",
+          "image": "images/liang-zhi-xiao-xiang/02.jpg"
+        },
+        {
+          "text": "两只小象齐用力，嗨哟嗨哟嗨嗨哟。",
+          "image": "images/liang-zhi-xiao-xiang/03.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "鸟",
+    "花",
+    "象",
+    "鼠"
+  ],
+  "words": [
+    "大象",
+    "老鼠",
+    "小鸟",
+    "鲜花"
+  ],
+  "pinyinOverrides": {
+    "老鼠": "lǎo shǔ",
+    "力气": "lì qi"
+  }
+}

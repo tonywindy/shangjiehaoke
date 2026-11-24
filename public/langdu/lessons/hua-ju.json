@@ -1,0 +1,41 @@
+{
+  "id": "hua-ju",
+  "title": "话剧",
+  "cover": "images/hua-ju/03.jpg",
+  "image": "images/hua-ju/01.jpg",
+  "theme": "#FF8A65",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "元旦节，演话剧，我来扮演小猎手。",
+          "image": "images/hua-ju/01.jpg"
+        },
+        {
+          "text": "腰挂小刀手拿弓，身后背着几根箭。",
+          "image": "images/hua-ju/02.jpg"
+        },
+        {
+          "text": "认真表演人人赞，老师同学夸我棒。",
+          "image": "images/hua-ju/03.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "元",
+    "小",
+    "刀",
+    "弓",
+    "几"
+  ],
+  "words": [
+    "小刀",
+    "弓箭"
+  ],
+  "pinyinOverrides": {
+    "扮演": "bàn yǎn",
+    "几根": "jǐ gēn",
+    "背着": "bēi zhe"
+  }
+}

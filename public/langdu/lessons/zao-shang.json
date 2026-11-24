@@ -1,0 +1,37 @@
+{
+  "id": "zao-shang",
+  "title": "早上",
+  "cover": "images/zao-shang/03.jpg",
+  "image": "images/zao-shang/01.jpg",
+  "theme": "#FFB74D",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "日儿升，月儿落，",
+          "image": "images/zao-shang/01.jpg"
+        },
+        {
+          "text": "新的一天开始了。",
+          "image": "images/zao-shang/02.jpg"
+        },
+        {
+          "text": "小山川里真热闹，人们起床劳动了。",
+          "image": "images/zao-shang/03.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "日",
+    "月",
+    "山",
+    "川",
+    "人"
+  ],
+  "words": [
+    "日月",
+    "山川"
+  ],
+  "pinyinOverrides": {}
+}

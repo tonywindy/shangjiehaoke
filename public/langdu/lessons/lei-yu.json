@@ -1,0 +1,43 @@
+{
+  "id": "lei-yu",
+  "title": "雷雨",
+  "cover": "images/lei-yu/04.jpg",
+  "image": "images/lei-yu/01.jpg",
+  "theme": "#7986CB",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "起风了，下雨了，",
+          "image": "images/lei-yu/01.jpg"
+        },
+        {
+          "text": "闪电过后雷声响。",
+          "image": "images/lei-yu/02.jpg"
+        },
+        {
+          "text": "风停了，雨停了，",
+          "image": "images/lei-yu/03.jpg"
+        },
+        {
+          "text": "夜空露出小星星。",
+          "image": "images/lei-yu/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "风",
+    "雨",
+    "电",
+    "雷",
+    "星"
+  ],
+  "words": [
+    "风雨",
+    "雷电"
+  ],
+  "pinyinOverrides": {
+    "星星": "xīng xing"
+  }
+}

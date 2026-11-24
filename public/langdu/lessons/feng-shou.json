@@ -1,0 +1,47 @@
+{
+  "id": "feng-shou",
+  "title": "丰收",
+  "cover": "images/feng-shou/04.jpg",
+  "image": "images/feng-shou/01.jpg",
+  "theme": "#FFA726",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "秋天到，叶子黄，丰收季节大伙忙。",
+          "image": "images/feng-shou/01.jpg"
+        },
+        {
+          "text": "树上挂满红苹果，瓜田长满大南瓜。",
+          "image": "images/feng-shou/02.jpg"
+        },
+        {
+          "text": "水井边，果园里，农民开心来收获。",
+          "image": "images/feng-shou/03.jpg"
+        },
+        {
+          "text": "丰收年到生活好，你我开心笑哈哈。",
+          "image": "images/feng-shou/04.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "叶",
+    "丰",
+    "果",
+    "田",
+    "瓜",
+    "井",
+    "生",
+    "你"
+  ],
+  "words": [
+    "苹果",
+    "南瓜",
+    "丰收"
+  ],
+  "pinyinOverrides": {
+    "叶子": "yè zi"
+  }
+}

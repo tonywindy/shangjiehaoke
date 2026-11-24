@@ -1,0 +1,40 @@
+{
+  "id": "tian-yuan",
+  "title": "田园",
+  "cover": "images/tian-yuan/03.jpg",
+  "image": "images/tian-yuan/01.jpg",
+  "theme": "#81C784",
+  "paragraphs": [
+    {
+      "sentences": [
+        {
+          "text": "河水流，鱼儿游，河底贝壳不会游。",
+          "image": "images/tian-yuan/01.jpg"
+        },
+        {
+          "text": "河岸边，禾苗笑，竹林里面虫子叫。",
+          "image": "images/tian-yuan/02.jpg"
+        },
+        {
+          "text": "山青青，水绿绿，田园风光真美丽。",
+          "image": "images/tian-yuan/03.jpg"
+        }
+      ]
+    }
+  ],
+  "newChars": [
+    "鱼",
+    "贝",
+    "禾",
+    "竹",
+    "虫"
+  ],
+  "words": [
+    "虫子",
+    "鱼儿",
+    "贝壳"
+  ],
+  "pinyinOverrides": {
+    "虫子": "chóng zi"
+  }
+}
